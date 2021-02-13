@@ -1,14 +1,51 @@
 <template>
   <div>
-    <div id="page-header" class="bg-red-600 text-white h-10 flex justify-between">
-      <div>This should be the header</div>
-      <!-- <img src="../../assets/user-icon.svg" /> -->
+    <header class="bg-red-600 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
+      <div class="pl-4">
+        <svg-image customClass="h-7 w-7 inline-block" icon="check-list-icon.svg"></svg-image>
+        Finisherist
+      </div>
+      <svg-image customClass="h-7 w-7" icon="user-icon.svg"></svg-image>
+    </header>
 
-      <svg-image icon="user-icon.svg"></svg-image>
-    </div>
-    <div id="page-content" class="bg-gray-400 flex">
-      <div class="bg-yellow-400 w-1/4">Side bar menu</div>
-      <div class="bg-white flex-grow">Content here</div>
+    <div class="flex">
+      <div class="top-0 p-10 h-screen flex-none bg-gray-50">Sticky side bar</div>
+      <div class="flex-grow p-4 h-full pt-10">
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+        Body Content <br />
+      </div>
     </div>
   </div>
 </template>
@@ -19,7 +56,7 @@ import SvgImage from "../../components/SvgImage.vue"
 
 @Component({
   components: {
-    SvgImage
+    SvgImage,
   },
 })
 export default class Home extends Vue {}
