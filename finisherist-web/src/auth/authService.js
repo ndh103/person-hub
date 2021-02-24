@@ -1,5 +1,6 @@
 /* eslint-disable */
 import Oidc from "oidc-client"
+import { isJSDocReturnTag } from "typescript"
 
 var userManager = new Oidc.UserManager({
   userStore: new Oidc.WebStorageStateStore(),
@@ -86,19 +87,16 @@ class AuthService {
 
   // Check if there is any user logged in
   signInIfHasNot() {
-    userManager
+    var self = this;
+    return userManager
       .getUser()
       .then(function(user) {
         if (user == null) {
-          self.signIn()
-          return resolve(false)
-        } else {
-          return resolve(true)
+          self.signinRedirect()
         }
       })
       .catch(function(err) {
         console.log(err)
-        return reject(err)
       })
   }
 
@@ -110,16 +108,16 @@ class AuthService {
   }
 
   signinRedirectCallback() {
-    userManager.signinRedirectCallback()
+    return userManager.signinRedirectCallback()
   }
 
   signinSilentCallback() {
-    userManager.signinSilentCallback()
+    return userManager.signinSilentCallback()
   }
 
   // Redirect of the current window to the end session endpoint
   signoutRedirect() {
-    userManager
+    return userManager
       .signoutRedirect()
       .then(function(resp) {
         console.log("signed out", resp)
@@ -131,4 +129,4 @@ class AuthService {
 }
 
 var authService = new AuthService();
-export default authService();
+export default authService;

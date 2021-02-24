@@ -6,6 +6,7 @@
         Finisherist
       </div>
       <svg-image class="h-7 w-7" icon="user-icon.svg"></svg-image>
+      <button @click="logout()">Logout</button>
     </header>
 
     <div class="flex">
@@ -53,10 +54,16 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
 import SvgImage from "../../components/SvgImage.vue"
+import authService from "@/auth/authService"
 
 @Component({
   components: {
     SvgImage,
+  },
+  methods: {
+    logout: function () {
+      authService.signoutRedirect()
+    },
   },
 })
 export default class Home extends Vue {}
