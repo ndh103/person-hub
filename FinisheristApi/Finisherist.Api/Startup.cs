@@ -30,6 +30,17 @@ namespace Finisherist.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "AllowAll",
+                                builder =>
+                                {
+                                    builder.AllowAnyHeader();
+                                    builder.AllowAnyMethod();
+                                    builder.AllowAnyOrigin();
+                                });
+            });
+
             services.AddControllersWithViews();
 
             services.Configure<RazorViewEngineOptions>(o =>
@@ -65,6 +76,8 @@ namespace Finisherist.Api
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseCors("AllowAll");
 
             app.UseIdentityServer();
 

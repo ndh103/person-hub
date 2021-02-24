@@ -5,7 +5,10 @@ const aboutRoutes: Array<RouteConfig> = [
     {
         path: "/about",
         name: "about",
-        component: About
+        component: About,
+        meta: {
+            requiresAuth: false
+          }
     }
 ];
 

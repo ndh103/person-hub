@@ -19,8 +19,7 @@ namespace Finisherist.Api.Area.Authentication
         public static IEnumerable<ApiScope> ApiScopes =>
             new ApiScope[]
             {
-                new ApiScope("scope1"),
-                new ApiScope("scope2"),
+                new ApiScope("api")
             };
 
         public static IEnumerable<Client> Clients =>
@@ -35,23 +34,20 @@ namespace Finisherist.Api.Area.Authentication
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = { new Secret("511536EF-F270-4058-80CA-1C89C192F69A".Sha256()) },
 
-                    AllowedScopes = { "scope1" }
+                    AllowedScopes = { "api" }
                 },
 
                 // interactive client using code flow + pkce
                 new Client
                 {
-                    ClientId = "interactive",
+                    ClientId = "web-client",
                     ClientSecrets = { new Secret("49C1A7E1-0C79-4A89-A3D6-A37998FB86B0".Sha256()) },
-
-                    AllowedGrantTypes = GrantTypes.Code,
-
-                    RedirectUris = { "https://localhost:44300/signin-oidc" },
-                    FrontChannelLogoutUri = "https://localhost:44300/signout-oidc",
-                    PostLogoutRedirectUris = { "https://localhost:44300/signout-callback-oidc" },
-
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    AllowAccessTokensViaBrowser = true,
+                    RedirectUris = { "http://localhost:8080/auth/callback" },
+                    PostLogoutRedirectUris = { "http://localhost:8080/" },
                     AllowOfflineAccess = true,
-                    AllowedScopes = { "openid", "profile", "scope2" }
+                    AllowedScopes = { "openid", "profile", "api" }
                 },
             };
     }
