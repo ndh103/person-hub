@@ -5,8 +5,11 @@
         <svg-image class="h-7 w-7 inline-block" icon="check-list-icon.svg"></svg-image>
         Finisherist
       </div>
-      <svg-image class="h-7 w-7" icon="user-icon.svg"></svg-image>
-      <button @click="logout()">Logout</button>
+      <div>
+        <svg-image class="h-7 w-7 inline-block" icon="user-icon.svg"></svg-image>
+        <button @click="logout()">Logout</button>
+      </div>
+      
     </header>
 
     <div class="flex">
