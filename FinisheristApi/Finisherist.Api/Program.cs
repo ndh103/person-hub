@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Finisherist.Api.Core.Data;
+using Finisherist.IdentityProvider;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -27,7 +21,7 @@ namespace Finisherist.Api
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
                 .CreateLogger();
                 
-            CreateHostBuilder(args).Build().MigrateDb().Run();
+            CreateHostBuilder(args).Build().SeedUsers().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

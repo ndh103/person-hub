@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finisherist.Core", "Finishe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finisherist.Infrastructure", "Finisherist.Infrastructure\Finisherist.Infrastructure.csproj", "{049D5CA0-97B9-4B5C-8C7F-B1A694F2818A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finisherist.IdentityProvider", "Finisherist.IdentityProvider\Finisherist.IdentityProvider.csproj", "{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{049D5CA0-97B9-4B5C-8C7F-B1A694F2818A}.Release|x64.Build.0 = Release|Any CPU
 		{049D5CA0-97B9-4B5C-8C7F-B1A694F2818A}.Release|x86.ActiveCfg = Release|Any CPU
 		{049D5CA0-97B9-4B5C-8C7F-B1A694F2818A}.Release|x86.Build.0 = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|x64.Build.0 = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Debug|x86.Build.0 = Debug|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x64.ActiveCfg = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x64.Build.0 = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x86.ActiveCfg = Release|Any CPU
+		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
