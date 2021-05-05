@@ -1,11 +1,12 @@
 using Finisherist.Api.Common.Configs;
 using Finisherist.IdentityProvider;
+using Finisherist.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
-namespace Finisherist.Api.Common.DependencyInjections.ServiceExtensions
+namespace Finisherist.Api.Common.DependencyInjections
 {
     public static class AddDatabaseContextsExtension
     {
@@ -14,6 +15,8 @@ namespace Finisherist.Api.Common.DependencyInjections.ServiceExtensions
             var databaseConnectionConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
 
             services.AddApplicationDbContext<IdentityApplicationDbContext>(databaseConnectionConfig.Identity, migrationAssemblyName: "Finisherist.IdentityProvider");
+
+            services.AddApplicationDbContext<FinisheristDbContext>(databaseConnectionConfig.Finisherist, migrationAssemblyName: "Finisherist.Infrastructure");
 
             return services;
         }

@@ -2,7 +2,7 @@ using Finisherist.Api.Common.Configs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Finisherist.Api.Common.DependencyInjections.ServiceExtensions
+namespace Finisherist.Api.Common.DependencyInjections
 {
     public static class AddApplicationOptionsExtension
     {

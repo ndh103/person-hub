@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Finisherist.Api.Common.DependencyInjections.ServiceExtensions;
 using Finisherist.IdentityProvider;
+using Finisherist.Api.Common.DependencyInjections;
 
 namespace Finisherist.Api
 {

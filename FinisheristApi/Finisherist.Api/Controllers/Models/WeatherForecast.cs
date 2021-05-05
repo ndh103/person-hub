@@ -2,6 +2,7 @@ using System;
 
 namespace Finisherist.Api.Controllers
 {
+    
     public class WeatherForecast
     {
         public DateTime Date { get; set; }
