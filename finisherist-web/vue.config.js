@@ -27,5 +27,5 @@ function registerSvgLoader(config) {
 module.exports = {
   chainWebpack: (config) => {
     registerSvgLoader(config)
-  },
+  }
 }

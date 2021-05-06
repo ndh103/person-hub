@@ -35,13 +35,13 @@ namespace Finisherist.Api.Controllers
             return challenge.Id;
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<Challenge>> GetAll([FromQuery] string userId)
+        [HttpGet("{userId}")]
+        public ActionResult<IEnumerable<Challenge>> GetAll(string userId)
         {
             return this.dbContext.Challenges.Where(r => r.UserId == userId).ToList();
         }
 
-        [HttpDelete]
+        [HttpDelete("{challengeId}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteChallenge([FromQuery] int challengeId)
         {
@@ -57,16 +57,16 @@ namespace Finisherist.Api.Controllers
             return Ok();
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{challengeId}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateChallenge(int id, Challenge challenge)
+        public async Task<IActionResult> UpdateChallenge(int challengeId, Challenge challenge)
         {
             if(!ModelState.IsValid){
                 return BadRequest();
             }
 
-            var toBeUpdatedChallenge = this.dbContext.Challenges.FirstOrDefault(r => r.Id == id);
+            var toBeUpdatedChallenge = this.dbContext.Challenges.FirstOrDefault(r => r.Id == challengeId);
 
             if(toBeUpdatedChallenge == null){
                 return NotFound();
