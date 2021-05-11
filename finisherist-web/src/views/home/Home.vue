@@ -14,11 +14,8 @@
     <div class="flex">
       <div class="top-0 p-10 h-screen flex-none bg-gray-50">Sticky side bar</div>
       <div class="flex-grow p-4 h-full pt-10">
-        <div v-for="challengeItem in challenges" :key="challengeItem.Id">
-          <p>{{challengeItem.title}}</p>
-          <p>{{challengeItem.description}}</p>
-          <p>{{challengeItem.status}}</p>
-        </div>
+        <add-new-challenge></add-new-challenge>
+        <challenge-list :challengeList = "challengeList"></challenge-list>
       </div>
     </div>
   </div>
@@ -29,15 +26,19 @@ import { Vue } from "vue-property-decorator"
 import SvgImage from "../../components/SvgImage.vue"
 import authService from "@/auth/authService"
 import challengeApiService from "@/api-services/challenge-api-service"
-import Challenge from "@/api-services/models/challenge"
+import Challenge from "@/api-services/models/ChallengeModel"
+import ChallengeList from "@/components/Challenge/ChallengeList.vue"
+import AddNewChallenge from "@/components/Challenge/AddNewChallenge.vue"
 
 const Home = Vue.extend({
   components: {
     SvgImage,
+    ChallengeList, 
+    AddNewChallenge
   },
   data: function () {
     return {
-      challenges: [] as Challenge[]
+      challengeList: [] as Challenge[]
     }
   },
   methods: {
@@ -47,7 +48,7 @@ const Home = Vue.extend({
   },
   created: function () {
     challengeApiService.getAll("hanguyen").then(value => {
-      this.challenges = value.data;
+      this.challengeList = value.data;
     })
   },
 })

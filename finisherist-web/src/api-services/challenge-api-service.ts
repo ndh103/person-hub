@@ -1,10 +1,10 @@
-import Challenge from "./models/challenge";
+import ChallengeModel from "./models/ChallengeModel";
 import http from "@/common/http-base";
 import { AxiosResponse } from "axios";
 
 class ChallengeApiService
 {
-    add(challenge: Challenge): Promise<AxiosResponse<any>>{
+    add(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
         return http.post('challenge', challenge);
     }
 
@@ -12,11 +12,11 @@ class ChallengeApiService
         return http.get(`challenge/${userId}`);
     }
 
-    update(challenge: Challenge): Promise<AxiosResponse<any>>{
+    update(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
         return http.put(`challenge/${challenge.id}`, challenge);
     }
 
-    delete(challenge: Challenge): Promise<AxiosResponse<any>>{
+    delete(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
         return http.delete(`challenge/${challenge.id}`);
     }
 }
