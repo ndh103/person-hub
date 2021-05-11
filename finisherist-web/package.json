@@ -22,7 +22,7 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.2.0",
     "vue-svg-loader": "^0.17.0-beta.2",
-    "vue-tailwind": "^2.1.1",
+    "vue-tailwind": "^2.2.1",
     "vuex": "^3.4.0"
   },
   "devDependencies": {
