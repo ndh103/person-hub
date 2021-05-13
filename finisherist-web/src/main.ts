@@ -8,10 +8,8 @@ import httpBase from './common/http-base';
 Vue.prototype.$http = httpBase;
 
 // Setup Tailwind
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./tailwind/tailwind.css";
-import VueTailwind from 'vue-tailwind';
-import tailwindSettings from './tailwind/tailwind-settings';
-Vue.use(VueTailwind, tailwindSettings)
 
 Vue.config.productionTip = false
 
