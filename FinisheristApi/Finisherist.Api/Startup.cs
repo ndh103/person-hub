@@ -41,6 +41,8 @@ namespace Finisherist.Api
 
             services.AddIdentityAuthentication();
 
+            services.AddLocalApiAuthentication();
+
             services.AddApplicationDbContexts(Configuration);
 
             services.AddSwaggerGen(c =>

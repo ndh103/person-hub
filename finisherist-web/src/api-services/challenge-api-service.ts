@@ -5,19 +5,19 @@ import { AxiosResponse } from "axios";
 class ChallengeApiService
 {
     add(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
-        return http.post('challenge', challenge);
+        return http.post('challenges', challenge);
     }
 
-    getAll(userId: string): Promise<AxiosResponse<any>>{
-        return http.get(`challenge/${userId}`);
+    getAll(): Promise<AxiosResponse<any>>{
+        return http.get(`challenges`);
     }
 
     update(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
-        return http.put(`challenge/${challenge.id}`, challenge);
+        return http.put(`challenges/${challenge.id}`, challenge);
     }
 
     delete(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
-        return http.delete(`challenge/${challenge.id}`);
+        return http.delete(`challenges/${challenge.id}`);
     }
 }
 

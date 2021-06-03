@@ -24,8 +24,9 @@ namespace Finisherist.IdentityProvider
                 // see https://identityserver4.readthedocs.io/en/latest/topics/resources.html
                 options.EmitStaticAudienceClaim = true;
             })
-                .AddInMemoryIdentityResources(IdentityConfig.IdentityResources)
                 .AddInMemoryApiScopes(IdentityConfig.ApiScopes)
+                .AddInMemoryApiResources(IdentityConfig.ApiResources)
+                .AddInMemoryIdentityResources(IdentityConfig.IdentityResources)
                 .AddInMemoryClients(IdentityConfig.Clients)
                 .AddAspNetIdentity<ApplicationUser>();
 

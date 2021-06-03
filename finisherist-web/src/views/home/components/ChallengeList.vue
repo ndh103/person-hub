@@ -12,7 +12,7 @@
 import Challenge from "@/api-services/models/ChallengeModel";
 import { PropType } from "vue";
 import { Vue } from "vue-property-decorator"
-import ChallengeOverview from "@/components/Challenge/ChallengeOverview.vue"
+import ChallengeOverview from "@/views/home/components/ChallengeOverview.vue"
 
 const ChallengeList = Vue.extend({
   components:{

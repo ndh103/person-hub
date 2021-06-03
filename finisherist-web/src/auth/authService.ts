@@ -1,12 +1,12 @@
 /* eslint-disable */
-import Oidc from "oidc-client"
+import Oidc, { User } from "oidc-client"
 
 var userManager = new Oidc.UserManager({
   authority: "https://localhost:5001",
   client_id: "web-client",
   redirect_uri: window.location.origin + "/auth/callback",
   response_type: "code",
-  scope: "openid profile api",
+  scope: "openid profile email IdentityServerApi",
   post_logout_redirect_uri: window.location.origin + "/",
   silent_redirect_uri: window.location.origin + "/auth/silent-renew",
   accessTokenExpiringNotificationTime: 10,
@@ -59,8 +59,8 @@ userManager.events.addUserSignedOut(function () {
 
 class AuthService {
   // Get the user who is logged in
-  getUser() {
-    return userManager.getUser()
+  getUserAsync(): Promise<User | null> {
+    return userManager.getUser();
   }
 
   // Check if there is any user logged in, if not, do the sign in
@@ -69,6 +69,7 @@ class AuthService {
     return userManager
       .getUser()
       .then(function (user) {
+
         if (user == null) {
           self.signinRedirect()
         }

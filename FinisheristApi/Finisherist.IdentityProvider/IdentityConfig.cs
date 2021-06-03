@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 using System.Collections.Generic;
 
@@ -9,17 +11,28 @@ namespace Finisherist.IdentityProvider
 {
     public static class IdentityConfig
     {
+        public static IEnumerable<ApiResource> ApiResources = new List<ApiResource>
+        {
+            // local API
+            new ApiResource(IdentityServerConstants.LocalApi.ScopeName)
+            {
+                Scopes = { IdentityServerConstants.LocalApi.ScopeName },
+                UserClaims = { JwtClaimTypes.Name, JwtClaimTypes.Email, JwtClaimTypes.PreferredUserName}
+            }
+        };
+
         public static IEnumerable<IdentityResource> IdentityResources =>
                    new IdentityResource[]
                    {
                         new IdentityResources.OpenId(),
                         new IdentityResources.Profile(),
+                        new IdentityResources.Email()
                    };
 
         public static IEnumerable<ApiScope> ApiScopes =>
             new ApiScope[]
             {
-                new ApiScope("api")
+                new ApiScope(IdentityServerConstants.LocalApi.ScopeName)
             };
 
         public static IEnumerable<Client> Clients =>
@@ -34,7 +47,7 @@ namespace Finisherist.IdentityProvider
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets = { new Secret("511536EF-F270-4058-80CA-1C89C192F69A".Sha256()) },
 
-                    AllowedScopes = { "api" }
+                    AllowedScopes = { IdentityServerConstants.LocalApi.ScopeName }
                 },
 
                 // interactive client using code flow + pkce
@@ -46,7 +59,7 @@ namespace Finisherist.IdentityProvider
                     RequireClientSecret = false,
                     RedirectUris = { "http://localhost:8080/auth/callback" },
                     PostLogoutRedirectUris = { "http://localhost:8080/" },
-                    AllowedScopes = { "openid", "profile", "api" },
+                    AllowedScopes = { "openid", "profile", "email", IdentityServerConstants.LocalApi.ScopeName },
                     RequirePkce = true
                 },
             };
