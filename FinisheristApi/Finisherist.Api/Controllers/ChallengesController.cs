@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Finisherist.Api.Common.Extensions;
 using Finisherist.Api.Controllers.Models;
+using Finisherist.Core.Common.Enum;
 using Finisherist.Core.Models;
 using Finisherist.Infrastructure.DataAccess;
 using IdentityModel;
@@ -49,20 +53,22 @@ namespace Finisherist.Api.Controllers
             return challenge.Id;
         }
 
-        [HttpGet()]
-        public ActionResult<IEnumerable<Challenge>> GetAll()
+        [HttpGet("{status}")]
+        public ActionResult<IEnumerable<Challenge>> QueryByStatus(string status)
         {
-            var identity = User.Identity as ClaimsIdentity;
+            var normStatusString =  status.ToTitleCase();
+            if(!normStatusString.IsValidEnumValue<ChallengeStatus>()){
+                return BadRequest("Invalid status");
+            }
 
-            var claims = from c in identity.Claims
-                         select new
-                         {
-                             subject = c.Subject.Name,
-                             type = c.Type,
-                             value = c.Value
-                         };
+            var statusEnum = normStatusString.ToEnum<ChallengeStatus>();
+            return this.dbContext.Challenges.Where(r => r.UserId == this.AuthenticatedUserName && r.Status ==  statusEnum).ToList();
+        }
 
-            return this.dbContext.Challenges.Where(r => r.UserId == this.AuthenticatedUserName).ToList();
+        [HttpGet("{challengeId}/details")]
+        public ActionResult<IEnumerable<Challenge>> Get(int challengeId)
+        {
+            return this.dbContext.Challenges.Where(r => r.UserId == this.AuthenticatedUserName && r.Id == challengeId).ToList();
         }
 
         [HttpDelete("{challengeId}")]
@@ -81,16 +87,16 @@ namespace Finisherist.Api.Controllers
             return Ok();
         }
 
-        [HttpPut("{challengeId}")]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateChallenge(int challengeId, ChallengeModel challengeModel)
+        public async Task<IActionResult> UpdateChallenge(int id, ChallengeModel challengeModel)
         {
             if(!ModelState.IsValid){
                 return BadRequest();
             }
 
-            var toBeUpdatedChallenge = this.dbContext.Challenges.FirstOrDefault(r => r.Id == challengeId && r.UserId == this.AuthenticatedUserName);
+            var toBeUpdatedChallenge = this.dbContext.Challenges.FirstOrDefault(r => r.Id == id && r.UserId == this.AuthenticatedUserName);
 
             if(toBeUpdatedChallenge == null){
                 return NotFound();

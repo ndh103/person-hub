@@ -12,11 +12,20 @@
     </header>
 
     <div class="flex">
-      <div class="top-0 p-10 h-screen flex-none bg-gray-50">Sticky side bar</div>
+      <div class="top-0 pt-10 pl-10 h-screen flex-none bg-gray-50 w-80">
+        <p class="pt-10"></p>
+        <p :class="['sidebar-menu-item', isRouteActive('initial') ? 'active':'']" @click="navigateTo('/challenges/initial')">
+          Initial
+        </p>
+        <p :class="['sidebar-menu-item', isRouteActive('started') ? 'active':'']" @click="navigateTo('/challenges/started')">
+          Started
+        </p>
+        <p :class="['sidebar-menu-item', isRouteActive('finished') ? 'active':'']" @click="navigateTo('/challenges/finished')">
+          Finished
+        </p>
+      </div>
       <div class="flex-grow p-4 h-full pt-10">
-        <add-new-challenge></add-new-challenge>
-        <button class='w-auto bg-indigo-500 hover:bg-indigo-700 rounded-lg shadow-xl font-medium text-white px-4 py-2' @click="fetchChallenges()">Refresh</button>
-        <challenge-list :challengeList="challengeList"></challenge-list>
+        <router-view></router-view>
       </div>
     </div>
   </div>
@@ -26,36 +35,38 @@
 import { Vue } from "vue-property-decorator"
 import SvgImage from "../../components/SvgImage.vue"
 import authService from "@/auth/authService"
-import challengeApiService from "@/api-services/challenge-api-service"
-import ChallengeModel from "@/api-services/models/ChallengeModel"
-import ChallengeList from "@/views/home/components/ChallengeList.vue"
-import AddNewChallenge from "@/views/home/components/AddNewChallenge.vue"
 
 const Home = Vue.extend({
   components: {
     SvgImage,
-    ChallengeList,
-    AddNewChallenge,
   },
-  data: function () {
-    return {
-      challengeList: [] as ChallengeModel[],
+  props: {
+    challengeStatus: {
+      type: String
     }
   },
   methods: {
     logout: function () {
       authService.signoutRedirect()
     },
-    fetchChallenges : async function(){
-      const response = await challengeApiService.getAll();
-      this.challengeList = response.data;
+    isRouteActive: function(status){
+      return this.$route.params['challengeStatus'] ==status;
     },
-  },
-
-  created: async function () {
-     await this.fetchChallenges();
+    navigateTo(path){
+      this.$router.push({path: path });
+    }
   },
 })
 
 export default Home
 </script>
+<style lang="postcss" scoped>
+  .sidebar-menu-item{
+    @apply rounded p-2 hover:bg-gray-300 cursor-pointer;
+  }
+
+  .active{
+    @apply bg-gray-300;
+  }
+</style>>
+

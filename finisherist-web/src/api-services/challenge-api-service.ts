@@ -8,9 +8,14 @@ class ChallengeApiService
         return http.post('challenges', challenge);
     }
 
-    getAll(): Promise<AxiosResponse<any>>{
-        return http.get(`challenges`);
+    query(status: string): Promise<AxiosResponse<any>>{
+        return http.get(`challenges/${status}`);
     }
+
+    get(id: number): Promise<AxiosResponse<any>>{
+        return http.get(`challenges/${id}/details`);
+    }
+
 
     update(challenge: ChallengeModel): Promise<AxiosResponse<any>>{
         return http.put(`challenges/${challenge.id}`, challenge);

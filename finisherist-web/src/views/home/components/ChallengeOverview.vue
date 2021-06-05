@@ -1,10 +1,5 @@
 <template>
-  <div class="border-red-300 border-2 p-4">
-      <p class="font-medium">{{challengeOverview.title}}</p>
-      <p class="italic">{{challengeOverview.description}}</p>
-      <p>{{challengeOverview.status}}</p>
-  </div>
-</template>
+<div class="border-red-300 border-b-2 p-4"><span class="font-medium cursor-pointer">{{challengeOverview.title}}</span></div></template>
 
 <script lang="ts">
 import Challenge from "@/api-services/models/ChallengeModel"
