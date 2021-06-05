@@ -1,5 +1,5 @@
 <template>
-<div class="border-red-300 border-b-2 p-4"><span class="font-medium cursor-pointer">{{challengeOverview.title}}</span></div></template>
+<div class="border-red-300 border-b-2 p-4"><span class="font-medium cursor-pointer" @click="gotoDetail()">{{challengeOverview.title}}</span></div></template>
 
 <script lang="ts">
 import Challenge from "@/api-services/models/ChallengeModel"
@@ -11,8 +11,13 @@ const ChallengeOverview = Vue.extend({
         challengeOverview: {
             type: Object as PropType<Challenge>
         }
+    },
+    methods:{
+        gotoDetail(){
+            this.$router.push(`/challenge/${this.challengeOverview.id}`);
+        }
     }
-})
+});
 
 export default ChallengeOverview;
 </script>

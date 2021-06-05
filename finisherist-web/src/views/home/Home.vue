@@ -56,9 +56,10 @@ const Home = Vue.extend({
       this.$router.push({path: path });
     }
   },
-})
+});
 
-export default Home
+export default Home;
+
 </script>
 <style lang="postcss" scoped>
   .sidebar-menu-item{

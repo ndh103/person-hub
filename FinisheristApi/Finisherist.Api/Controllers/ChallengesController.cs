@@ -66,9 +66,9 @@ namespace Finisherist.Api.Controllers
         }
 
         [HttpGet("{challengeId}/details")]
-        public ActionResult<IEnumerable<Challenge>> Get(int challengeId)
+        public ActionResult<Challenge> Get(int challengeId)
         {
-            return this.dbContext.Challenges.Where(r => r.UserId == this.AuthenticatedUserName && r.Id == challengeId).ToList();
+            return this.dbContext.Challenges.FirstOrDefault(r => r.UserId == this.AuthenticatedUserName && r.Id == challengeId);
         }
 
         [HttpDelete("{challengeId}")]
