@@ -3,7 +3,7 @@
     <header class="bg-red-600 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
       <div class="pl-4">
         <svg-image class="h-7 w-7 inline-block" icon="check-list-icon.svg"></svg-image>
-        Finisherist
+        Person Hub
       </div>
       <div>
         <svg-image class="h-7 w-7 inline-block" icon="user-icon.svg"></svg-image>

@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/FinisheristApi/Finisherist.Api/bin/Debug/net5.0/Finisherist.Api.dll",
+            "program": "${workspaceFolder}/PersonHubApi/PersonHub.Api/bin/Debug/net5.0/PersonHub.Api.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/FinisheristApi/Finisherist.Api",
+            "cwd": "${workspaceFolder}/PersonHubApi/PersonHub.Api",
             "stopAtEntry": false,
             "console": "internalConsole"
         }

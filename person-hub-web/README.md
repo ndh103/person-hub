@@ -1,4 +1,4 @@
-# finisherist-web
+# person-hub-web
 
 ## Project setup
 ```
