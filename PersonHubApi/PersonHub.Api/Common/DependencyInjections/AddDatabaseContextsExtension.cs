@@ -1,10 +1,10 @@
 using PersonHub.Api.Common.Configs;
 using PersonHub.IdentityProvider;
-using PersonHub.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using PersonHub.Api.Infrastructure.DataAccess;
 
 namespace PersonHub.Api.Common.DependencyInjections
 {
@@ -16,7 +16,7 @@ namespace PersonHub.Api.Common.DependencyInjections
 
             services.AddApplicationDbContext<IdentityApplicationDbContext>(databaseConnectionConfig.Identity, migrationAssemblyName: "PersonHub.IdentityProvider");
 
-            services.AddApplicationDbContext<PersonHubDbContext>(databaseConnectionConfig.PersonHub, migrationAssemblyName: "PersonHub.Infrastructure");
+            services.AddApplicationDbContext<PersonHubDbContext>(databaseConnectionConfig.PersonHub);
 
             return services;
         }

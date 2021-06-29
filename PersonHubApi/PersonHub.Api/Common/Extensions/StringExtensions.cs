@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using PersonHub.Core.Common.Enum;
 
 namespace PersonHub.Api.Common.Extensions
 {

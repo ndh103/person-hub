@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using IdentityServer4;
 using IdentityModel;
+using Microsoft.AspNetCore.Mvc;
 
-namespace PersonHub.Api.Controllers
+namespace PersonHub.Api.Common
 {
     public class ApiControllerBase : ControllerBase
     {
@@ -37,6 +34,6 @@ namespace PersonHub.Api.Controllers
 
             return identity.FindFirst(claimType)?.Value;
         }
-        
     }
+
 }
