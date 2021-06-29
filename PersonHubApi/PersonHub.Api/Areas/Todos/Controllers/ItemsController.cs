@@ -13,7 +13,7 @@ using static IdentityServer4.IdentityServerConstants;
 namespace PersonHub.Api.Areas.Todos.Controllers
 {
     [ApiController]
-    [Area("[area]")]
+    [Route("todos/[controller]")]
     [Authorize(LocalApi.PolicyName)]
     public class ItemsController : ApiControllerBase
     {

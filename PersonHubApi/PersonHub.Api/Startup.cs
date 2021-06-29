@@ -6,6 +6,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using PersonHub.IdentityProvider;
 using PersonHub.Api.Common.DependencyInjections;
+using System;
+using System.Collections.Generic;
+using IdentityServer4;
+using PersonHub.Api.Common.Filters;
+using IdentityServer4.Models;
 
 namespace PersonHub.Api
 {
@@ -45,9 +50,34 @@ namespace PersonHub.Api
 
             services.AddApplicationDbContexts(Configuration);
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonHub.Api", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonHub.Api", Version = "v1" });
+
+                // Add Authentication Definition for Swagger
+                options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("https://localhost:5001/connect/authorize"),
+                            TokenUrl = new Uri("https://localhost:5001/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                {"openid", "OpenId Scope"},
+                                {"profile", "profile scope"},
+                                {"email", "email scope"},
+                                {IdentityServerConstants.LocalApi.ScopeName, "IdentityServerApi scope"},
+                            }
+                        }
+                    }
+                });
+
+                // Apply filter on the Actions that have Authorize need
+                options.OperationFilter<SwaggerAuthorizeCheckOperationFilter>();
+
             });
         }
 
@@ -58,7 +88,14 @@ namespace PersonHub.Api
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PersonHub.Api v1"));
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "PersonHub.Api V1");
+                    options.OAuthClientId("swagger-client");
+                    options.OAuthClientSecret("swagger-secret".Sha256());
+                    options.OAuthAppName("Demo API - Swagger");
+                    options.OAuthUsePkce();
+                });
             }
 
             app.UseStaticFiles();
@@ -73,10 +110,6 @@ namespace PersonHub.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "MyArea",
-                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-
                 endpoints.MapDefaultControllerRoute();
             });
         }

@@ -62,6 +62,17 @@ namespace PersonHub.IdentityProvider
                     AllowedScopes = { "openid", "profile", "email", IdentityServerConstants.LocalApi.ScopeName },
                     RequirePkce = true
                 },
+                // Swagger Client
+                new Client
+                {
+                    ClientId = "swagger-client",
+                    ClientSecrets = { new Secret("swagger-secret".Sha256()) },
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequireClientSecret = false,
+                    RedirectUris = {"https://localhost:5001/swagger/oauth2-redirect.html"},
+                    AllowedScopes = { "openid", "profile", "email", IdentityServerConstants.LocalApi.ScopeName },
+                    RequirePkce = true
+                },
             };
     }
 }
