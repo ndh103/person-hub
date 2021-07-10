@@ -12,7 +12,7 @@
 <script lang="ts">
   import { Vue } from "vue-property-decorator"
 import TodoItemModel from "@/api-services/models/TodoItemModel";
-import TodoItemOverview from "@/views/home/components/TodoItemOverview.vue"
+import TodoItemOverview from "@/views/home/todos/TodoItemOverview.vue"
 import todoItemApiService from "@/api-services/todo-item-api-service";
 import TodoItemStatusEnum from "@/api-services/models/TodoItemStatusEnum";
 

@@ -12,15 +12,20 @@
     </header>
 
     <div class="flex">
-      <div class="top-0 pt-10 pl-10 h-screen flex-none bg-gray-50 w-80">
+      <aside class="top-0 pt-10 pl-10 h-screen flex-none bg-gray-50 w-80">
         <p class="pt-10"></p>
         <p :class="['sidebar-menu-item', isRouteActive('todos-view') ? 'active':'']" @click="navigateToRoute('todos-view')">
           Todo Items
         </p>
-      </div>
-      <div class="flex-grow p-4 h-full pt-10">
+
+        <p :class="['sidebar-menu-item', isRouteActive('events-view') ? 'active':'']" @click="navigateToRoute('events-view')">
+          Events
+        </p>
+
+      </aside>
+      <main class="flex-grow p-4 h-full pt-10">
         <router-view></router-view>
-      </div>
+      </main>
     </div>
   </div>
 </template>
