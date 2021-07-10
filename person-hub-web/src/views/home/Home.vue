@@ -12,17 +12,7 @@
     </header>
 
     <div class="flex">
-      <aside class="top-0 pt-10 pl-10 h-screen flex-none bg-gray-50 w-80">
-        <p class="pt-10"></p>
-        <p :class="['sidebar-menu-item', isRouteActive('todos-view') ? 'active':'']" @click="navigateToRoute('todos-view')">
-          Todo Items
-        </p>
-
-        <p :class="['sidebar-menu-item', isRouteActive('events-view') ? 'active':'']" @click="navigateToRoute('events-view')">
-          Events
-        </p>
-
-      </aside>
+      <aside-menu class="flex-none w-80 top-0 pt-10 pl-10 h-screen bg-gray-50"></aside-menu>
       <main class="flex-grow p-4 h-full pt-10">
         <router-view></router-view>
       </main>
@@ -33,26 +23,19 @@
 <script lang="ts">
 import { Vue } from "vue-property-decorator"
 import SvgImage from "../../components/SvgImage.vue"
+import AsideMenu from "./AsideMenu.vue"
 import authService from "@/auth/authService"
 
 const Home = Vue.extend({
   components: {
     SvgImage,
+    AsideMenu
   },
   props: {
   },
   methods: {
     logout: function () {
       authService.signoutRedirect()
-    },
-    isRouteActive: function(routeName: string){
-      return this.$route.name == routeName;
-    },
-    navigateToRoute(routeName){
-      if(!this.isRouteActive(routeName)){
-        this.$router.push({name: routeName });
-      }
-      
     }
   },
 });
@@ -61,12 +44,5 @@ export default Home;
 
 </script>
 <style lang="postcss" scoped>
-  .sidebar-menu-item{
-    @apply rounded p-2 hover:bg-gray-300 cursor-pointer;
-  }
-
-  .active{
-    @apply bg-gray-300;
-  }
 </style>>
 
