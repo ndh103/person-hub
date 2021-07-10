@@ -14,14 +14,8 @@
     <div class="flex">
       <div class="top-0 pt-10 pl-10 h-screen flex-none bg-gray-50 w-80">
         <p class="pt-10"></p>
-        <p :class="['sidebar-menu-item', isRouteActive('initial') ? 'active':'']" @click="navigateTo('/challenges/initial')">
-          Initial
-        </p>
-        <p :class="['sidebar-menu-item', isRouteActive('started') ? 'active':'']" @click="navigateTo('/challenges/started')">
-          Started
-        </p>
-        <p :class="['sidebar-menu-item', isRouteActive('finished') ? 'active':'']" @click="navigateTo('/challenges/finished')">
-          Finished
+        <p :class="['sidebar-menu-item', isRouteActive('todos-view') ? 'active':'']" @click="navigateToRoute('todos-view')">
+          Todo Items
         </p>
       </div>
       <div class="flex-grow p-4 h-full pt-10">
@@ -41,19 +35,19 @@ const Home = Vue.extend({
     SvgImage,
   },
   props: {
-    challengeStatus: {
-      type: String
-    }
   },
   methods: {
     logout: function () {
       authService.signoutRedirect()
     },
-    isRouteActive: function(status){
-      return this.$route.params['challengeStatus'] ==status;
+    isRouteActive: function(routeName: string){
+      return this.$route.name == routeName;
     },
-    navigateTo(path){
-      this.$router.push({path: path });
+    navigateToRoute(routeName){
+      if(!this.isRouteActive(routeName)){
+        this.$router.push({name: routeName });
+      }
+      
     }
   },
 });

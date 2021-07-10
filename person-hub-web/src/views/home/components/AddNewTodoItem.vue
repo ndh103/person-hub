@@ -4,7 +4,7 @@
       <label class="text-gray-700 dark:text-gray-200" for="username">Title</label>
       <input
         type="text"
-        v-model="newChallenge.title"
+        v-model="newTodoItem.title"
         class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
       />
     </div>
@@ -13,7 +13,7 @@
       <label class="text-gray-700 dark:text-gray-200" for="username">Description</label>
       <input
         type="text"
-        v-model="newChallenge.description"
+        v-model="newTodoItem.description"
         class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
       />
     </div>
@@ -27,27 +27,26 @@
 </template>
 
 <script lang = "ts">
-import ChallengeModel from "@/api-services/models/ChallengeModel"
-import ChallengeStatusEnum from "@/api-services/models/ChallengeStatusEnum"
-import challengeApiService from "@/api-services/challenge-api-service"
-import { Vue } from "vue-property-decorator"
+  import { Vue } from "vue-property-decorator"
+import TodoItemModel from "@/api-services/models/TodoItemModel"
+import TodoItemStatusEnum from "@/api-services/models/TodoItemStatusEnum"
+import todoItemApiService from "@/api-services/todo-item-api-service"
 
-
-const AddNewChallenge = Vue.extend({
+const AddNewTodoItem = Vue.extend({
   data: function () {
     return {
-      newChallenge: new ChallengeModel()
+      newTodoItem: new TodoItemModel()
     }
   },
   methods:{
     submitForm: async function(){
-        this.newChallenge.status = ChallengeStatusEnum.Initial;
-        await challengeApiService.add(this.newChallenge);
+        this.newTodoItem.status = TodoItemStatusEnum.Initial;
+        await todoItemApiService.add(this.newTodoItem);
     }
   }
 })
 
-export default AddNewChallenge
+export default AddNewTodoItem
 </script>
 
 <style>

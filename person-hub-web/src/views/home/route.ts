@@ -1,7 +1,7 @@
 import { RouteConfig } from "vue-router";
 import Home from "./Home.vue";
-import ChallengeList from "./components/ChallengeList.vue";
-import ChallengeDetail from "./components/ChallengeDetail.vue";
+import TodoItemList from "./components/TodoItemList.vue";
+import TodoItemDetail from "./components/TodoItemDetail.vue";
 
 const homeRoutes: RouteConfig[] = [
     {
@@ -14,21 +14,20 @@ const homeRoutes: RouteConfig[] = [
         children: [
             {
                 path: "",
-                redirect: "/challenges/started"
+                redirect: "/todos"
             },
             {
-                path: "/challenges/:challengeStatus",
-                name: "list-by-status", 
-                component: ChallengeList,
+                path: "/todos",
+                name: "todos-view", 
+                component: TodoItemList,
                 props: true
             },
             {
-                path: "/challenge/:challengeId",
-                name: "view-challenge-detail",
-                component: ChallengeDetail,
+                path: "/todos/:todoItemId",
+                name: "todos-view-detail",
+                component: TodoItemDetail,
                 props: true
             },
-
         ]
     }
 ];
