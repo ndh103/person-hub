@@ -14,7 +14,7 @@ const TodoItemOverview = Vue.extend({
     },
     methods:{
         gotoDetail(){
-            this.$router.push(`/todos/items/${this.todoItemOverview.id}`);
+            this.$router.push(`/todos/${this.todoItemOverview.id}`);
         }
     }
 });

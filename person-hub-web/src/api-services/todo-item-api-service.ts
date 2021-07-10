@@ -13,7 +13,7 @@ class TodoItemApiService
     }
 
     get(id: string): Promise<AxiosResponse<any>>{
-        return http.get(`todos/items/${id}/details`);
+        return http.get(`todos/items/${id}`);
     }
 
     update(todoItem: TodoItemModel): Promise<AxiosResponse<any>>{
