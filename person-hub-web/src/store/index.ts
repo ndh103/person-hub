@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import applicationStore from './application-store'
+import applicationStore from './application/application-store'
 
 Vue.use(Vuex)
 
