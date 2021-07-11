@@ -1,5 +1,5 @@
-import axios from 'axios';
-import authService from "@/auth/authService";
+import axios from 'axios'
+import {getAuthServiceInstance} from '@/auth0/auth'
 
 const httpInstance = axios.create({
   baseURL: process.env.VUE_APP_API_URL
@@ -7,7 +7,10 @@ const httpInstance = axios.create({
 
 // Add a request interceptor
 httpInstance.interceptors.request.use(async function (request) {
-  const user = await authService.getUserAsync();
+  const authService = getAuthServiceInstance();
+  const user = await authService.getUser();
+
+  debugger;
 
   if (user) {
     request.headers.Authorization = "Bearer " + user.access_token;

@@ -29,7 +29,7 @@ import { mapMutations, mapGetters } from "vuex"
 import SvgImage from "@/components/SvgImage.vue"
 import AppStoreConstant from "@/store/application/application-store-constant"
 import AsideMenu from "./AsideMenu.vue"
-import authService from "@/auth/authService"
+import { getAuthServiceInstance } from "@/auth0/auth"
 
 const Home = Vue.extend({
   components: {
@@ -46,8 +46,10 @@ const Home = Vue.extend({
     ...mapMutations("application", {
       toggleSideBar: AppStoreConstant.MUTATIONS.toogleSidebar,
     }),
-    logout: function () {
-      authService.signoutRedirect()
+    logout: async function () {
+      const authService = await getAuthServiceInstance();
+
+      await authService.logout();
     },
   },
 })
