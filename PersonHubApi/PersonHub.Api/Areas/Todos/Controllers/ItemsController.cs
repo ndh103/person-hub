@@ -30,7 +30,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
                 return BadRequest();
             }
 
-            todoItemModel.UserName = this.AuthenticatedUserName;
+            todoItemModel.UserName = this.AuthenticatedUserEmail;
 
             _dbContext.TodoItems.Add(todoItemModel);
             await _dbContext.SaveChangesAsync();
@@ -70,7 +70,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
                 return BadRequest();
             }
 
-            var todoItems = await _dbContext.TodoItems.Where(r => r.UserName == AuthenticatedUserName && r.Status == (TodoItemStatus)status).ToListAsync();
+            var todoItems = await _dbContext.TodoItems.Where(r => r.UserName == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
 
             return Ok(todoItems);
         }
@@ -79,7 +79,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> Get(int id)
         {
-            var todoItem = await _dbContext.TodoItems.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserName && r.Id == id);
+            var todoItem = await _dbContext.TodoItems.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
                 return BadRequest();
@@ -91,7 +91,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var todoItem = await _dbContext.TodoItems.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserName && r.Id == id);
+            var todoItem = await _dbContext.TodoItems.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
                 return BadRequest();

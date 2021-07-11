@@ -6,24 +6,20 @@ namespace PersonHub.Api.Common
 {
     public class ApiControllerBase : ControllerBase
     {
-        public string AuthenticatedUserName
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public string AuthenticatedUserEmail
         {
             get
             {
-                throw new NotImplementedException();
+                var value = GetClaimValueFromUserIdentity("email");
+                return value;
             }
         }
 
         private string GetClaimValueFromUserIdentity(string claimType)
         {
+            // This is the namespace created by Rules in Auth0
+            claimType = "https://custom-claim/" + claimType;
+
             var identity = HttpContext.User.Identity as ClaimsIdentity;
 
 
@@ -35,5 +31,4 @@ namespace PersonHub.Api.Common
             return identity.FindFirst(claimType)?.Value;
         }
     }
-
 }

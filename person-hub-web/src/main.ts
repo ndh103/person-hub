@@ -21,7 +21,17 @@ import { Auth0Plugin, getAuthServiceInstance } from './auth0/auth';
 const options = {
   domain: process.env.VUE_APP_AUTH0_DOMAIN,
   client_id: process.env.VUE_APP_AUTH0_CLIENTID,
-  redirect_uri: window.location.origin
+  audience:  process.env.VUE_APP_AUTH0_AUDIENCE,
+  redirect_uri: window.location.origin,
+  scope: 'openid profile email',
+  response_type: 'token id_token',
+  onRedirectCallback: appState => {
+    router.push(
+      appState && appState.targetUrl
+        ? appState.targetUrl
+        : window.location.pathname
+    );
+  }
 };
 
 Vue.use(Auth0Plugin, options);

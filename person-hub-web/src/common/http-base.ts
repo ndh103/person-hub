@@ -8,12 +8,10 @@ const httpInstance = axios.create({
 // Add a request interceptor
 httpInstance.interceptors.request.use(async function (request) {
   const authService = getAuthServiceInstance();
-  const user = await authService.getUser();
+  const token = await authService.getTokenSilently();
 
-  debugger;
-
-  if (user) {
-    request.headers.Authorization = "Bearer " + user.access_token;
+  if (token) {
+    request.headers.Authorization = `Bearer ${token}`;
   }
 
   // Do something before request is sent
