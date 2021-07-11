@@ -8,13 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
 using PersonHub.Api.Infrastructure.DataAccess;
-using static IdentityServer4.IdentityServerConstants;
 
 namespace PersonHub.Api.Areas.Todos.Controllers
 {
     [ApiController]
     [Route("todos/[controller]")]
-    [Authorize(LocalApi.PolicyName)]
+    [Authorize]
     public class ItemsController : ApiControllerBase
     {
         private PersonHubDbContext _dbContext;

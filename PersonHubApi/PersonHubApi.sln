@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api", "PersonHub.Api\PersonHub.Api.csproj", "{15ABCDD5-3EA0-4FE8-87DB-022A4DDE932F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.IdentityProvider", "PersonHub.IdentityProvider\PersonHub.IdentityProvider.csproj", "{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

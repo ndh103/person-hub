@@ -1,5 +1,5 @@
+using System;
 using System.Security.Claims;
-using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace PersonHub.Api.Common
@@ -10,7 +10,7 @@ namespace PersonHub.Api.Common
         {
             get
             {
-                return GetClaimValueFromUserIdentity(JwtClaimTypes.Subject);
+                throw new NotImplementedException();
             }
         }
 
@@ -18,7 +18,7 @@ namespace PersonHub.Api.Common
         {
             get
             {
-                return GetClaimValueFromUserIdentity(JwtClaimTypes.Email);
+                throw new NotImplementedException();
             }
         }
 

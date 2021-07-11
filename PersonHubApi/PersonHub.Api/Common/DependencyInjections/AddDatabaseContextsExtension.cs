@@ -1,5 +1,4 @@
 using PersonHub.Api.Common.Configs;
-using PersonHub.IdentityProvider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +12,6 @@ namespace PersonHub.Api.Common.DependencyInjections
         public static IServiceCollection AddApplicationDbContexts(this IServiceCollection services, IConfiguration configuration)
         {
             var databaseConnectionConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
-
-            services.AddApplicationDbContext<IdentityApplicationDbContext>(databaseConnectionConfig.Identity, migrationAssemblyName: "PersonHub.IdentityProvider");
 
             services.AddApplicationDbContext<PersonHubDbContext>(databaseConnectionConfig.PersonHub);
 
