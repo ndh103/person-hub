@@ -5,7 +5,7 @@
 <script lang="ts">
 import Vue from "vue"
 
-const Component = Vue.extend({
+const SvgImage =  Vue.extend({
   props: {
     icon: String,
   },
@@ -16,5 +16,6 @@ const Component = Vue.extend({
   }
 })
 
-export default Component
+export default SvgImage;
+
 </script>

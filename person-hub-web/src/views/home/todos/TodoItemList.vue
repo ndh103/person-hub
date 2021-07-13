@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div>
-      <img :src="$auth.user.picture">
-      <h2>{{ $auth.user.name }}</h2>
-      <p>{{ $auth.user.email }}</p>
-    </div>
-    
     <button class='w-auto bg-indigo-500 hover:bg-indigo-700 rounded-lg shadow-xl font-medium text-white px-4 py-2' @click="fetchTodoItems()">Fetch</button>
     
     <div v-for="todoItemOverview in todoItemList" :key="todoItemOverview.id">

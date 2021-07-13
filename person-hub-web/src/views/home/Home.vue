@@ -1,17 +1,6 @@
 <template>
   <div>
-    <header class="bg-red-600 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
-      <div class="pl-4">
-        <span @click="toggleSideBar()">
-          <svg-image class="inline-block h-7 w-7 lg:hidden" icon="menu-icon.svg"></svg-image>
-        </span>
-        Person Hub
-      </div>
-      <div>
-        <svg-image class="h-7 w-7 inline-block" icon="user-icon.svg"></svg-image>
-        <button @click="logout()">Logout</button>
-      </div>
-    </header>
+    <site-header></site-header>
 
     <div class="flex">
       <div class="hidden" :class="[overlaySideBarStatus + '-sidebar-overlay']"></div>
@@ -25,15 +14,14 @@
 
 <script lang="ts">
 import { Vue } from "vue-property-decorator"
-import { mapMutations, mapGetters } from "vuex"
-import SvgImage from "@/components/SvgImage.vue"
+import { mapGetters } from "vuex"
+import SiteHeader from "./SiteHeader.vue"
 import AppStoreConstant from "@/store/application/application-store-constant"
 import AsideMenu from "./AsideMenu.vue"
-import { getAuthServiceInstance } from "@/auth0/auth"
 
 const Home = Vue.extend({
   components: {
-    SvgImage,
+    SiteHeader,
     AsideMenu,
   },
   props: {},
@@ -41,17 +29,7 @@ const Home = Vue.extend({
     ...mapGetters("application", {
       overlaySideBarStatus: AppStoreConstant.GETTERS.overlaySideBarStatus,
     }),
-  },
-  methods: {
-    ...mapMutations("application", {
-      toggleSideBar: AppStoreConstant.MUTATIONS.toogleSidebar,
-    }),
-    logout: async function () {
-      const authService = await getAuthServiceInstance();
-
-      await authService.logout();
-    },
-  },
+  }
 })
 
 export default Home
