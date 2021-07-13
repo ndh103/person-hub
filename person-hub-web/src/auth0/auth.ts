@@ -91,18 +91,6 @@ class AuthService {
         return await this.auth0Client.isAuthenticated();
     }
 
-    async ensureLoaded(){
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-
-        return new Promise(function (resolve) {
-            (function waitForFoo(){
-                if (!self.loading) return resolve(true);
-                setTimeout(waitForFoo, 30);
-            })();
-        });
-    }
-
     async init(options: Auth0ClientOptions) {
         // Create a new instance of the SDK client using members of the given options object
         this.auth0Client = await createAuth0Client(options);
@@ -135,7 +123,15 @@ class AuthService {
             this.loading = false;
         }
     }
+}
 
+const ensureLoaded = async() => {
+    return new Promise(function (resolve) {
+        (function waitForFoo(){
+            if (!instance.loading) return resolve(true);
+            setTimeout(waitForFoo, 30);
+        })();
+    });
 }
 
 /** Returns the current instance of the SDK */
@@ -143,7 +139,7 @@ export const getAuthServiceInstance = async () => {
     if (instance && !instance.loading) return instance;
 
     if(instance.loading){
-        await instance.ensureLoaded();
+        await ensureLoaded();
     }
 
     return instance;
