@@ -9,7 +9,7 @@
 import { Vue } from "vue-property-decorator"
 import TodoItemModel from "@/api-services/models/TodoItemModel"
 import TodoItemStatusEnum from "@/api-services/models/TodoItemStatusEnum"
-import todoItemApiService from "@/api-services/todo-item-api-service"
+// import todoItemApiService from "@/api-services/todo-item-api-service"
 
 const AddNewTodoItem = Vue.extend({
   data: function () {
@@ -20,7 +20,8 @@ const AddNewTodoItem = Vue.extend({
   methods: {
     submitForm: async function () {
       this.newTodoItem.status = TodoItemStatusEnum.Initial
-      await todoItemApiService.add(this.newTodoItem)
+      // await todoItemApiService.add(this.newTodoItem)
+      this.$emit('onAddNewItem', this.newTodoItem);
     },
   },
 })

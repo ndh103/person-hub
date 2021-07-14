@@ -1,6 +1,6 @@
 <template>
   <div>
-    <add-new-todo-item></add-new-todo-item>
+    <add-new-todo-item @onAddNewItem = "addNewTodoItem($event)"></add-new-todo-item>
     <button class="block w-auto bg-purple-500 hover:bg-purple-700 rounded-lg shadow-xl text-white py-2 px-4 mx-2 mt-2" @click="fetchTodoItems()">
       Refresh <svg-image class="h-2 w-2 inline-block" icon="refresh-icon.svg"></svg-image>
     </button>
@@ -35,6 +35,13 @@ const TodoItemList = Vue.extend({
     }
   },
   methods: {
+    addNewTodoItem: async function(todoItem: TodoItemModel){
+      this.todoItemList.push(todoItem);
+      const response = await todoItemApiService.add(todoItem);
+
+      // Update the todoItem from response
+      todoItem = response.data;
+    },
     fetchTodoItems : async function(){
       const response = await todoItemApiService.query(TodoItemStatusEnum.Initial);
       this.todoItemList = response.data;
