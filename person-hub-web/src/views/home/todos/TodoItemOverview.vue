@@ -16,14 +16,19 @@ const TodoItemOverview = Vue.extend({
   props: {
     todoItemOverview: {
       type: Object as PropType<TodoItemModel>,
-    },
+    }
   },
   methods: {
     gotoDetail() {
       this.$router.push(`/todos/${this.todoItemOverview.id}`)
     },
     async markAsDone() {
-      this.todoItemOverview.status = TodoItemStatusEnum.Finished
+      this.todoItemOverview.status = TodoItemStatusEnum.Finished;
+      
+      setTimeout(() => {
+        this.$emit('onItemMarkedAsDone');    
+      }, 500);
+      
       await todoItemApiService.update(this.todoItemOverview)
     },
   },

@@ -21,7 +21,10 @@ const AddNewTodoItem = Vue.extend({
     submitForm: async function () {
       this.newTodoItem.status = TodoItemStatusEnum.Initial
       // await todoItemApiService.add(this.newTodoItem)
-      this.$emit('onAddNewItem', this.newTodoItem);
+      this.$emit('onAddNewItem', {...this.newTodoItem});
+
+      // Reset
+      this.newTodoItem.title = '';
     },
   },
 })

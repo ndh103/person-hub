@@ -30,6 +30,8 @@ namespace PersonHub.Api.Areas.Todos.Controllers
                 return BadRequest();
             }
 
+            // Reset the id to prevent Id set from client side
+            todoItemModel.Id = 0;
             todoItemModel.UserName = this.AuthenticatedUserEmail;
 
             _dbContext.TodoItems.Add(todoItemModel);
