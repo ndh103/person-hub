@@ -13,6 +13,7 @@ module.exports = {
     extend: {
       opacity: ["disabled"],
       cursor: ["disabled"],
+      visibility: ['hover', 'focus'],
     },
   },
   experiments: {
