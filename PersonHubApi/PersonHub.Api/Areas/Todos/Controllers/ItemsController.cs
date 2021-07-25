@@ -57,6 +57,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             todoItem.Title = todoItemModel.Title;
             todoItem.Description = todoItemModel.Description;
             todoItem.Status = todoItemModel.Status;
+            todoItem.ItemOrder = todoItemModel.ItemOrder;
 
             await _dbContext.SaveChangesAsync();
 

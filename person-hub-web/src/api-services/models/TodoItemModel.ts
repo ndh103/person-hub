@@ -6,6 +6,7 @@ class TodoItemModel {
     title!: string;
     description!: string;
     status!: TodoItemStatusEnum;
+    itemOrder!: string;
 }
 
 export default TodoItemModel;

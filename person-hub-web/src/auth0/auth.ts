@@ -87,7 +87,6 @@ class AuthService {
             return this.isAuthenticated;
         }
         
-        debugger;
         return await this.auth0Client.isAuthenticated();
     }
 
