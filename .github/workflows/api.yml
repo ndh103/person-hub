@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore PersonHub.Api/PersonHub.Api.csproj
+      run: dotnet restore PersonHubApi/PersonHub.Api/PersonHub.Api.csproj
     - name: Build
-      run: dotnet build PersonHub.Api/PersonHub.Api.csproj --no-restore
+      run: dotnet build PersonHubApi/PersonHub.Api/PersonHub.Api.csproj --no-restore
     #- name: Test
     #  run: dotnet test --no-build --verbosity normal
