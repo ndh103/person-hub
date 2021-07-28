@@ -3,8 +3,14 @@ name: .NET Web Api
 on:
   push:
     branches: [ main ]
+    paths:
+    - PersonHubApi/**
+    - .github/**
+
   pull_request:
     branches: [ main ]
+    - PersonHubApi/**
+    - .github/**
 
 jobs:
   build:

@@ -3,16 +3,21 @@ name: Single Page Web App
 on:
   push:
     branches: [ main ]
+    paths:
+    - person-hub-web/**
+    - .github/**
   pull_request:
     branches: [ main ]
-
+    paths:    
+    - person-hub-web/**
+    - .github/**
 jobs:
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: 14.x
+        node-version: [14.x]
 
     steps:
     - uses: actions/checkout@v2
