@@ -28,5 +28,5 @@ jobs:
       run: dotnet restore PersonHubApi/PersonHub.Api/PersonHub.Api.csproj
     - name: Build
       run: dotnet build PersonHubApi/PersonHub.Api/PersonHub.Api.csproj --no-restore
-    #- name: Test
-    #  run: dotnet test --no-build --verbosity normal
+    - name: Test
+     run: dotnet test PersonHubApi/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal
