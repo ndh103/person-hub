@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api", "PersonHub.Api\PersonHub.Api.csproj", "{15ABCDD5-3EA0-4FE8-87DB-022A4DDE932F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api.IntegrationTest", "PersonHub.Api.IntegrationTest\PersonHub.Api.IntegrationTest.csproj", "{1FAA958A-B278-4CDF-AD5B-72516E5FD697}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,5 +68,19 @@ Global
 		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x64.Build.0 = Release|Any CPU
 		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x86.ActiveCfg = Release|Any CPU
 		{7DB4BB3F-1352-47C4-8549-6B9DFABA739A}.Release|x86.Build.0 = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|x64.Build.0 = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Debug|x86.Build.0 = Debug|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x64.ActiveCfg = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x64.Build.0 = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x86.ActiveCfg = Release|Any CPU
+		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal

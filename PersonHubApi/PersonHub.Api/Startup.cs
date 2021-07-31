@@ -50,7 +50,6 @@ namespace PersonHub.Api
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonHub.Api", Version = "v1" });
-
                 //TODO: add authentication for swagger
             });
         }
@@ -88,7 +87,7 @@ namespace PersonHub.Api
             });
         }
 
-        private void AddAuthentication(IServiceCollection services)
+        protected virtual void AddAuthentication(IServiceCollection services)
         {
             services.AddAuthentication(options =>
             {
