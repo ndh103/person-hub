@@ -56,7 +56,7 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
                                         {
                                             await dbContext.Database.ExecuteSqlRawAsync("set Search_Path to \"public\"; DROP SCHEMA IF EXISTS \"person-hub-test\" CASCADE; CREATE SCHEMA \"person-hub-test\";");
                                             
-                                            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../pipeline/sql");
+                                            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../sql");
                                             var files =  Directory.GetFiles(path).OrderBy(r=>r);
                                             var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
                                             foreach (var filePath in files)
