@@ -64,8 +64,7 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
                                             {
                                                 throw new Exception("WRONG SQL PATH FOLDER");
                                             }
-
-
+                                            
                                             foreach (var filePath in files)
                                             {
                                                 string sqlContent = File.ReadAllText(filePath);

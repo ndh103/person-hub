@@ -31,7 +31,8 @@ jobs:
           POSTGRES_DB: person-hub-db
 
         ports:
-          - 5432:5432
+          # TEST TEST TEST
+          - 5431:5432
 
         # Set health checks to wait until postgres has started
         options: >-
