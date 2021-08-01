@@ -5,12 +5,12 @@ on:
     branches: [ main ]
     paths:
     - person-hub-web/**
-    - .github/**
+    - .github/workflows/spa-web.yml
   pull_request:
     branches: [ main ]
-    paths:    
+    paths:
     - person-hub-web/**
-    - .github/**
+    - .github/workflows/spa-web.yml
 jobs:
   build:
     runs-on: ubuntu-latest
