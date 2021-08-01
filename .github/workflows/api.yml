@@ -22,7 +22,7 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
     - name: Start dependencies (docker-compose)
-      run: docker-compose up -f "PersonHubApi/docker-compose.test.yaml" -d
+      run: docker-compose -f "PersonHubApi/docker-compose.test.yaml" up -d
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
