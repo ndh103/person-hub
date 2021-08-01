@@ -9,8 +9,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=P@ssw0rd
       - POSTGRES_DB=person-hub-db
-    volumes:
-       - postgres:/data/postgres
+    # volumes:
+    #    - postgres:/data/postgres
     restart: on-failure
 
 volumes:
