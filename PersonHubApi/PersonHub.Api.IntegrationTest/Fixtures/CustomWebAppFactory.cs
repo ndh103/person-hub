@@ -55,10 +55,17 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
                                         try
                                         {
                                             await dbContext.Database.ExecuteSqlRawAsync("set Search_Path to \"public\"; DROP SCHEMA IF EXISTS \"person-hub-test\" CASCADE; CREATE SCHEMA \"person-hub-test\";");
-                                            
+
                                             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../sql");
-                                            var files =  Directory.GetFiles(path).OrderBy(r=>r);
+                                            var files = Directory.GetFiles(path).OrderBy(r => r);
                                             var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
+
+                                            if (!files.Any())
+                                            {
+                                                throw new Exception("WRONG SQL PATH FOLDER");
+                                            }
+
+
                                             foreach (var filePath in files)
                                             {
                                                 string sqlContent = File.ReadAllText(filePath);
@@ -70,8 +77,6 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
                                             dbContext.Dispose();
                                             logger.LogError(ex, "An error occurred seeding the " +
                                                 "database with test messages. Error: {Message}", ex.Message);
-
-                                            throw new Exception("CANNOT CONNECT TO TEST DB");
                                         }
                                     }
                                 });
