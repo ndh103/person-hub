@@ -22,13 +22,13 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - NAME: START DEPENDENCIES (DOCKER-COMPOSE)
-      RUN: DOCKER-COMPOSE -F "PERSONHUBAPI/DOCKER-COMPOSE.TEST.YAML" UP -D
+    - name: Start dependencies (docker-compose)
+      run: docker-compose -f "PersonHubApi/docker-compose.test.yaml" up -d
 
-    - NAME: WAIT FOR SQL SERVER CONTAINER
-      USES: JAKEJARVIS/WAIT-ACTION@MASTER
-      WITH:
-        TIME: '5S'
+    - name: Wait for SQL Server container
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '5s'
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
