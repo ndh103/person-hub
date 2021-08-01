@@ -1,9 +1,0 @@
-version: "3.9"
-services:
-    person-hub:
-        build: .
-        ports:
-            - "5000:80"
-        environment:
-            DatabaseConnectionConfig__Identity__Host: "host.docker.internal"
-            DatabaseConnectionConfig__PersonHub__Host: "host.docker.internal"
