@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   postgresql:
-    image: postgres
+    image: postgres:latest
     container_name: person-hub-database
     ports:
       - "5432:5432"
@@ -9,6 +9,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=P@ssw0rd
       - POSTGRES_DB=person-hub-db
+      - PGDATA=/data/postgres
     volumes:
        - postgres:/data/postgres
     restart: on-failure
