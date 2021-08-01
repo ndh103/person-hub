@@ -70,6 +70,8 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
                                             dbContext.Dispose();
                                             logger.LogError(ex, "An error occurred seeding the " +
                                                 "database with test messages. Error: {Message}", ex.Message);
+
+                                            throw new Exception("CANNOT CONNECT TO TEST DB");
                                         }
                                     }
                                 });
