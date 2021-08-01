@@ -10,14 +10,14 @@ namespace PersonHub.Api.IntegrationTest.Tests
 {
     [Collection("Test collection")]
 
-    public class TodoItemApiTest : TestBaseClass
+    public class TodoItemApiTest2 : TestBaseClass
     {
-        public TodoItemApiTest(IntegrationTestClassFixture fixture): base(fixture)
+        public TodoItemApiTest2(IntegrationTestClassFixture fixture): base(fixture)
         {
         }
 
         [Fact]
-        public async Task Test1()
+        public async Task Test2()
         {
             var response = await Fixture.Client.GetAsync("/todos/items/status/0");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
