@@ -21,15 +21,25 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
+
     - name: Start dependencies (docker-compose)
       run: docker-compose -f "PersonHubApi/docker-compose.test.yaml" up -d
+
+    - name: Wait for SQL Server container
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '5s'      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+
     - name: Restore dependencies
       run: dotnet restore PersonHubApi/PersonHubApi.sln
+
     - name: Build
       run: dotnet build -c Release PersonHubApi/PersonHubApi.sln --no-restore
+
     - name: Test
       run: dotnet test -c Release PersonHubApi/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal
