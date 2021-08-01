@@ -8,10 +8,9 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=P@ssw0rd
-      # - POSTGRES_DB=person-hub-db
+      - POSTGRES_DB=person-hub-db-test
     volumes:
        - postgres:/data/postgres
-       - ./init-test-db.sql:/docker-entrypoint-initdb.d/init.sql
     restart: on-failure
 
 volumes:
