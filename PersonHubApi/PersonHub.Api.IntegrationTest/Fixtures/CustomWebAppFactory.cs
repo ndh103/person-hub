@@ -40,45 +40,6 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
 
                                     config.AddInMemoryCollection(inMemorySettings);
                                 });
-
-                                builder.ConfigureServices(async services =>
-                                {
-                                    using (var scope = services.BuildServiceProvider().CreateScope())
-                                    {
-                                        var scopedServices = scope.ServiceProvider;
-                                        var dbContext = scopedServices.GetRequiredService<PersonHubDbContext>();
-                                        var logger = scopedServices
-                                            .GetRequiredService<ILogger<CustomWebAppFactory<IntegrationTestStartup>>>();
-
-                                        dbContext.Database.EnsureCreated();
-
-                                        try
-                                        {
-                                            await dbContext.Database.ExecuteSqlRawAsync("set Search_Path to \"public\"; DROP SCHEMA IF EXISTS \"person-hub-test\" CASCADE; CREATE SCHEMA \"person-hub-test\";");
-
-                                            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../sql");
-                                            var files = Directory.GetFiles(path).OrderBy(r => r);
-                                            var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
-
-                                            if (!files.Any())
-                                            {
-                                                throw new Exception("WRONG SQL PATH FOLDER");
-                                            }
-                                            
-                                            foreach (var filePath in files)
-                                            {
-                                                string sqlContent = File.ReadAllText(filePath);
-                                                await dbContext.Database.ExecuteSqlRawAsync(setSearchPathSql + sqlContent);
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            dbContext.Dispose();
-                                            logger.LogError(ex, "An error occurred seeding the " +
-                                                "database with test messages. Error: {Message}", ex.Message);
-                                        }
-                                    }
-                                });
                             });
 
             return host;
