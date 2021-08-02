@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api", "PersonHub.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api.IntegrationTest", "PersonHub.Api.IntegrationTest\PersonHub.Api.IntegrationTest.csproj", "{1FAA958A-B278-4CDF-AD5B-72516E5FD697}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api.UnitTest", "PersonHub.Api.UnitTest\PersonHub.Api.UnitTest.csproj", "{F9FA76A6-D13F-4165-924A-E70C2416CB52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,18 @@ Global
 		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x64.Build.0 = Release|Any CPU
 		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x86.ActiveCfg = Release|Any CPU
 		{1FAA958A-B278-4CDF-AD5B-72516E5FD697}.Release|x86.Build.0 = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|x64.Build.0 = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Debug|x86.Build.0 = Debug|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|x64.ActiveCfg = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|x64.Build.0 = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|x86.ActiveCfg = Release|Any CPU
+		{F9FA76A6-D13F-4165-924A-E70C2416CB52}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

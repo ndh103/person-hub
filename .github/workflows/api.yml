@@ -44,5 +44,8 @@ jobs:
     - name: Build
       run: dotnet build -c Release PersonHubApi/PersonHubApi.sln --no-restore
 
-    - name: Test
+    - name: Run Unit Test
+      run: dotnet test -c Release PersonHubApi/PersonHub.Api.UnitTest/PersonHub.Api.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
+
+    - name: Run Integration Test
       run: dotnet test -c Release PersonHubApi/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"

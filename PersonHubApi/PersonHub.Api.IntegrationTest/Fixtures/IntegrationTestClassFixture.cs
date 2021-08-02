@@ -72,7 +72,7 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
             });
 
             Client = factory.CreateClient();
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", "token");
+            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", null);
         }
 
         public void Dispose()
