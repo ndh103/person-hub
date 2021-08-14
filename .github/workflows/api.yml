@@ -63,7 +63,7 @@ jobs:
 
         heroku_app_name: ${{ env.APP_NAME }}
 
-        dockerfile_directory: ./
+        dockerfile_directory: ./PersonHubApi
 
         dockerfile_name: Dockerfile.heroku
 
