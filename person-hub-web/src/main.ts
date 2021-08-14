@@ -13,11 +13,12 @@ Vue.prototype.$http = httpBase;
 // Setup Tailwind
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./tailwind/tailwind.css";
+import { AuthPlugin, getAuthServiceInstance } from './auth/AuthServiceProvider'
 
 Vue.config.productionTip = false
 
 // Install the authentication plugin here
-import { Auth0Plugin, getAuthServiceInstance } from './auth0/auth';
+
 
 const options = {
   domain: process.env.VUE_APP_AUTH0_DOMAIN,
@@ -35,7 +36,7 @@ const options = {
   }
 };
 
-Vue.use(Auth0Plugin, options);
+Vue.use(AuthPlugin, options);
 
 // Router to handle authentication flow
 router.beforeEach(async (to, from, next) => {

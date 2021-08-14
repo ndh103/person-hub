@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import createAuth0Client, { Auth0Client, Auth0ClientOptions } from "@auth0/auth0-spa-js";
+import AuthServiceInterface from "./AuthServiceInterface";
 
 /** Define a default action to perform after authentication */
 const DEFAULT_REDIRECT_CALLBACK = () =>
     window.history.replaceState({}, document.title, window.location.pathname);
 
-let instance;
-
-let options;
-
-class AuthService {
+export default class Auth0AuthService implements AuthServiceInterface {
     loading = true;
     isAuthenticated =  false;
     user: {};
@@ -123,41 +120,3 @@ class AuthService {
         }
     }
 }
-
-const ensureLoaded = async() => {
-    return new Promise(function (resolve) {
-        (function waitForFoo(){
-            if (!instance.loading) return resolve(true);
-            setTimeout(waitForFoo, 30);
-        })();
-    });
-}
-
-/** Returns the current instance of the SDK */
-export const getAuthServiceInstance = async () => {
-    if (instance && !instance.loading) return instance;
-
-    if(instance.loading){
-        await ensureLoaded();
-    }
-
-    return instance;
-}
-
-/** Creates an instance of the Auth0 SDK. If one has already been created, it returns that instance */
-const useAuth0 = async () => {
-    if (instance) return instance;
-
-    instance = new AuthService();
-    await instance.init(options);
-
-    return instance;
-};
-
-// Create a simple Vue plugin to expose the wrapper object throughout the application
-export const Auth0Plugin = {
-    async install(Vue, auth0Options) {
-        options = auth0Options;
-        Vue.prototype.$auth = await useAuth0();
-    }
-};

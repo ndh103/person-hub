@@ -1,5 +1,5 @@
+import { getAuthServiceInstance } from '@/auth/AuthServiceProvider';
 import axios from 'axios'
-import {getAuthServiceInstance} from '@/auth0/auth'
 
 const httpInstance = axios.create({
   baseURL: process.env.VUE_APP_API_URL
