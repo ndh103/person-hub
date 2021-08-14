@@ -1,14 +1,22 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import Auth0AuthService from "./Auth0AuthService";
 import AuthServiceInterface from "./AuthServiceInterface";
+import MsalAuthService from "./MsalAuthService";
 
-let instance: AuthServiceInterface;
-const authImplementation = "auth0";
+let instance: AuthServiceInterface = null;
+
+enum AuthImplementation{
+    Auth0 = 1,
+    MicrosoftAD_B2C = 2
+}
+
+// eslint-disable-next-line prefer-const
+let authImplementation = AuthImplementation.MicrosoftAD_B2C;
 
 const ensureLoaded = async() => {
     return new Promise(function (resolve) {
         (function waitForInstanceLoaded(){
-            if (!instance.loading) return resolve(true);
+            if (instance && !instance.loading) return resolve(true);
             setTimeout(waitForInstanceLoaded, 30);
         })();
     });
@@ -16,25 +24,21 @@ const ensureLoaded = async() => {
 
 export const getAuthServiceInstance = async (): Promise<AuthServiceInterface> => {
     if (instance && !instance.loading) return instance;
-
-    if(instance.loading){
-        await ensureLoaded();
-    }
-
+    await ensureLoaded();
     return instance;
 }
 
 /** Creates an instance of the Auth0 SDK. If one has already been created, it returns that instance */
 const useAuth = async (authOptions) => {
     if (instance) return instance;
-
-    if(authImplementation == "auth0"){
+   
+    if(authImplementation == AuthImplementation.Auth0){
         instance = new Auth0AuthService();
     }
     else{
-        throw `Auth type ${authImplementation} is not implemented!`;
+        instance = new MsalAuthService();
     }
-    
+
     await instance.init(authOptions);
 
     return instance;

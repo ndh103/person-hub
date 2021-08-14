@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PersonHub.Api.Common.DependencyInjections;
@@ -89,20 +90,43 @@ namespace PersonHub.Api
 
         protected virtual void AddAuthentication(IServiceCollection services)
         {
-            services.AddAuthentication(options =>
+            string activeAuthentication = Configuration["Authentication:ActiveImplementation"];
+
+            if (activeAuthentication == "Auth0")
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+                services.AddAuthentication(options =>
+                            {
+                                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                            }).AddJwtBearer(options =>
+                            {
+                                options.Authority = Configuration["Auth0:Authority"];
+                                options.Audience = Configuration["Auth0:ApiIdentifier"];
+                                // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
+                                options.TokenValidationParameters = new TokenValidationParameters
+                                {
+                                    NameClaimType = ClaimTypes.NameIdentifier
+                                };
+                            });
+
+                return;
+            }
+
+            if (activeAuthentication == "AzureAdB2C")
             {
-                options.Authority = Configuration["Auth0:Authority"];
-                options.Audience = Configuration["Auth0:ApiIdentifier"];
-                // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = ClaimTypes.NameIdentifier
-                };
-            });
+                // Adds Microsoft Identity platform (Azure AD B2C) support to protect this Api
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddMicrosoftIdentityWebApi(
+                            options =>
+                            {
+                                Configuration.Bind("Authentication:AzureAdB2C", options);
+
+                                options.TokenValidationParameters.NameClaimType = "name";
+                            },
+                            options => { Configuration.Bind("Authentication:AzureAdB2C", options); });
+
+                return;
+            }
         }
     }
 }

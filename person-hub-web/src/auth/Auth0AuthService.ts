@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import createAuth0Client, { Auth0Client, Auth0ClientOptions } from "@auth0/auth0-spa-js";
 import AuthServiceInterface from "./AuthServiceInterface";
+import UserInfo from "./UserInfo";
 
 /** Define a default action to perform after authentication */
 const DEFAULT_REDIRECT_CALLBACK = () =>
@@ -9,70 +10,24 @@ const DEFAULT_REDIRECT_CALLBACK = () =>
 export default class Auth0AuthService implements AuthServiceInterface {
     loading = true;
     isAuthenticated =  false;
-    user: {};
+    user = new UserInfo();
     auth0Client: Auth0Client;
     popupOpen = false;
     error: null;
 
-    /** Authenticates the user using a popup window */
-    async loginWithPopup(options, config) {
-        this.popupOpen = true;
-
-        try {
-            await this.auth0Client.loginWithPopup(options, config);
-            this.user = await this.auth0Client.getUser();
-            this.isAuthenticated = await this.auth0Client.isAuthenticated();
-            this.error = null;
-        } catch (e) {
-            this.error = e;
-            // eslint-disable-next-line
-            console.error(e);
-        } finally {
-            this.popupOpen = false;
-        }
-
-        this.user = await this.auth0Client.getUser();
-        this.isAuthenticated = true;
-    }
-
-    /** Handles the callback when logging in using a redirect */
-    async handleRedirectCallback() {
-        this.loading = true;
-        try {
-            await this.auth0Client.handleRedirectCallback();
-            this.user = await this.auth0Client.getUser();
-            this.isAuthenticated = true;
-            this.error = null;
-        } catch (e) {
-            this.error = e;
-        } finally {
-            this.loading = false;
-        }
-    }
-
     /** Authenticates the user using the redirect method */
-    loginWithRedirect(o) {
+    loginWithRedirect(o): Promise<void> {
         return this.auth0Client.loginWithRedirect(o);
     }
 
-    /** Returns all the claims present in the ID token */
-    getIdTokenClaims(o) {
-        return this.auth0Client.getIdTokenClaims(o);
+    /** Logs the user out and removes their session on the authorization server */
+    logout(o){
+        return this.auth0Client.logout(o);
     }
 
     /** Returns the access token. If the token is invalid or missing, a new one is retrieved */
-    getTokenSilently(o) {
+    getTokenSilently(o): Promise<string> {
         return this.auth0Client.getTokenSilently(o);
-    }
-
-    /** Gets the access token using a popup window */
-    getTokenWithPopup(o) {
-        return this.auth0Client.getTokenWithPopup(o);
-    }
-
-    /** Logs the user out and removes their session on the authorization server */
-    logout(o) {
-        return this.auth0Client.logout(o);
     }
 
     async getUser() {
