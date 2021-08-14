@@ -10,19 +10,27 @@ namespace PersonHub.Api.Common
         {
             get
             {
-                var value = GetClaimValueFromUserIdentity("email");
+                var auth0EmailClaimType = "https://custom-claim/email";
+                var azureB2CEmailClaimType = "emails";
+
+                var value = GetClaimValueFromUserIdentity(auth0EmailClaimType);
+
+                if(string.IsNullOrEmpty(value)){
+                    value = GetClaimValueFromUserIdentity(azureB2CEmailClaimType);
+                }
+
+                if(string.IsNullOrEmpty(value)){
+                    throw new Exception("Cannot extract email from Claims");
+                }
+
                 return value;
             }
         }
 
         private string GetClaimValueFromUserIdentity(string claimType)
         {
-            // This is the namespace created by Rules in Auth0
-            claimType = "https://custom-claim/" + claimType;
-
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-
-
+            
             if (identity == null)
             {
                 return string.Empty;
