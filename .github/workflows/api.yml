@@ -26,6 +26,7 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
       HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      AUTHENTICATION_TYPE: Auth0
 
     steps:
     - name: Check out code
@@ -64,6 +65,7 @@ jobs:
       with:
         files: 'PersonHubApi/PersonHub.Api/appsettings.json'
       env:
+        Authentication.ActiveImplementation: ${{ env.AUTHENTICATION_TYPE }}
         ApplicationSetting.AppName: ${{ env.APP_NAME }}
         DatabaseConnectionConfig.PersonHub.Password: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
 
