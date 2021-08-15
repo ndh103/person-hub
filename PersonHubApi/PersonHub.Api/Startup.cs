@@ -68,7 +68,7 @@ namespace PersonHub.Api
             app.UseRouting();
 
             app.UseCors(builder => {
-                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("Access-Control-Allow-Origin");
             });
 
             app.UseAuthentication();
