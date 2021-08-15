@@ -65,7 +65,7 @@ jobs:
 
         dockerfile_directory: ./PersonHubApi
 
-        dockerfile_name: Dockerfile.heroku
+        dockerfile_name: Dockerfile
 
         docker_options: "--no-cache"
 
