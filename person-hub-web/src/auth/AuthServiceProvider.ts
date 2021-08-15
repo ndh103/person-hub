@@ -5,14 +5,6 @@ import MsalAuthService from "./MsalAuthService";
 
 let instance: AuthServiceInterface = null;
 
-enum AuthImplementation{
-    Auth0 = 1,
-    MicrosoftAD_B2C = 2
-}
-
-// eslint-disable-next-line prefer-const
-let authImplementation = AuthImplementation.Auth0;
-
 const ensureLoaded = async() => {
     return new Promise(function (resolve) {
         (function waitForInstanceLoaded(){
@@ -32,7 +24,7 @@ export const getAuthServiceInstance = async (): Promise<AuthServiceInterface> =>
 const useAuth = async (authOptions) => {
     if (instance) return instance;
    
-    if(authImplementation == AuthImplementation.Auth0){
+    if(process.env.VUE_APP_AUTH_TYPE == "Auth0"){
         instance = new Auth0AuthService();
     }
     else{
