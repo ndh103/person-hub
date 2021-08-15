@@ -21,7 +21,7 @@ namespace PersonHub.Api.Areas.LifeEvents.Controllers
         [HttpGet("test")]
         public ActionResult<string> Test()
         {
-            var appName = this._configuration["ApplicationSetting.AppName:AppName"];
+            var appName = this._configuration["ApplicationSetting:AppName"];
 
             return Ok(appName);
         }
