@@ -21,6 +21,7 @@ jobs:
       HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       APP_NAME: person-hub
+      PERSONHUB_POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
 
     steps:
     - name: Check out code
@@ -60,6 +61,7 @@ jobs:
         files: 'PersonHubApi/PersonHub.Api/appsettings.json'
       env:
         APP_NAME: ${{ env.APP_NAME }}
+        DatabaseConnectionConfig.PersonHub.Password: ${{ env.PERSONHUB_POSTGRES_PASSWORD }}
 
     - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
       uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
