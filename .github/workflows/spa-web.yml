@@ -35,7 +35,7 @@ jobs:
     - name: Create env file
       run: |
           touch person-hub-web/.env.production
-          echo VUE_APP_AUTH_TYPE=Auth0 >> .env
+          echo VUE_APP_AUTH_TYPE=Auth0 >> person-hub-web/.env.production
           cat person-hub-web/.env.production
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
