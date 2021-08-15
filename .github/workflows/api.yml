@@ -79,7 +79,7 @@ jobs:
       - name: Run Migration
         run: >-
           docker run --rm
-          --volume /PersonHubApi/sql:/flyway/sql
+          --volume ${{ github.workspace }}/PersonHubApi/sql:/flyway/sql
           flyway/flyway:7.12.1-alpine
           -url="jdbc:postgresql://${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}?sslmode=require"
           -schemas=${{ env.POSTGRES_SCHEMA }}
