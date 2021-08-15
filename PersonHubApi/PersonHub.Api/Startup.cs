@@ -29,9 +29,12 @@ namespace PersonHub.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplicationOptions(Configuration);
+            services.AddCors(c =>
+            {
+                c.AddPolicy("AllowSpecified", options => options.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowCredentials().AllowAnyHeader().SetIsOriginAllowedToAllowWildcardSubdomains().WithExposedHeaders("Access-Control-Allow-Origin"));
+            });
 
-            services.AddCors();
+            services.AddApplicationOptions(Configuration);
 
             services.AddControllersWithViews();
 
@@ -67,9 +70,7 @@ namespace PersonHub.Api
 
             app.UseRouting();
 
-            app.UseCors(builder => {
-                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("Access-Control-Allow-Origin");
-            });
+            app.UseCors("AllowSpecified");
 
             app.UseAuthentication();
 
@@ -77,7 +78,7 @@ namespace PersonHub.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute().RequireCors("AllowSpecified");
             });
         }
 
