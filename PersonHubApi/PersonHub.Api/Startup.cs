@@ -50,7 +50,7 @@ namespace PersonHub.Api
         public void Configure(IApplicationBuilder app)
         {
             app.UseCors(builder => {
-                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials();
             });
 
             if (Environment.IsDevelopment())
