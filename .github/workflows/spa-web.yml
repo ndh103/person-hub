@@ -45,6 +45,7 @@ jobs:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: ${{ runner.os }}-node-
+
     - name: Build
       run: |
         cd person-hub-web
@@ -71,12 +72,3 @@ jobs:
         # By default, this argument is set to "web".
         # For more information look at https://devcenter.heroku.com/articles/process-model
         process_type: web
-
-    # - name: Deploy site to netlify using secrets created on repository
-    #   uses: netlify/actions/cli@master
-    #   env:
-    #     NETLIFY_AUTH_TOKEN: ${{ env.NETLIFY_AUTH_TOKEN }}
-    #     NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
-    #   with:
-    #     args: deploy --dir=dist --prod
-    #     secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
