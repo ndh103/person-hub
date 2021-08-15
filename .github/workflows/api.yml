@@ -57,7 +57,7 @@ jobs:
     - name: variable substitution in json, xml, and yml files
       uses: microsoft/variable-substitution@v1
       with:
-        files: 'PersonHubApi/PersonHub.Api/myapp/appsettings.json'
+        files: 'PersonHubApi/PersonHub.Api/appsettings.json'
       env:
         APP_NAME: ${{ secrets.APP_NAME }}
 
