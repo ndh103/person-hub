@@ -60,7 +60,7 @@ jobs:
       with:
         files: 'PersonHubApi/PersonHub.Api/appsettings.json'
       env:
-        APP_NAME: ${{ env.APP_NAME }}
+        ApplicationSetting.AppName: ${{ env.APP_NAME }}
         DatabaseConnectionConfig.PersonHub.Password: ${{ env.PERSONHUB_POSTGRES_PASSWORD }}
 
     - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
