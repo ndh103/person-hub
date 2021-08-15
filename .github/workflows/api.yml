@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      APP_NAME: person-hub
+      APP_NAME: person-hub-api
       POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
       POSTGRES_PORT: 5432
       POSTGRES_DB: db6bibheb648q8

@@ -31,7 +31,7 @@ namespace PersonHub.Api
         {
             services.AddCors(config =>
             {
-                config.AddPolicy("AllowSpecified", options => options.WithOrigins("http://localhost:8080")
+                config.AddPolicy("AllowSpecified", options => options.WithOrigins("http://localhost:8080", "https://zen-clarke-eed7d1.netlify.app")
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
