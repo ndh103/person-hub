@@ -17,8 +17,8 @@ jobs:
 
     env:
       APP_NAME: person-hub
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
 
     strategy:
       matrix:
@@ -43,6 +43,27 @@ jobs:
         cd person-hub-web
         npm ci
         npm run build
+
+    - name: Build, publish docker image, and deploy to heroku
+      uses: gonuit/heroku-docker-deploy@v1.3.3
+      with:
+        email: ${{ env.HEROKU_EMAIL }}
+
+        heroku_api_key: ${{ env.HEROKU_API_KEY }}
+
+        heroku_app_name: ${{ env.APP_NAME }}
+
+        dockerfile_directory: ./person-hub-web
+
+        dockerfile_name: Dockerfile.heroku
+
+        docker_options: "--no-cache"
+
+        # (Optional, default: "web")
+        # Select the process type for which you want the docker container to be uploaded.
+        # By default, this argument is set to "web".
+        # For more information look at https://devcenter.heroku.com/articles/process-model
+        process_type: web
 
     # - name: Deploy site to netlify using secrets created on repository
     #   uses: netlify/actions/cli@master
