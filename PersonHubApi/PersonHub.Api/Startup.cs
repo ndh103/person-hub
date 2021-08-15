@@ -58,6 +58,8 @@ namespace PersonHub.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseCors("AllowAll");
+
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -75,8 +77,6 @@ namespace PersonHub.Api
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.UseCors("AllowAll");
 
             app.UseAuthentication();
 
