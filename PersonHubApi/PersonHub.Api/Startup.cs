@@ -39,6 +39,7 @@ namespace PersonHub.Api
                                     builder.AllowAnyHeader();
                                     builder.AllowAnyMethod();
                                     builder.AllowAnyOrigin();
+                                    builder.SetIsOriginAllowed(origin => true);
                                 });
             });
 
