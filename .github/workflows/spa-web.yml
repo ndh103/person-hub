@@ -33,7 +33,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
-    - uses: actions/cache@v2
+      uses: actions/cache@v2
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -45,7 +45,7 @@ jobs:
         npm run build
 
     - name: Deploy site to netlify using secrets created on repository
-    - uses: netlify/actions/cli@master
+      uses: netlify/actions/cli@master
       env:
         NETLIFY_AUTH_TOKEN: ${{ env.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
