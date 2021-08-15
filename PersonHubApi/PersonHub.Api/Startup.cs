@@ -78,7 +78,7 @@ namespace PersonHub.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute().RequireCors("AllowSpecified");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 
