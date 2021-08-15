@@ -77,8 +77,10 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v2
-      - run: >-
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run Migration
+        run: >-
           docker run --rm
           --volume ${{ github.workspace }}/PersonHubApi/PersonHub.Api/sql:/flyway/sql
           flyway/flyway:7.12.1-alpine
