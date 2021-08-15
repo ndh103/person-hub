@@ -33,6 +33,3 @@ const AddNewTodoItem = Vue.extend({
 
 export default AddNewTodoItem
 </script>
-
-<style>
-</style>

@@ -35,6 +35,3 @@ const TodoItemDetail = Vue.extend({
 
 export default TodoItemDetail;
 </script>
-
-<style>
-</style>
