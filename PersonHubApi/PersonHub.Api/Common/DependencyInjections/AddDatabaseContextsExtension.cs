@@ -27,7 +27,8 @@ namespace PersonHub.Api.Common.DependencyInjections
                 Database = databaseConnection.Database,
                 Username = databaseConnection.UserName,
                 Password = databaseConnection.Password,
-                SearchPath = databaseConnection.SearchPath
+                SearchPath = databaseConnection.SearchPath,
+                SslMode = (SslMode)databaseConnection.SslMode
             };
 
             if (string.IsNullOrEmpty(migrationAssemblyName))
