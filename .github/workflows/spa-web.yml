@@ -40,7 +40,7 @@ jobs:
         file_name: .env.production
 
     - name: Print content of .env.production files
-      run: cat person-hub-web/.env.production
+      run: cat ./person-hub-web/.env.production
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
       uses: actions/cache@v2
