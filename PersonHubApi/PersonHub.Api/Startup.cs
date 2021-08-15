@@ -31,18 +31,7 @@ namespace PersonHub.Api
         {
             services.AddApplicationOptions(Configuration);
 
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(
-                builder =>
-                {
-                    builder.WithOrigins("http://localhost:8080",
-                                        "http://www.contoso.com")
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();                            
-                });
-
-            });
+            services.AddCors();
 
             services.AddControllersWithViews();
 
@@ -60,6 +49,10 @@ namespace PersonHub.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseCors(builder => {
+                builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            });
+
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -77,8 +70,6 @@ namespace PersonHub.Api
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.UseCors();
 
             app.UseAuthentication();
 
