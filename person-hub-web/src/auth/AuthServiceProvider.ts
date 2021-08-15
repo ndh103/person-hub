@@ -11,7 +11,7 @@ enum AuthImplementation{
 }
 
 // eslint-disable-next-line prefer-const
-let authImplementation = AuthImplementation.MicrosoftAD_B2C;
+let authImplementation = AuthImplementation.Auth0;
 
 const ensureLoaded = async() => {
     return new Promise(function (resolve) {
