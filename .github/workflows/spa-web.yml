@@ -35,9 +35,12 @@ jobs:
     - name: Make envfile production to override some values
       uses: SpicyPizza/create-envfile@v1
       with:
-        VUE_APP_AUTH_TYPE: Auth0
+        envkey_VUE_APP_AUTH_TYPE: Auth0
         directory: person-hub-web
         file_name: .env.production
+
+    - name: Print content of .env.production files
+      run: cat person-hub-web/.env.production
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
       uses: actions/cache@v2
