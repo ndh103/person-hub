@@ -54,19 +54,12 @@ jobs:
     - name: Run Integration Test
       run: dotnet test -c Release PersonHubApi/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
-    - name: Update config before deployment
-      uses: Azure/appservice-settings@v1
+    - name: variable substitution in json, xml, and yml files
+      uses: microsoft/variable-substitution@v1
       with:
-      app-name: ${{ env.APP_NAME }}
-      app-settings-json: |
-        [
-            {
-                "name": "UI:Index:Header",
-                "value": "${{ secrets.INDEX_HEADER }}",
-                "slotSetting": true
-            }
-        ]
-
+        files: 'PersonHubApi/PersonHub.Api/myapp/appsettings.json'
+      env:
+        APP_NAME: ${{ secrets.APP_NAME }}
 
     - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
       uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
