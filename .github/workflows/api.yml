@@ -63,23 +63,50 @@ jobs:
         ApplicationSetting.AppName: ${{ env.APP_NAME }}
         DatabaseConnectionConfig.PersonHub.Password: ${{ env.PERSONHUB_POSTGRES_PASSWORD }}
 
-    - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
-      uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
-      with:
-        email: ${{ env.HEROKU_EMAIL }}
+  migrate-database:
+    name: Run Flyway migrations
+    needs: build
+    runs-on: ubuntu-20.04
+    env:
+      POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: db6bibheb648q8
+      POSTGRES_SCHEMA: person-hub
+      POSTGRES_USER: bddygoeimcbvwr
+      POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
 
-        heroku_api_key: ${{ env.HEROKU_API_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: >-
+          docker run --rm
+          --volume ${{ github.workspace }}/PersonHubApi/PersonHub.Api/sql:/flyway/sql
+          flyway/flyway:7.12.1-alpine
+          -url="jdbc:postgresql://${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}?sslmode=require"
+          -schemas=${{ env.POSTGRES_SCHEMA }}
+          -user="${{ env.POSTGRES_USER }}"
+          -password="${{ env.POSTGRES_PASSWORD }}"
+          migrate
 
-        heroku_app_name: ${{ env.APP_NAME }}
+  deploy:
+    name: Build, Push and Release a Docker container to Heroku.
+    needs: migrate-database
+    runs-on: ubuntu-20.04
+    uses: gonuit/heroku-docker-deploy@v1.3.3
+    with:
+      email: ${{ env.HEROKU_EMAIL }}
 
-        dockerfile_directory: ./PersonHubApi
+      heroku_api_key: ${{ env.HEROKU_API_KEY }}
 
-        dockerfile_name: Dockerfile.heroku
+      heroku_app_name: ${{ env.APP_NAME }}
 
-        docker_options: "--no-cache"
+      dockerfile_directory: ./PersonHubApi
 
-        # (Optional, default: "web")
-        # Select the process type for which you want the docker container to be uploaded.
-        # By default, this argument is set to "web".
-        # For more information look at https://devcenter.heroku.com/articles/process-model
-        process_type: web
+      dockerfile_name: Dockerfile.heroku
+
+      docker_options: "--no-cache"
+
+      # (Optional, default: "web")
+      # Select the process type for which you want the docker container to be uploaded.
+      # By default, this argument is set to "web".
+      # For more information look at https://devcenter.heroku.com/articles/process-model
+      process_type: web
