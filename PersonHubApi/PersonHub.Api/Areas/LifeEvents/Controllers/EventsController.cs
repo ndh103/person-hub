@@ -21,9 +21,9 @@ namespace PersonHub.Api.Areas.LifeEvents.Controllers
         [HttpGet("test")]
         public ActionResult<string> Test()
         {
-            var appName = this._configuration["ApplicationSetting:AppName"];
+            string activeAuthentication = _configuration["Authentication:ActiveImplementation"];
 
-            return Ok(appName);
+            return Ok(activeAuthentication);
         }
     }
 }
