@@ -16,7 +16,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
@@ -64,10 +63,8 @@ jobs:
         DatabaseConnectionConfig.PersonHub.Password: ${{ env.PERSONHUB_POSTGRES_PASSWORD }}
 
   migrate-database:
-    name: Run Flyway migrations
-    needs: build
     runs-on: ubuntu-latest
-
+    needs: build
     env:
       POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
       POSTGRES_PORT: 5432
@@ -82,7 +79,7 @@ jobs:
       - name: Run Migration
         run: >-
           docker run --rm
-          --volume ${{ github.workspace }}/PersonHubApi/PersonHub.Api/sql:/flyway/sql
+          --volume PersonHubApi/PersonHub.Api/sql:/flyway/sql
           flyway/flyway:7.12.1-alpine
           -url="jdbc:postgresql://${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}?sslmode=require"
           -schemas=${{ env.POSTGRES_SCHEMA }}
