@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using PersonHub.Api.Common;
 
 namespace PersonHub.Api.Areas.LifeEvents.Controllers
@@ -10,16 +11,19 @@ namespace PersonHub.Api.Areas.LifeEvents.Controllers
     [Route("life-events/[controller]")]
     public class EventsController : ApiControllerBase
     {
-        
-        [HttpGet("test")]
-        public ActionResult<IEnumerable<string>> Test()
+        private readonly IConfiguration _configuration;
+        public EventsController(IConfiguration configuration)
         {
-            var items = new List<string>(){
-                "test1",
-                "test2"
-            };
+            this._configuration = configuration;
 
-            return Ok(items);
+        }
+
+        [HttpGet("test")]
+        public ActionResult<string> Test()
+        {
+            var appName = this._configuration["APP_NAME"];
+
+            return Ok(appName);
         }
     }
 }
