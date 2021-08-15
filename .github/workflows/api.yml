@@ -13,15 +13,20 @@ on:
     - PersonHubApi/**
     - .github/workflows/api.yml
 
+  env:
+    HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+    HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    APP_NAME: person-hub
+    POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: db6bibheb648q8
+    POSTGRES_SCHEMA: person-hub
+    POSTGRES_USER: bddygoeimcbvwr
+    POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      APP_NAME: person-hub
-      PERSONHUB_POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
-
     steps:
     - name: Check out code
       uses: actions/checkout@v2
@@ -60,18 +65,11 @@ jobs:
         files: 'PersonHubApi/PersonHub.Api/appsettings.json'
       env:
         ApplicationSetting.AppName: ${{ env.APP_NAME }}
-        DatabaseConnectionConfig.PersonHub.Password: ${{ env.PERSONHUB_POSTGRES_PASSWORD }}
+        DatabaseConnectionConfig.PersonHub.Password: ${{ env.POSTGRES_PASSWORD }}
 
   migrate-database:
     runs-on: ubuntu-latest
     needs: build
-    env:
-      POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: db6bibheb648q8
-      POSTGRES_SCHEMA: person-hub
-      POSTGRES_USER: bddygoeimcbvwr
-      POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
 
     steps:
       - name: Checkout
