@@ -96,8 +96,8 @@ namespace PersonHub.Api
                                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                             }).AddJwtBearer(options =>
                             {
-                                options.Authority = Configuration["Auth0:Authority"];
-                                options.Audience = Configuration["Auth0:ApiIdentifier"];
+                                options.Authority = Configuration["Authentication:Auth0:Authority"];
+                                options.Audience = Configuration["Authentication:Auth0:ApiIdentifier"];
                                 // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
                                 options.TokenValidationParameters = new TokenValidationParameters
                                 {

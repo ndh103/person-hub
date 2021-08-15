@@ -23,7 +23,7 @@ export const getAuthServiceInstance = async (): Promise<AuthServiceInterface> =>
 /** Creates an instance of the Auth0 SDK. If one has already been created, it returns that instance */
 const useAuth = async (authOptions) => {
     if (instance) return instance;
-   
+
     if(process.env.VUE_APP_AUTH_TYPE == "Auth0"){
         instance = new Auth0AuthService();
     }
