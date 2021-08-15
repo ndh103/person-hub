@@ -36,10 +36,7 @@ namespace PersonHub.Api
                 options.AddPolicy(name: "AllowAll",
                                 builder =>
                                 {
-                                    builder.AllowAnyHeader();
-                                    builder.AllowAnyMethod();
-                                    builder.AllowAnyOrigin();
-                                    builder.SetIsOriginAllowed(origin => true);
+                                    builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().Build();
                                 });
             });
 
