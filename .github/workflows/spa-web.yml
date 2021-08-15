@@ -34,10 +34,10 @@ jobs:
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
     - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
     - name: Build
       run: |
         cd person-hub-web
