@@ -32,13 +32,13 @@ stages:
       inputs:
         command: 'build'
         projects: |
-            PersonHubApi.sln
+             PersonHubApi/PersonHubApi.sln
 
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
         projects: |
-            tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+            PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
 
   # - job: Build
   #   displayName: Build
