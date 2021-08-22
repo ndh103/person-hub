@@ -1,4 +1,4 @@
-namespace PersonHub.Domain.Entities
+namespace PersonHub.Domain.TodoModule.Entities
 {
     public enum TodoItemStatus
     {

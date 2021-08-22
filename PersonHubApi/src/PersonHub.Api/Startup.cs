@@ -8,6 +8,8 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PersonHub.Api.Common.DependencyInjections;
+using PersonHub.Domain.Interfaces;
+using PersonHub.Infrastructure.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -35,6 +37,9 @@ namespace PersonHub.Api
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
+
+            // Add DI for Implemented service in Infrastructure
+            AddInfrastructureServices(services);
 
             services.AddApplicationOptions(Configuration);
 
@@ -124,5 +129,12 @@ namespace PersonHub.Api
                 return;
             }
         }
+
+        protected virtual void AddInfrastructureServices(IServiceCollection services)
+        {
+            services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
+        }
+
     }
 }
+

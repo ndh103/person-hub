@@ -1,11 +1,11 @@
 using System;
+using PersonHub.Domain.Entities;
+using PersonHub.Domain.Interfaces;
 
-namespace PersonHub.Domain.Entities
+namespace PersonHub.Domain.TodoModule.Entities
 {
-    public class TodoItem
+    public class TodoItem : BaseEntity, IAggregateRoot
     {
-        public Int64 Id { get; set; }
-
         public string UserName {get;set;}
 
         public string  Title { get; set; }
@@ -15,6 +15,5 @@ namespace PersonHub.Domain.Entities
         public TodoItemStatus Status { get; set; }
 
         public string ItemOrder {get;set;}
-        
     }
 }

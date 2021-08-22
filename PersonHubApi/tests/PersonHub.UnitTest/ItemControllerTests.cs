@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NSubstitute;
 using PersonHub.Api.Areas.Todos.Controllers;
-using PersonHub.Domain.Entities;
+using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
 using Xunit;
 
@@ -24,7 +23,9 @@ namespace PersonHub.UnitTest
 
             using var dbContext = new PersonHubDbContext(options);
 
-            var controller = new ItemsController(dbContext);
+            var repository = new EfRepository<TodoItem>(dbContext);
+
+            var controller = new ItemsController(repository);
 
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {

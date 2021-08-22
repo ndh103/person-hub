@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PersonHub.Domain.Entities;
+using PersonHub.Domain.TodoModule.Entities;
 
 namespace PersonHub.Infrastructure.DataAccess
 {
@@ -10,6 +10,15 @@ namespace PersonHub.Infrastructure.DataAccess
         public PersonHubDbContext(DbContextOptions<PersonHubDbContext> options) : base(options)
         {
 
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasSequence<int>("TodoItemId", schema:"shared");
+
+            modelBuilder.Entity<TodoItem>()
+                .Property(e => e.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR shared.TodoItemId");
         }
     }
 }
