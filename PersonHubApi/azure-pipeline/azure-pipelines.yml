@@ -24,6 +24,8 @@ variables:
   value: '$(Build.BuildId)'
 - name: imageRepository
   value: 'person-hub-api'
+- name: imageName
+  value: 'personhub.azurecr.io/$(imageRepository):$(tag)'
 - name: appServiceName
   value: 'person-hub'
 - name: dockerRegistryServiceConnection
@@ -86,4 +88,4 @@ stages:
       inputs:
         azureSubscription: $(azureSubscription)
         appName: $(appServiceName)
-        containers: $(imageRepository)
+        containers: $(imageName)
