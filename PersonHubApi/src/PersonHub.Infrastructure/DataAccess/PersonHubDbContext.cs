@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using PersonHub.Api.Areas.Todos.Models;
+using PersonHub.Domain.Entities;
 
-namespace PersonHub.Api.Infrastructure.DataAccess
+namespace PersonHub.Infrastructure.DataAccess
 {
     public class PersonHubDbContext : DbContext
     {

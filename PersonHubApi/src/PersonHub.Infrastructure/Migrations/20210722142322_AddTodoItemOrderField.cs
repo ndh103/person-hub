@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace PersonHub.Api.Infrastructure.Migrations
+namespace PersonHub.Infrastructure.Migrations
 {
     public partial class AddTodoItemOrderField : Migration
     {

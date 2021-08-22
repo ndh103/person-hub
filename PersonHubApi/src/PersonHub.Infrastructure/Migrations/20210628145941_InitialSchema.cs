@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace PersonHub.Api.Infrastructure.Migrations
+namespace PersonHub.Infrastructure.Migrations
 {
     public partial class InitialSchema : Migration
     {

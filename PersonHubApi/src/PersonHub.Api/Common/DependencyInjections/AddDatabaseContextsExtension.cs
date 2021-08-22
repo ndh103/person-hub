@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using PersonHub.Api.Infrastructure.DataAccess;
+using PersonHub.Infrastructure.DataAccess;
 
 namespace PersonHub.Api.Common.DependencyInjections
 {

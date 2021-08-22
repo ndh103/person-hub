@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
-using PersonHub.Api.Infrastructure.DataAccess;
+using PersonHub.Domain.Entities;
+using PersonHub.Infrastructure.DataAccess;
 
 namespace PersonHub.Api.Areas.Todos.Controllers
 {

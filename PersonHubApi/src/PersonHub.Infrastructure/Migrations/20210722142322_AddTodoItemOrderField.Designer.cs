@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using PersonHub.Api.Infrastructure.DataAccess;
+using PersonHub.Infrastructure.DataAccess;
 
-namespace PersonHub.Api.Infrastructure.Migrations
+namespace PersonHub.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonHubDbContext))]
     [Migration("20210722142322_AddTodoItemOrderField")]

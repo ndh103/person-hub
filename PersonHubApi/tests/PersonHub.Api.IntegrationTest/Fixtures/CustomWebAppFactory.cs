@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Serilog;
-using System.Linq;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using PersonHub.Api.Infrastructure.DataAccess;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace PersonHub.Api.IntegrationTest.Fixtures
 {

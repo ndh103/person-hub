@@ -1,4 +1,4 @@
-namespace PersonHub.Api.Areas.Todos.Models
+namespace PersonHub.Domain.Entities
 {
     public enum TodoItemStatus
     {

@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using PersonHub.Api.Areas.Todos.Controllers;
-using PersonHub.Api.Areas.Todos.Models;
-using PersonHub.Api.Infrastructure.DataAccess;
+using PersonHub.Domain.Entities;
+using PersonHub.Infrastructure.DataAccess;
 using Xunit;
 
 namespace PersonHub.Api.UnitTest

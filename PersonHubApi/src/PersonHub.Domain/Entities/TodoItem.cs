@@ -1,6 +1,6 @@
 using System;
 
-namespace PersonHub.Api.Areas.Todos.Models
+namespace PersonHub.Domain.Entities
 {
     public class TodoItem
     {
