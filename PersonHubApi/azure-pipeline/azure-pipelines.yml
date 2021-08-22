@@ -78,6 +78,6 @@ stages:
     - task: AzureWebAppContainer@1
       displayName: Deploy to Azure WebApp using container
       inputs:
-        azureSubscription: 'Visual Studio Enterprise Subscription – MPN (61b366e3-0ce9-49b1-b378-9b1ded00ef6d)'
+        azureSubscription: $(azureSubscription)
         appName: $(appServiceName)
-        containers: $(azureSubscription)
+        containers: $(imageRepository)
