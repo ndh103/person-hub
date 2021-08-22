@@ -21,7 +21,7 @@ pool:
 variables:
   tag: '$(Build.BuildId)'
   imageRepository: 'person-hub-api'
-  dockerRegistryServiceConnection: 'ndh103personhub'
+  dockerRegistryServiceConnection: 'personhubACR'
 
 stages:
 - stage: Build
