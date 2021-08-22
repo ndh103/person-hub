@@ -7,7 +7,7 @@ on:
     - PersonHubApi/**
     - .github/workflows/api.yml
     paths-ignore:
-    - **/azure-pipelines/**
+    - '**/azure-pipelines/**'
 
   pull_request:
     branches: [ main ]
@@ -15,7 +15,7 @@ on:
     - PersonHubApi/**
     - .github/workflows/api.yml
     paths-ignore:
-    - **/azure-pipelines/**
+    - '**/azure-pipelines/**'
 
 jobs:
   build:

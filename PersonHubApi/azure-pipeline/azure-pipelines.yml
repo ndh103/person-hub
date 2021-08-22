@@ -2,8 +2,15 @@
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
+# specific path build
 trigger:
-- main
+  branches:
+    include:
+    - master
+    - releases/*
+  paths:
+    include:
+    - PersonHubApi/*
 
 resources:
 - repo: self
