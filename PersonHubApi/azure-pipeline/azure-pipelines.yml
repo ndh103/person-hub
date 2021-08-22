@@ -75,6 +75,11 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+          
+- stage: Deploy
+  displayName: Deploy
+  jobs:
+  - job: Deploy
     - task: AzureWebAppContainer@1
       displayName: Deploy to Azure WebApp using container
       inputs:
