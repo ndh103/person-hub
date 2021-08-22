@@ -49,21 +49,21 @@ jobs:
         dotnet-version: 5.0.x
 
     - name: Restore dependencies
-      run: dotnet restore PersonHubApi/PersonHubApi.sln
+      run: dotnet restore PersonHubApi/src/PersonHubApi.sln
 
     - name: Build
       run: dotnet build -c Release PersonHubApi/PersonHubApi.sln --no-restore
 
     - name: Run Unit Test
-      run: dotnet test -c Release PersonHubApi/PersonHub.Api.UnitTest/PersonHub.Api.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
+      run: dotnet test -c Release PersonHubApi/tests/PersonHub.Api.UnitTest/PersonHub.Api.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: Run Integration Test
-      run: dotnet test -c Release PersonHubApi/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
+      run: dotnet test -c Release PersonHubApi/tests/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: variable substitution in json, xml, and yml files
       uses: microsoft/variable-substitution@v1
       with:
-        files: 'PersonHubApi/PersonHub.Api/appsettings.json'
+        files: 'PersonHubApi/src/PersonHub.Api/appsettings.json'
       env:
         Authentication.ActiveImplementation: ${{ env.AUTHENTICATION_TYPE }}
         ApplicationSetting.AppName: ${{ env.APP_NAME }}

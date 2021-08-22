@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PersonHub.Api\PersonHub.Api.csproj" />
+    <ProjectReference Include="..\..\src\PersonHub.Api\PersonHub.Api.csproj" />
   </ItemGroup>
-
 </Project>

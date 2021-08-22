@@ -4,12 +4,12 @@ FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers
-COPY PersonHub.Api/*.csproj ./
+COPY src/PersonHub.Api/*.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
 COPY . .
-RUN dotnet publish PersonHub.Api/PersonHub.Api.csproj -c Release -o out
+RUN dotnet publish src/PersonHub.Api/PersonHub.Api.csproj -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
