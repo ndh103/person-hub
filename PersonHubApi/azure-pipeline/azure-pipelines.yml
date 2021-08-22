@@ -32,6 +32,8 @@ variables:
   value: 'personhubACR'
 - name: azureSubscription
   value: $(azure-subscription)
+- name: dockerRegistryPassword
+  value: $(docker-registry-password)
 
 stages:
 - stage: Build
@@ -89,3 +91,7 @@ stages:
         azureSubscription: $(azureSubscription)
         appName: $(appServiceName)
         containers: $(imageName)
+        appSettings:
+          -DOCKER_REGISTRY_SERVER_USERNAME personhub
+          -DOCKER_REGISTRY_SERVER_URL personhub.azurecr.io
+          -DOCKER_REGISTRY_SERVER_PASSWORD $(dockerRegistryPassword)
