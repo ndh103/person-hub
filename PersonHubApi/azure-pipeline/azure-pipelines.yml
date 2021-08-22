@@ -35,12 +35,27 @@ stages:
         projects: |
              PersonHubApi/PersonHubApi.sln
 
-    # - task: DotNetCoreCLI@2
-    #   displayName: Run Unit-test
-    #   inputs:
-    #     command: 'test'
-    #     projects: |
-    #         PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+    - task: DotNetCoreCLI@2
+      displayName: Run Unit-test
+      inputs:
+        command: 'test'
+        projects: |
+            PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+
+    - task: DockerCompose@0
+      displayName: Start dependencies (docker-compose)
+      inputs:
+        containerregistrytype: Container Registry
+        dockerComposeFile: PersonHubApi/docker-compose.test.yml
+        dockerComposeCommand: 'up -d'
+
+    - task: DotNetCoreCLI@2
+      displayName: Run Integratin Test
+      inputs:
+        command: test
+        projects: 'PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj'
+        arguments: '-c release --collect:"XPlat Code Coverage"'
+
 
   # - job: Build
   #   displayName: Build
