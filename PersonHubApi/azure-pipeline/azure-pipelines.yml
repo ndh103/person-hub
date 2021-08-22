@@ -19,9 +19,17 @@ pool:
   vmImage: Ubuntu-16.04
 
 variables:
-  tag: '$(Build.BuildId)'
-  imageRepository: 'person-hub-api'
-  dockerRegistryServiceConnection: 'personhubACR'
+- group: person-hub-api
+- name: tag
+  value: '$(Build.BuildId)'
+- name: imageRepository
+  value: 'person-hub-api'
+- name: appServiceName
+  value: 'person-hub'
+- name: dockerRegistryServiceConnection
+  value: 'personhubACR'
+- name: azureSubscription
+  value: $(azure-subscription)
 
 stages:
 - stage: Build
@@ -68,7 +76,8 @@ stages:
         tags: |
           $(tag)
     - task: AzureWebAppContainer@1
+      displayName: Deploy to Azure WebApp using container
       inputs:
         azureSubscription: 'Visual Studio Enterprise Subscription – MPN (61b366e3-0ce9-49b1-b378-9b1ded00ef6d)'
-        appName: 'person-hub'
-        containers: 'person-hub-api'
+        appName: $(appServiceName)
+        containers: $(azureSubscription)
