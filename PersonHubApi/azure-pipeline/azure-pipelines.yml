@@ -10,7 +10,7 @@ trigger:
     - releases/*
   paths:
     include:
-    - PersonHubApi/*
+    - PersonHubApi
 
 resources:
 - repo: self
