@@ -46,7 +46,7 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
             using (var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString))
             {
                 //TODO: Should found a robust way to get sql path
-                string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../PersonHubApi/sql");
+                string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../../sql");
                 var files = Directory.GetFiles(path).OrderBy(r => r);
                 var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
 
@@ -64,7 +64,7 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
 
             factory = new CustomWebAppFactory<IntegrationTestStartup>().WithWebHostBuilder(builder =>
             {
-                builder.UseSolutionRelativeContentRoot("PersonHub.Api");
+                builder.UseSolutionRelativeContentRoot("src/PersonHub.Api");
 
                 builder.ConfigureTestServices(services =>
                 {
