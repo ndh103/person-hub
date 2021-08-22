@@ -45,7 +45,8 @@ namespace PersonHub.Api.IntegrationTest.Fixtures
             connectionStringBuilder.SearchPath = "person-hub-test";
             using (var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString))
             {
-                string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../sql");
+                //TODO: Should found a robust way to get sql path
+                string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../PersonHubApi/sql");
                 var files = Directory.GetFiles(path).OrderBy(r => r);
                 var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
 
