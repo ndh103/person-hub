@@ -15,22 +15,40 @@ trigger:
 resources:
 - repo: self
 
+pool:
+  vmImage: Ubuntu-16.04
+
 variables:
   tag: '$(Build.BuildId)'
 
 stages:
 - stage: Build
-  displayName: Build image
+  displayName: Build Project
   jobs:
   - job: Build
     displayName: Build
-    pool:
-      vmImage: ubuntu-latest
     steps:
-    - task: Docker@2
-      displayName: Build an image
+    - task: DotNetCoreCLI@2
       inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/PersonHubApi/Dockerfile'
-        tags: |
-          $(tag)
+        command: 'build'
+        projects: |
+            PersonHubApi.sln
+
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+      projects: |
+          tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+          
+  # - job: Build
+  #   displayName: Build
+  #   pool:
+  #     vmImage: ubuntu-latest
+  #   steps:
+  #   - task: Docker@2
+  #     displayName: Build an image
+  #     inputs:
+  #       command: build
+  #       dockerfile: '$(Build.SourcesDirectory)/PersonHubApi/Dockerfile'
+  #       tags: |
+  #         $(tag)
