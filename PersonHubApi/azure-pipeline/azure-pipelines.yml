@@ -20,6 +20,7 @@ pool:
 
 variables:
   tag: '$(Build.BuildId)'
+  imageName: 'person-hub-api'
 
 stages:
 - stage: Build
@@ -56,16 +57,11 @@ stages:
         projects: 'PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj'
         arguments: '-c release --collect:"XPlat Code Coverage"'
 
-
-  # - job: Build
-  #   displayName: Build
-  #   pool:
-  #     vmImage: ubuntu-latest
-  #   steps:
-  #   - task: Docker@2
-  #     displayName: Build an image
-  #     inputs:
-  #       command: build
-  #       dockerfile: '$(Build.SourcesDirectory)/PersonHubApi/Dockerfile'
-  #       tags: |
-  #         $(tag)
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        repository: $(imageName)
+        command: build
+        dockerfile: '$(Build.SourcesDirectory)/PersonHubApi/Dockerfile'
+        tags: |
+          $(tag)
