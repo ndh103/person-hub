@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace PersonHub.Api.IntegrationTest.Stubs
+namespace PersonHub.IntegrationTest.Stubs
 {
     public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {

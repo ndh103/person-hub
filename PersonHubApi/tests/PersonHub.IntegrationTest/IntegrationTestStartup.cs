@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PersonHub.Api.IntegrationTest.Stubs;
+using PersonHub.Api;
+using PersonHub.IntegrationTest.Stubs;
 
-namespace PersonHub.Api.IntegrationTest
+namespace PersonHub.IntegrationTest
 {
     public class IntegrationTestStartup : Startup
     {

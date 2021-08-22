@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{50C8ADF2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api", "src\PersonHub.Api\PersonHub.Api.csproj", "{EB24B32C-63A6-4040-9239-A71FA0AB73E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api.UnitTest", "tests\PersonHub.Api.UnitTest\PersonHub.Api.UnitTest.csproj", "{14895195-04B6-4919-A421-3C37A4F964DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.UnitTest", "tests\PersonHub.UnitTest\PersonHub.UnitTest.csproj", "{14895195-04B6-4919-A421-3C37A4F964DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Api.IntegrationTest", "tests\PersonHub.Api.IntegrationTest\PersonHub.Api.IntegrationTest.csproj", "{88C7DDBA-9056-493F-B9AC-2E76BF84D80E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.IntegrationTest", "tests\PersonHub.IntegrationTest\PersonHub.IntegrationTest.csproj", "{88C7DDBA-9056-493F-B9AC-2E76BF84D80E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Domain", "src\PersonHub.Domain\PersonHub.Domain.csproj", "{5AC47295-0CD6-403B-9C34-774F9E19F4D1}"
 EndProject

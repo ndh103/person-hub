@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace PersonHub.Api.IntegrationTest.Fixtures
+namespace PersonHub.IntegrationTest.Fixtures
 {
     public class CustomWebAppFactory<TTestStartup> : WebApplicationFactory<TTestStartup> where TTestStartup : class
     {

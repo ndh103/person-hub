@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace PersonHub.Api.IntegrationTest.Fixtures
+namespace PersonHub.IntegrationTest.Fixtures
 {
     [CollectionDefinition("Test collection")]
     public class DatabaseCollection : ICollectionFixture<IntegrationTestClassFixture>

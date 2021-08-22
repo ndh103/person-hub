@@ -55,10 +55,10 @@ jobs:
       run: dotnet build -c Release PersonHubApi/PersonHubApi.sln --no-restore
 
     - name: Run Unit Test
-      run: dotnet test -c Release PersonHubApi/tests/PersonHub.Api.UnitTest/PersonHub.Api.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
+      run: dotnet test -c Release PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: Run Integration Test
-      run: dotnet test -c Release PersonHubApi/tests/PersonHub.Api.IntegrationTest/PersonHub.Api.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
+      run: dotnet test -c Release PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: variable substitution in json, xml, and yml files
       uses: microsoft/variable-substitution@v1

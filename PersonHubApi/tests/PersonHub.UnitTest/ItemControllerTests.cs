@@ -10,7 +10,7 @@ using PersonHub.Domain.Entities;
 using PersonHub.Infrastructure.DataAccess;
 using Xunit;
 
-namespace PersonHub.Api.UnitTest
+namespace PersonHub.UnitTest
 {
     public class UnitTest1
     {

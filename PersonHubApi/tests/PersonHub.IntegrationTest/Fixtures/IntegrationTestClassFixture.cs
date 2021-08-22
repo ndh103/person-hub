@@ -10,8 +10,9 @@ using Npgsql;
 using System.IO;
 using System.Reflection;
 using System.Linq;
+using PersonHub.Api;
 
-namespace PersonHub.Api.IntegrationTest.Fixtures
+namespace PersonHub.IntegrationTest.Fixtures
 {
     public class IntegrationTestClassFixture : IDisposable
     {
