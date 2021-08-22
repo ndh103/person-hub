@@ -34,12 +34,12 @@ stages:
         projects: |
             PersonHubApi.sln
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'test'
-      projects: |
-          tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
-          
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: |
+            tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+
   # - job: Build
   #   displayName: Build
   #   pool:
