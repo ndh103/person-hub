@@ -2,19 +2,16 @@ import { PublicClientApplication, AuthenticationResult, Configuration, LogLevel,
 import AuthServiceInterface from "./AuthServiceInterface";
 import UserInfo from "./UserInfo";
 
-const b2cPolicies = {
-    names: {
-        signUpSignIn: "B2C_1_UserSignUpAndSignIn"
+const b2cConfig = {
+    policyAuthorities:{
+        signUpSignIn: process.env.VUE_APP_AZUREADB2C_SIGN_IN_POLICY_AUTHORITY
     },
-    authorities: {
-        signUpSignIn: {
-            authority: "https://personhub.b2clogin.com/personhub.onmicrosoft.com/B2C_1_UserSignUpAndSignIn",
-        }
-    },
-    authorityDomain: "personhub.b2clogin.com"
+    authorityDomain: process.env.VUE_APP_AZUREADB2C_AUTHORITY_DOMAIN,
+    clientId : process.env.VUE_APP_AZUREADB2C_CLIENTID,
+    apiApplicationIdUrl: process.env.VUE_APP_AZUREADB2C_API_APP_ID_URL
 }
 
-const b2cScopes = ["https://personhub.onmicrosoft.com/api/Api.Read", "https://personhub.onmicrosoft.com/api/Api.Write"];
+const apiScopes = [`${b2cConfig.apiApplicationIdUrl}/Api.Read`, `${b2cConfig.apiApplicationIdUrl}/Api.Write`];
 
 /**
  * Configuration class for @azure/msal-browser: 
@@ -22,9 +19,9 @@ const b2cScopes = ["https://personhub.onmicrosoft.com/api/Api.Read", "https://pe
  */
 const MSAL_CONFIG: Configuration = {
     auth: {
-        clientId: "3c4effda-3960-4dbe-8e9e-27887584b8ff",
-        authority: b2cPolicies.authorities.signUpSignIn.authority,
-        knownAuthorities: [b2cPolicies.authorityDomain],
+        clientId: b2cConfig.clientId,
+        authority: b2cConfig.policyAuthorities.signUpSignIn,
+        knownAuthorities: [b2cConfig.authorityDomain],
     },
     cache: {
         cacheLocation: "sessionStorage", // This configures where your cache will be stored
@@ -73,7 +70,7 @@ export default class MsalAuthService implements AuthServiceInterface {
         this.account = null;
 
         this.loginRedirectRequest = {
-            scopes: b2cScopes,
+            scopes: apiScopes,
             redirectStartPage: window.location.origin
         };
     }
@@ -100,7 +97,7 @@ export default class MsalAuthService implements AuthServiceInterface {
         try {
             const response = await this.myMSALObj.acquireTokenSilent({
                 account: this.account,
-                scopes: b2cScopes
+                scopes: apiScopes
             });
 
             return response.accessToken;
