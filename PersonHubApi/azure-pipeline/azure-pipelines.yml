@@ -23,22 +23,24 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build Project
+  displayName: Build
   jobs:
   - job: Build
     displayName: Build
     steps:
     - task: DotNetCoreCLI@2
+      displayName: Build solution
       inputs:
         command: 'build'
         projects: |
              PersonHubApi/PersonHubApi.sln
 
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'test'
-        projects: |
-            PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
+    # - task: DotNetCoreCLI@2
+    #   displayName: Run Unit-test
+    #   inputs:
+    #     command: 'test'
+    #     projects: |
+    #         PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj
 
   # - job: Build
   #   displayName: Build
