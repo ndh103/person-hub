@@ -15,9 +15,6 @@ on:
     - .github/workflows/api.yml
     - '!PersonHubApi/azure-pipelines/**'
 
-    paths-ignore:
-    - '**/azure-pipelines/**'
-
 jobs:
   build:
     runs-on: ubuntu-latest
