@@ -110,14 +110,7 @@ stages:
         path: $(Pipeline.Workspace)/sql
 
     - script: |
-        docker run --rm
-        --volume $(Pipeline.Workspace)/sql:/flyway/sql
-        flyway/flyway:7.12.1-alpine
-        -url="jdbc:postgresql://$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=require"
-        -schemas=$(POSTGRES_SCHEMA)
-        -user="$(POSTGRES_USER)"
-        -password="$(POSTGRES_PASSWORD)"
-        migrate
+        docker run --rm --volume $(Pipeline.Workspace)/sql:/flyway/sql flyway/flyway:7.12.1-alpine -url="jdbc:postgresql://$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=require" -schemas=$(POSTGRES_SCHEMA) -user="$(POSTGRES_USER)" -password="$(POSTGRES_PASSWORD)" migrate
 
     - task: AzureWebAppContainer@1
       displayName: Deploy to Azure WebApp using container
