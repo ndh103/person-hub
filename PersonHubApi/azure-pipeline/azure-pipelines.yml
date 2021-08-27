@@ -46,6 +46,8 @@ variables:
   value: bddygoeimcbvwr
 - name: POSTGRES_PASSWORD
   value: $(postgres-password)
+- name: authentication-type
+  value: AzureAdB2C
 
 stages:
 - stage: Build
@@ -123,3 +125,5 @@ stages:
           -DOCKER_REGISTRY_SERVER_USERNAME personhub
           -DOCKER_REGISTRY_SERVER_URL personhub.azurecr.io
           -DOCKER_REGISTRY_SERVER_PASSWORD $(dockerRegistryPassword)
+          -DatabaseConnectionConfig__PersonHub__Password $(postgres-password)
+          -Authentication__ActiveImplementation $(authentication-type)
