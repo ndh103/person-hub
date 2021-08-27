@@ -80,6 +80,12 @@ stages:
         tags: |
           $(tag)
 
+    - task: PublishBuildArtifacts@1
+      displayName: Publish sql artifact
+      inputs:
+        pathToPublish: PersonHubApi/sql
+        artifactName: sql
+
 - stage: Deploy
   displayName: Deploy
   jobs:
