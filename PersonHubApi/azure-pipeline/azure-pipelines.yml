@@ -91,6 +91,12 @@ stages:
   jobs:
   - job: Deploy
     steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        source: current
+        artifact: sql
+        path: $(Pipeline.Workspace)/sql
+
     - task: AzureWebAppContainer@1
       displayName: Deploy to Azure WebApp using container
       inputs:
