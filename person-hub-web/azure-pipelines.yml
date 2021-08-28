@@ -41,6 +41,17 @@ stages:
         command: 'install'
         workingDir: person-hub-web
 
+    - script: |
+        cd person-hub-web
+        touch .env.production
+        echo VUE_APP_AUTH_TYPE=Auth0 >> .env.production
+        cat .env.production
+      displayName: Override env config file
+
+    - script: |
+        cat person-hub-web/.env.production
+      displayName: Print content of .env.production file
+
     - task: Npm@1
       inputs:
         command: 'custom'
@@ -64,10 +75,13 @@ stages:
         artifact: dist
         path: $(Pipeline.Workspace)/dist
 
-    - task: AzureFileCopy@4
+    - task: AzureCLI@1
+      displayName: Deploy the web to Azure Blob Storage
       inputs:
-        sourcePath: $(Pipeline.Workspace)/dist
-        azureSubscription: $(azureSubscription)
-        destination: azureBlob
-        storage: $(storage-account)
-        containerName: $(storage-container-name)
+        azureSubscription: $(azure-subscription)
+        scriptLocation: inlineScript
+        inlineScript: |
+          az storage blob upload-batch \
+            --destination "$(storage-container-name)" \
+            --account-name "$(storage-account)" \
+            --source "$(Pipeline.Workspace)/dist"
