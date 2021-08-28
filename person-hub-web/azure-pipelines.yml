@@ -1,0 +1,65 @@
+trigger:
+  branches:
+    include:
+    - main
+    - releases/*
+  paths:
+    include:
+    - person-hub-web
+
+resources:
+- repo: self
+
+pool:
+  vmImage: Ubuntu-16.04
+
+variables:
+- group: person-hub-web
+- name: tag
+  value: '$(Build.BuildId)'
+- name: imageRepository
+  value: 'person-hub-web'
+- name: imageName
+  value: 'personhub.azurecr.io/$(imageRepository):$(tag)'
+- name: appServiceName
+  value: 'person-hub-web'
+- name: dockerRegistryServiceConnection
+  value: 'personhubACR'
+- name: azureSubscription
+  value: $(azure-subscription)
+- name: dockerRegistryPassword
+  value: $(docker-registry-password)
+- name: authentication-type
+  value: AzureAdB2C
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    steps:
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: person-hub-web
+
+    - task: Npm@1
+      inputs:
+        command: 'build'
+        workingDir: person-hub-web
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish sql artifact
+      inputs:
+        pathToPublish: person-hub-web/sql
+        artifactName: dist
+
+# - stage: Deploy
+#   displayName: Deploy
+#   jobs:
+#   - job: Deploy
+#     steps:
+#     - task: DownloadPipelineArtifact@2
+#       inputs:
+#         source: current
+#         artifact: dist
+#         path: $(Pipeline.Workspace)/dist
