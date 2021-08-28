@@ -77,7 +77,7 @@ stages:
         path: $(Pipeline.Workspace)/dist
 
     - task: AzureCLI@1
-      displayName: Deploy the web to Azure Blob Storage
+      displayName: Remove previous deployment in Azure Blob Storage
       inputs:
         azureSubscription: $(azure-subscription)
         scriptLocation: inlineScript
@@ -85,7 +85,7 @@ stages:
           az storage blob delete-batch \
             --source \$web \
             --account-name "$(storage-account)" \
-            --pattern *
+            --pattern *.*
 
     - task: AzureCLI@1
       displayName: Deploy the web to Azure Blob Storage
