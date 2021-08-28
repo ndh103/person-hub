@@ -84,8 +84,7 @@ stages:
         inlineScript: |
           az storage blob delete-batch \
             --source \$web \
-            --account-name "$(storage-account)" \
-            --pattern *.*
+            --account-name "$(storage-account)"
 
     - task: AzureCLI@1
       displayName: Deploy the web to Azure Blob Storage
