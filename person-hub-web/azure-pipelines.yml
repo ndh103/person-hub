@@ -82,6 +82,17 @@ stages:
         azureSubscription: $(azure-subscription)
         scriptLocation: inlineScript
         inlineScript: |
+          az storage blob delete-batch \
+            --source \$web \
+            --account-name "$(storage-account)" \
+            --pattern *
+
+    - task: AzureCLI@1
+      displayName: Deploy the web to Azure Blob Storage
+      inputs:
+        azureSubscription: $(azure-subscription)
+        scriptLocation: inlineScript
+        inlineScript: |
           az storage blob upload-batch \
             --destination \$web \
             --account-name "$(storage-account)" \
