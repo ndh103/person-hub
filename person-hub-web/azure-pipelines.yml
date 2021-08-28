@@ -82,6 +82,6 @@ stages:
         scriptLocation: inlineScript
         inlineScript: |
           az storage blob upload-batch \
-            --destination "$(storage-container-name)" \
+            --destination \$web \
             --account-name "$(storage-account)" \
-            --source "./dist"
+            --source "$(Pipeline.Workspace)/dist"
