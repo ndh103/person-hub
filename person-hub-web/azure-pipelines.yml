@@ -23,10 +23,10 @@ variables:
   value: $(azure-subscription)
 - name: storage-account
   value: personhub
-- name: storage-container-name
-  value: "$web"
 - name: authentication-type
   value: AzureAdB2C
+- name: api-url
+  value: https://person-hub-api.azurewebsites.net/
 
 stages:
 - stage: Build
@@ -44,7 +44,8 @@ stages:
     - script: |
         cd person-hub-web
         touch .env.production
-        echo VUE_APP_AUTH_TYPE=Auth0 >> .env.production
+        echo VUE_APP_AUTH_TYPE=AzureAdB2C >> .env.production
+        echo VUE_APP_API_URL=$(api-url) >> .env.production
         cat .env.production
       displayName: Override env config file
 

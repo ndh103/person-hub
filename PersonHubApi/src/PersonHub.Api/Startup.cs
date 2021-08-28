@@ -33,7 +33,7 @@ namespace PersonHub.Api
         {
             services.AddCors(config =>
             {
-                config.AddPolicy("AllowSpecified", options => options.WithOrigins("http://localhost:8080", "https://person-hub.herokuapp.com")
+                config.AddPolicy("AllowSpecified", options => options.WithOrigins("http://localhost:8080", "https://person-hub.herokuapp.com", "https://personhub.z23.web.core.windows.net")
                     .AllowAnyMethod()
                     .AllowAnyHeader());
             });
