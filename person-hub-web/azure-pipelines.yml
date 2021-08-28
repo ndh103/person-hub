@@ -24,7 +24,7 @@ variables:
 - name: storage-account
   value: personhub
 - name: storage-container-name
-  value: $web
+  value: "$web"
 - name: authentication-type
   value: AzureAdB2C
 
