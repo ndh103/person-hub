@@ -37,6 +37,9 @@ stages:
   jobs:
   - job: Build
     steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
     - task: Npm@1
       inputs:
         command: 'install'
@@ -53,13 +56,13 @@ stages:
         pathToPublish: person-hub-web/sql
         artifactName: dist
 
-# - stage: Deploy
-#   displayName: Deploy
-#   jobs:
-#   - job: Deploy
-#     steps:
-#     - task: DownloadPipelineArtifact@2
-#       inputs:
-#         source: current
-#         artifact: dist
-#         path: $(Pipeline.Workspace)/dist
+- stage: Deploy
+  displayName: Deploy
+  jobs:
+  - job: Deploy
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        source: current
+        artifact: dist
+        path: $(Pipeline.Workspace)/dist
