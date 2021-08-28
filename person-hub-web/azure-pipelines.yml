@@ -47,7 +47,8 @@ stages:
 
     - task: Npm@1
       inputs:
-        command: 'run build'
+        command: 'custom'
+        customCommand: 'run build'
         workingDir: person-hub-web
 
     - task: PublishBuildArtifacts@1
