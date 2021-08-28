@@ -84,4 +84,4 @@ stages:
           az storage blob upload-batch \
             --destination "$(storage-container-name)" \
             --account-name "$(storage-account)" \
-            --source "$(Pipeline.Workspace)/dist"
+            --source "dist"
