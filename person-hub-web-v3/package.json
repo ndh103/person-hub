@@ -7,7 +7,15 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.2.6"
+    "@auth0/auth0-spa-js": "^1.18.0",
+    "@azure/msal-browser": "^2.17.0",
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@tailwindcss/forms": "^0.3.3",
+    "axios": "^0.21.4",
+    "vue": "^3.2.6",
+    "vue-router": "^4.0.11",
+    "vuedraggable": "^4.1.0",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.6.1",
