@@ -24,7 +24,6 @@ export default defineComponent({
   components: {
     CloseIcon
   },
-  props: {},
   methods: {
     ...mapMutations("application", {
       toggleSideBar: AppStoreConstant.MUTATIONS.toogleSidebar,
