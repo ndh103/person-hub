@@ -1,32 +1,22 @@
 <template>
-  <div>
-   This is the content of the event list
-     
-  </div>
+  <div>This is the content of the event list</div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+  import { defineComponent } from 'vue'
 
-export default defineComponent({
-  components:{
-  },
-  props: {
-  },
-  data: function () {
-    return {
+  export default defineComponent({
+    components: {},
+    props: {},
+    data: function () {
+      return {}
+    },
+    methods: {},
+  })
 
-    }
-  },
-  methods: {
+  // const EventList = Vue.extend({
 
-  }
-})
+  // })
 
-// const EventList = Vue.extend({
-  
-// })
-
-// export default EventList;
-
+  // export default EventList;
 </script>

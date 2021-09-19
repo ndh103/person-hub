@@ -7,29 +7,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue"
-import todoItemApiService from "@/api-services/todo-item-api-service"
-import TodoItemModel from "@/api-services/models/TodoItemModel"
+  import { defineComponent } from 'vue'
+  import todoItemApiService from '@/api-services/todo-item-api-service'
+  import TodoItemModel from '@/api-services/models/TodoItemModel'
 
-export default defineComponent({
-  props: {
-    todoItemId: {
-      type: String,
+  export default defineComponent({
+    props: {
+      todoItemId: {
+        type: String,
+      },
     },
-  },
-  data: function () {
-    return {
-      todoItem: new TodoItemModel(),
-    }
-  },
-  methods: {
-    fetchTodoItemDetail: async function () {
-      const response = await todoItemApiService.get(this.todoItemId)
-      this.todoItem = response.data
+    data: function () {
+      return {
+        todoItem: new TodoItemModel(),
+      }
     },
-  },
-  created: async function () {
-    await this.fetchTodoItemDetail()
-  },
-})
+    created: async function () {
+      await this.fetchTodoItemDetail()
+    },
+    methods: {
+      fetchTodoItemDetail: async function () {
+        const response = await todoItemApiService.get(this.todoItemId)
+        this.todoItem = response.data
+      },
+    },
+  })
 </script>

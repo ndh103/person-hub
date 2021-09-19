@@ -1,16 +1,24 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.activeBackground": "#0d93ec",
-        "activityBar.activeBorder": "#fcc3e5",
-        "activityBar.background": "#0d93ec",
-        "activityBar.foreground": "#e7e7e7",
-        "activityBar.inactiveForeground": "#e7e7e799",
-        "activityBarBadge.background": "#fcc3e5",
-        "activityBarBadge.foreground": "#15202b",
-        "titleBar.activeBackground": "#0a75bc",
-        "titleBar.activeForeground": "#e7e7e7",
-        "titleBar.inactiveBackground": "#0a75bc99",
-        "titleBar.inactiveForeground": "#e7e7e799"
-    },
-    "peacock.color": "#0a75bc"
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#0d93ec",
+    "activityBar.activeBorder": "#fcc3e5",
+    "activityBar.background": "#0d93ec",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#fcc3e5",
+    "activityBarBadge.foreground": "#15202b",
+    "titleBar.activeBackground": "#0a75bc",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#0a75bc99",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#0a75bc",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

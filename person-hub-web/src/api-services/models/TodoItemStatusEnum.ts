@@ -1,6 +1,6 @@
 enum TodoItemStatusEnum {
-    Initial = 0,
-    Finished = 1,
+  Initial = 0,
+  Finished = 1,
 }
 
-export default TodoItemStatusEnum;
+export default TodoItemStatusEnum

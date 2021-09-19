@@ -1,19 +1,19 @@
 const ACTIONS = {
-    setLoggedInUser : "setLoggedInUser"
+  setLoggedInUser: 'setLoggedInUser',
 }
 
 const MUTATIONS = {
-    setLoggedInUser : "setLoggedInUser",
-    toogleSidebar : "toogleSidebar"
+  setLoggedInUser: 'setLoggedInUser',
+  toogleSidebar: 'toogleSidebar',
 }
 
 const GETTERS = {
-    loggedInUser : "loggedInUser",
-    overlaySideBarStatus : "overlaySideBarStatus"
+  loggedInUser: 'loggedInUser',
+  overlaySideBarStatus: 'overlaySideBarStatus',
 }
 
 export default {
-    ACTIONS,
-    MUTATIONS,
-    GETTERS
+  ACTIONS,
+  MUTATIONS,
+  GETTERS,
 }

@@ -1,16 +1,16 @@
 export {}
 
 if (!Array.prototype.last) {
-Array.prototype.last = function () {
+  Array.prototype.last = function () {
     if (!this.length) {
-        return undefined;
+      return undefined
     }
-    return this[this.length - 1];
-};
+    return this[this.length - 1]
+  }
 }
 
 declare global {
-    interface Array<T> {
-        last(): T | undefined;
-    }
+  interface Array<T> {
+    last(): T | undefined
   }
+}
