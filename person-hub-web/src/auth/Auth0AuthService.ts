@@ -13,7 +13,7 @@ export default class Auth0AuthService implements AuthServiceInterface {
     user = new UserInfo();
     auth0Client: Auth0Client;
     popupOpen = false;
-    error: null;
+    error: any;
 
     /** Authenticates the user using the redirect method */
     loginWithRedirect(o): Promise<void> {

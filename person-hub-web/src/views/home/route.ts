@@ -1,10 +1,9 @@
-import { RouteConfig } from "vue-router"
 import Home from "./Home.vue"
 import TodoItemList from "./todos/TodoItemList.vue"
 import TodoItemDetail from "./todos/TodoItemDetail.vue"
 import EventList from "./events/EventList.vue"
 
-const homeRoutes: RouteConfig[] = [
+const homeRoutes = [
     {
         path: "/",
         name: "home",

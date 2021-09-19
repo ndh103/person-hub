@@ -2,7 +2,7 @@ import { getAuthServiceInstance } from '@/auth/AuthServiceProvider';
 import axios from 'axios'
 
 const httpInstance = axios.create({
-  baseURL: process.env.VUE_APP_API_URL
+  baseURL: import.meta.env.VITE_API_URL as string
 });
 
 // Add a request interceptor

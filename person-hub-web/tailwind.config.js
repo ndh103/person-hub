@@ -1,13 +1,8 @@
-const colors = require("tailwindcss/colors")
-
 module.exports = {
-  purge: ["./src/**/*.html", "./src/**/*.vue", "./src/**/*.jsx"],
+  purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
-    colors: {
-      ...colors,
-    },
   },
   variants: {
     extend: {
@@ -16,8 +11,7 @@ module.exports = {
       visibility: ['hover', 'focus'],
     },
   },
-  experiments: {
-    shadowLookup: true,
-  },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
 }

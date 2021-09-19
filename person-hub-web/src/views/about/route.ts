@@ -1,7 +1,6 @@
-import { RouteConfig } from "vue-router";
 import About from "./About.vue";
 
-const aboutRoutes: Array<RouteConfig> = [
+const aboutRoutes = [
     {
         path: "/about",
         name: "about",

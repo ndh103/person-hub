@@ -2,7 +2,7 @@
   <header class="bg-red-600 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
     <div class="pl-4">
       <span @click="toggleSideBar()">
-        <svg-image class="inline-block h-7 w-7 lg:hidden" icon="menu-icon.svg"></svg-image>
+        <MenuIcon class="inline-block h-7 w-7 lg:hidden"></MenuIcon>
       </span>
       Person Hub
     </div>
@@ -15,14 +15,14 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue"
-import SvgImage from "@/components/SvgImage.vue"
+import MenuIcon from "@/assets/menu-icon.svg?component"
 import { mapMutations } from "vuex"
 import applicationStoreConstant from "@/store/application/application-store-constant"
+import { defineComponent } from "vue"
 
-export default Vue.extend({
+export default defineComponent({
   components: {
-    SvgImage,
+    MenuIcon,
   },
   methods: {
     ...mapMutations("application", {

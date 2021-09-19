@@ -7,31 +7,29 @@
 </template>
 
 <script lang="ts">
-import { Vue } from "vue-property-decorator"
+import { defineComponent } from "vue"
 import todoItemApiService from "@/api-services/todo-item-api-service"
 import TodoItemModel from "@/api-services/models/TodoItemModel"
 
-const TodoItemDetail = Vue.extend({
+export default defineComponent({
   props: {
     todoItemId: {
-      type : String 
-    }
+      type: String,
+    },
   },
   data: function () {
     return {
-      todoItem: new TodoItemModel()
+      todoItem: new TodoItemModel(),
     }
   },
   methods: {
-    fetchTodoItemDetail : async function(){
-      const response = await todoItemApiService.get(this.todoItemId);
-      this.todoItem = response.data;
+    fetchTodoItemDetail: async function () {
+      const response = await todoItemApiService.get(this.todoItemId)
+      this.todoItem = response.data
     },
   },
   created: async function () {
-     await this.fetchTodoItemDetail();
+    await this.fetchTodoItemDetail()
   },
-});
-
-export default TodoItemDetail;
+})
 </script>

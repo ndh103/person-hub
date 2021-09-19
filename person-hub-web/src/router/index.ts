@@ -1,20 +1,16 @@
-import Vue from 'vue'
-import VueRouter, { RouteConfig } from 'vue-router'
+import { createWebHistory } from 'vue-router'
 
 import homeRoutes from "../views/home/route";
 import aboutRoutes from '@/views/about/route';
 
-Vue.use(VueRouter)
+import { createRouter } from 'vue-router'
 
-const routes: Array<RouteConfig> = [
-  ...homeRoutes,
-  ...aboutRoutes
-];
-
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes
-})
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    ...homeRoutes,
+    ...aboutRoutes
+  ]
+});
 
 export default router

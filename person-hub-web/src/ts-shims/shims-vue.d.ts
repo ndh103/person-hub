@@ -1,14 +1,11 @@
-declare module '*.vue' {
-  import Vue from 'vue'
-  export default Vue
-}
-
+import axios from 'axios'
 import AuthServiceInterface from '@/auth/AuthServiceInterface'
 import VueRouter from 'vue-router'
 
-declare module 'vue/types/vue' {
-  interface Vue {
-    $router: VueRouter;
+declare module '@vue/runtime-core' {
+  export interface ComponentCustomProperties {
+    $http: typeof axios,
     $auth: AuthServiceInterface;
+    $router: VueRouter;
   }
 }

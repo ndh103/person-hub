@@ -2,7 +2,6 @@
   <div>
     <site-header></site-header>
 
-
     <div class="flex">
       <div class="hidden" :class="[overlaySideBarStatus + '-sidebar-overlay']"></div>
       <aside-menu class="flex-none w-80 h-screen fixed top-0 left-0 pt-8 pl-8 bg-gray-50 lg:static lg:block" :class="[overlaySideBarStatus + '-sidebar']"></aside-menu>
@@ -14,13 +13,13 @@
 </template>
 
 <script lang="ts">
-import { Vue } from "vue-property-decorator"
+import { defineComponent } from "vue"
 import { mapGetters } from "vuex"
 import SiteHeader from "./SiteHeader.vue"
 import AppStoreConstant from "@/store/application/application-store-constant"
 import AsideMenu from "./AsideMenu.vue"
 
-const Home = Vue.extend({
+export default defineComponent({
   components: {
     SiteHeader,
     AsideMenu,
@@ -33,7 +32,6 @@ const Home = Vue.extend({
   }
 })
 
-export default Home
 </script>
 <style lang="postcss" scoped>
 .open-sidebar {

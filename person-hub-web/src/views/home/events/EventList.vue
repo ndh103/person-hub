@@ -6,9 +6,9 @@
 </template>
 
 <script lang="ts">
-  import { Vue } from "vue-property-decorator"
+import { defineComponent } from 'vue'
 
-const EventList = Vue.extend({
+export default defineComponent({
   components:{
   },
   props: {
@@ -23,6 +23,10 @@ const EventList = Vue.extend({
   }
 })
 
-export default EventList;
+// const EventList = Vue.extend({
+  
+// })
+
+// export default EventList;
 
 </script>

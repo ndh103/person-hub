@@ -24,7 +24,7 @@ export const getAuthServiceInstance = async (): Promise<AuthServiceInterface> =>
 const useAuth = async (authOptions) => {
     if (instance) return instance;
 
-    if(process.env.VUE_APP_AUTH_TYPE == "Auth0"){
+    if(import.meta.env.VITE_AUTH_TYPE == "Auth0"){
         instance = new Auth0AuthService();
     }
     else{
@@ -38,7 +38,7 @@ const useAuth = async (authOptions) => {
 
 // Create a simple Vue plugin to expose the wrapper object throughout the application
 export const AuthPlugin = {
-    async install(Vue, authOptions) {
-        Vue.prototype.$auth = await useAuth(authOptions);
-    }
+    install: async (app, options) => {
+        app.config.globalProperties.$auth = await useAuth(options);
+      }
 };
