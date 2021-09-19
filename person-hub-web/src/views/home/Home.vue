@@ -26,6 +26,8 @@
         <router-view></router-view>
       </main>
     </div>
+
+    <Loading></Loading>
   </div>
 </template>
 
@@ -35,11 +37,13 @@
   import SiteHeader from './SiteHeader.vue'
   import AppStoreConstant from '@/store/application/application-store-constant'
   import AsideMenu from './AsideMenu.vue'
+  import Loading from '@/components/Loading.vue'
 
   export default defineComponent({
     components: {
       SiteHeader,
       AsideMenu,
+      Loading,
     },
     props: {},
     computed: {

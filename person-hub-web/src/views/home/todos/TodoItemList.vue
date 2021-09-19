@@ -54,6 +54,8 @@
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
+  import { mapMutations } from 'vuex'
+  import AppStoreConstant from '@/store/application/application-store-constant.ts'
 
   export default defineComponent({
     components: {
@@ -81,6 +83,9 @@
       await this.fetchTodoItems()
     },
     methods: {
+      ...mapMutations('application', {
+        toggleLoading: AppStoreConstant.MUTATIONS.toggleLoading,
+      }),
       addNewTodoItem: async function (todoItem: TodoItemModel) {
         // get the current order of the last item
         const lastItem = this.todoItemList.last()
@@ -104,9 +109,13 @@
         )
       },
       fetchTodoItems: async function () {
-        const response = await todoItemApiService.query(
-          TodoItemStatusEnum.Initial
-        )
+        this.toggleLoading(true)
+
+        const response = await todoItemApiService
+          .query(TodoItemStatusEnum.Initial)
+          .finally(() => {
+            this.toggleLoading(false)
+          })
         this.todoItemList = response.data
         this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
       },
@@ -134,8 +143,6 @@
 </script>
 
 <style lang="postcss" scoped>
-  /* Enter and leave animations can use different */
-  /* durations and timing functions.              */
   .slide-fade-enter-active {
     transition: all 0.3s ease;
   }
