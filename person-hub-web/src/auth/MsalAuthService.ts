@@ -4,11 +4,11 @@ import UserInfo from "./UserInfo";
 
 const b2cConfig = {
     policyAuthorities:{
-        signUpSignIn: import.meta.env.VITE_AZUREADB2C_SIGN_IN_POLICY_AUTHORITY
+        signUpSignIn: import.meta.env.VITE_AZUREADB2C_SIGN_IN_POLICY_AUTHORITY as string
     },
-    authorityDomain: import.meta.env.VITE_AZUREADB2C_AUTHORITY_DOMAIN,
-    clientId : import.meta.env.VITE_AZUREADB2C_CLIENTID,
-    apiApplicationIdUrl: import.meta.env.VITE_AZUREADB2C_API_APP_ID_URL
+    authorityDomain: import.meta.env.VITE_AZUREADB2C_AUTHORITY_DOMAIN as string,
+    clientId : import.meta.env.VITE_AZUREADB2C_CLIENTID as string,
+    apiApplicationIdUrl: import.meta.env.VITE_AZUREADB2C_API_APP_ID_URL as string
 }
 
 const apiScopes = [`${b2cConfig.apiApplicationIdUrl}/Api.Read`, `${b2cConfig.apiApplicationIdUrl}/Api.Write`];
