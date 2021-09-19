@@ -39,7 +39,7 @@ jobs:
       run: |
           cd person-hub-web
           touch .env.production
-          echo VUE_APP_AUTH_TYPE=Auth0 >> .env.production
+          echo VITE_AUTH_TYPE=Auth0 >> .env.production
           cat .env.production
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)

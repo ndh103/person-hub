@@ -44,8 +44,8 @@ stages:
           - script: |
               cd person-hub-web
               touch .env.production
-              echo VUE_APP_AUTH_TYPE=AzureAdB2C >> .env.production
-              echo VUE_APP_API_URL=$(api-url) >> .env.production
+              echo VITE_AUTH_TYPE=AzureAdB2C >> .env.production
+              echo VITE_API_URL=$(api-url) >> .env.production
               cat .env.production
             displayName: Override env config file
 
