@@ -113,25 +113,29 @@
       fetchTodoItems: async function () {
         this.toggleLoading(true)
 
-        const response = await todoItemApiService
-          .query(TodoItemStatusEnum.Initial)
-          .catch(() => {
-            createToast(
-              {
-                title: 'test tile',
-                description: 'test description',
-              },
-              {
-                type: 'danger',
-                position: 'bottom-right',
-              }
-            )
-          })
-          .finally(() => {
-            this.toggleLoading(false)
-          })
-        this.todoItemList = response.data
-        this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+        //TODO: make this better
+        try {
+          const response = await todoItemApiService.query(
+            TodoItemStatusEnum.Initial
+          )
+          this.toggleLoading(false)
+
+          this.todoItemList = response.data
+          this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+        } catch (error) {
+          this.toggleLoading(false)
+
+          createToast(
+            {
+              title: 'test tile',
+              description: 'test description',
+            },
+            {
+              type: 'danger',
+              position: 'bottom-right',
+            }
+          )
+        }
       },
       onDragEnd: async function (evt) {
         const newIndex = evt.newIndex
