@@ -55,7 +55,9 @@
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import { mapMutations } from 'vuex'
-  import AppStoreConstant from '@/store/application/application-store-constant.ts'
+  import AppStoreConstant from '@/store/application/application-store-constant'
+  import { createToast } from 'mosha-vue-toastify'
+  import 'mosha-vue-toastify/dist/style.css'
 
   export default defineComponent({
     components: {
@@ -113,6 +115,18 @@
 
         const response = await todoItemApiService
           .query(TodoItemStatusEnum.Initial)
+          .catch(() => {
+            createToast(
+              {
+                title: 'test tile',
+                description: 'test description',
+              },
+              {
+                type: 'danger',
+                position: 'bottom-right',
+              }
+            )
+          })
           .finally(() => {
             this.toggleLoading(false)
           })
