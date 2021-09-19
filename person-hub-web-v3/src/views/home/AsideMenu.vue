@@ -3,7 +3,7 @@
     <div class="z-20">
       <div class="flex flex-row-reverse">
         <span class="hidden h-10 w-10 pr-2 cursor-pointer close-button" @click="toggleSideBar()">
-          <svg-image  icon="close-icon.svg"></svg-image>
+          <CloseIcon></CloseIcon>
         </span>
       </div>
 
@@ -17,12 +17,12 @@
 <script lang="ts">
 import { defineComponent } from "vue"
 import { mapMutations } from "vuex"
-import SvgImage from "@/components/SvgImage.vue"
 import AppStoreConstant from "@/store/application/application-store-constant"
+import CloseIcon from "@/assets/close-icon.svg?component"
 
 export default defineComponent({
   components: {
-    SvgImage,
+    CloseIcon
   },
   props: {},
   methods: {

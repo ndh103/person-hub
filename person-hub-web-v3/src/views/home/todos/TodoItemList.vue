@@ -1,7 +1,8 @@
 <template>
   <div>
     <add-new-todo-item @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
-    <button class="block w-auto bg-purple-500 hover:bg-purple-700 rounded-lg shadow-xl text-white py-2 px-4 mx-2 mt-2" @click="fetchTodoItems()">Refresh <svg-image class="h-2 w-2 inline-block" icon="refresh-icon.svg"></svg-image></button>
+    <button class="block w-auto bg-purple-500 hover:bg-purple-700 rounded-lg shadow-xl text-white py-2 px-4 mx-2 mt-2" @click="fetchTodoItems()">Refresh <RefreshIcon class="h-2 w-2 inline-block"></RefreshIcon></button>
+    
     <!-- <draggable v-model="todoItemList" item-key="id" v-bind="dragOptions" @start="drag = true" @end="onDragEnd($event)" handle=".handle-icon" :class="{ dragging: drag, 'no-drag': !drag }">
       <template #item="{item}">
         <transition name="slide-fade">
@@ -25,7 +26,7 @@ import TodoItemOverview from "@/views/home/todos/TodoItemOverview.vue"
 import todoItemApiService from "@/api-services/todo-item-api-service"
 import TodoItemStatusEnum from "@/api-services/models/TodoItemStatusEnum"
 import AddNewTodoItem from "./AddNewTodoItem.vue"
-import SvgImage from "@/components/SvgImage.vue"
+import RefreshIcon from "@/assets/refresh-icon.svg?component"
 import draggable from "vuedraggable"
 import LexicoGraphicalUtility from "@/common/lexico-string-generator"
 
@@ -33,7 +34,7 @@ export default defineComponent({
   components: {
     TodoItemOverview,
     AddNewTodoItem,
-    SvgImage,
+    RefreshIcon,
     draggable,
   },
   props: {},
@@ -56,7 +57,7 @@ export default defineComponent({
       const response = await todoItemApiService.add(todoItem)
 
       // Update the todoItem from response
-      todoItem = response.data
+      todoItem.id = response.data.id;
     },
     onItemMarkedAsDone() {
       this.todoItemList = this.todoItemList.filter((r) => r.status != TodoItemStatusEnum.Finished)
