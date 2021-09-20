@@ -34,6 +34,7 @@
         type: Object as PropType<TodoItemModel>,
       },
     },
+    emits: ['onItemMarkedAsDone'],
     methods: {
       gotoDetail() {
         this.$router.push(`/todos/${this.todoItemOverview.id}`)

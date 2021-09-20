@@ -14,7 +14,7 @@ const applicationStore = {
     [MUTATIONS.setLoggedInUser](state, user) {
       state.loggedInUser = user
     },
-    [MUTATIONS.toogleSidebar](state) {
+    [MUTATIONS.toggleSideBar](state) {
       if (state.overlaySidebarStatus == 'open') {
         state.overlaySidebarStatus = 'closed'
       } else {

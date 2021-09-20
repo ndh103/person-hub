@@ -30,8 +30,7 @@
 
 <script lang="ts">
   import MenuIcon from '@/assets/menu-icon.svg?component'
-  import { mapMutations } from 'vuex'
-  import applicationStoreConstant from '@/store/application/application-store-constant'
+  import appStoreService from '@/store/application/applicationStoreService'
   import { defineComponent } from 'vue'
 
   export default defineComponent({
@@ -39,11 +38,11 @@
       MenuIcon,
     },
     methods: {
-      ...mapMutations('application', {
-        toggleSideBar: applicationStoreConstant.MUTATIONS.toogleSidebar,
-      }),
-      logout: function () {
+      logout() {
         this.$auth.logout()
+      },
+      toggleSideBar() {
+        return appStoreService.toggleSideBar()
       },
     },
   })

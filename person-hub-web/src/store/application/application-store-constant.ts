@@ -4,7 +4,7 @@ const ACTIONS = {
 
 const MUTATIONS = {
   setLoggedInUser: 'setLoggedInUser',
-  toogleSidebar: 'toogleSidebar',
+  toggleSideBar: 'toggleSideBar',
   toggleLoading: 'toggleLoading',
 }
 

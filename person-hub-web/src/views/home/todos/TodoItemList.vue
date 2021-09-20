@@ -54,8 +54,7 @@
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
-  import { mapMutations } from 'vuex'
-  import AppStoreConstant from '@/store/application/application-store-constant'
+  import appStoreService from '@/store/application/applicationStoreService'
   import { createToast } from 'mosha-vue-toastify'
   import 'mosha-vue-toastify/dist/style.css'
 
@@ -85,9 +84,6 @@
       await this.fetchTodoItems()
     },
     methods: {
-      ...mapMutations('application', {
-        toggleLoading: AppStoreConstant.MUTATIONS.toggleLoading,
-      }),
       addNewTodoItem: async function (todoItem: TodoItemModel) {
         // get the current order of the last item
         const lastItem = this.todoItemList.last()
@@ -111,19 +107,19 @@
         )
       },
       fetchTodoItems: async function () {
-        this.toggleLoading(true)
+        appStoreService.toggleLoading(true)
 
         //TODO: make this better
         try {
           const response = await todoItemApiService.query(
             TodoItemStatusEnum.Initial
           )
-          this.toggleLoading(false)
+          appStoreService.toggleLoading(false)
 
           this.todoItemList = response.data
           this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
         } catch (error) {
-          this.toggleLoading(false)
+          appStoreService.toggleLoading(false)
 
           createToast(
             {

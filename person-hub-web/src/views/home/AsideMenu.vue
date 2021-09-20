@@ -35,18 +35,14 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import { mapMutations } from 'vuex'
-  import AppStoreConstant from '@/store/application/application-store-constant'
   import CloseIcon from '@/assets/close-icon.svg?component'
+  import appStoreService from '@/store/application/applicationStoreService'
 
   export default defineComponent({
     components: {
       CloseIcon,
     },
     methods: {
-      ...mapMutations('application', {
-        toggleSideBar: AppStoreConstant.MUTATIONS.toogleSidebar,
-      }),
       isRouteActive: function (routeName: string) {
         return this.$route.name == routeName
       },
@@ -54,6 +50,9 @@
         if (!this.isRouteActive(routeName)) {
           this.$router.push({ name: routeName })
         }
+      },
+      toggleSideBar() {
+        appStoreService.toggleSideBar()
       },
     },
   })
