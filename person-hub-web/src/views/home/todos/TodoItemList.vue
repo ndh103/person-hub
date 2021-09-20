@@ -109,28 +109,18 @@
       fetchTodoItems: async function () {
         appStoreService.toggleLoading(true)
 
-        //TODO: make this better
-        try {
-          const response = await todoItemApiService.query(
-            TodoItemStatusEnum.Initial
-          )
-          appStoreService.toggleLoading(false)
+        const response = await todoItemApiService
+          .query(TodoItemStatusEnum.Initial)
+          .catch(() => {
+            appStoreService.toggleLoading(false)
+            return null
+          })
 
+        appStoreService.toggleLoading(false)
+
+        if (response) {
           this.todoItemList = response.data
           this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
-        } catch (error) {
-          appStoreService.toggleLoading(false)
-
-          createToast(
-            {
-              title: 'test tile',
-              description: 'test description',
-            },
-            {
-              type: 'danger',
-              position: 'bottom-right',
-            }
-          )
         }
       },
       onDragEnd: async function (evt) {
