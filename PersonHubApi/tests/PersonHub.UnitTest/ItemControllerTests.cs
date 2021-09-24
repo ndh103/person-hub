@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using PersonHub.Api.Areas.Todos.Controllers;
+using PersonHub.Domain.Interfaces;
 using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
 using Xunit;
@@ -16,14 +18,8 @@ namespace PersonHub.UnitTest
         [Fact]
         public async Task ItemsController_AddTodoItemWithValidRequest_ShouldSuccessAsync()
         {
-            
-            var options = new DbContextOptionsBuilder<PersonHubDbContext>()
-            .UseInMemoryDatabase(databaseName: "person-hub-db-test")
-            .Options;
-
-            using var dbContext = new PersonHubDbContext(options);
-
-            var repository = new EfRepository<TodoItem>(dbContext);
+            var repository = Substitute.For<IAsyncRepository<TodoItem>>();
+            repository.AddAsync(Arg.Any<TodoItem>()).Returns(new TodoItem(){});
 
             var controller = new ItemsController(repository);
 
