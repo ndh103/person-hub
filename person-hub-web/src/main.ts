@@ -6,6 +6,7 @@ import '@/common/custom-extensions'
 
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import './index.css'
+import VCalendar from 'v-calendar'
 
 const app = createApp(App)
 
@@ -55,5 +56,8 @@ router.beforeEach(async (to, from, next) => {
 app.use(router)
 
 app.use(store)
+
+// Additional Plugins
+app.use(VCalendar)
 
 app.mount('#app')

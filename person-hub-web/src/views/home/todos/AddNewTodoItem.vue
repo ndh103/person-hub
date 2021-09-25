@@ -3,35 +3,10 @@
     <input
       v-model="newTodoItem.title"
       type="text"
-      class="
-        flex-1
-        py-2
-        mx-2
-        mt-2
-        rounded
-        text-gray-700
-        border-gray-300
-        focus:border-blue-500
-      "
+      class="app-input"
       @keyup.enter="submitForm()"
     />
-    <button
-      class="
-        flex-none
-        w-auto
-        bg-green-400
-        hover:bg-orange-700
-        rounded-lg
-        shadow-xl
-        text-white
-        px-4
-        mx-2
-        mt-2
-      "
-      @click="submitForm()"
-    >
-      Add
-    </button>
+    <button class="app-btn-primary" @click="submitForm()">Add</button>
   </div>
 </template>
 
@@ -41,6 +16,7 @@
   import { defineComponent } from 'vue'
 
   export default defineComponent({
+    emits: ['onAddNewItem'],
     data: function () {
       return {
         newTodoItem: new TodoItemModel(),

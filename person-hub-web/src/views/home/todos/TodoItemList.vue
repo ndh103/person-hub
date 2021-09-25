@@ -3,22 +3,7 @@
     <add-new-todo-item
       @onAddNewItem="addNewTodoItem($event)"
     ></add-new-todo-item>
-    <button
-      class="
-        block
-        w-auto
-        bg-purple-500
-        hover:bg-purple-700
-        rounded-lg
-        shadow-xl
-        text-white
-        py-2
-        px-4
-        mx-2
-        mt-2
-      "
-      @click="fetchTodoItems()"
-    >
+    <button class="app-btn-primary" @click="fetchTodoItems()">
       Refresh <RefreshIcon class="h-2 w-2 inline-block"></RefreshIcon>
     </button>
 
@@ -55,8 +40,6 @@
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import appStoreService from '@/store/application/applicationStoreService'
-  import { createToast } from 'mosha-vue-toastify'
-  import 'mosha-vue-toastify/dist/style.css'
 
   export default defineComponent({
     components: {

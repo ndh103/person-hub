@@ -34,7 +34,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             todoItemModel.UserName = this.AuthenticatedUserEmail;
             var addedItem =  await _repository.AddAsync(todoItemModel);
 
-            return Ok(addedItem);
+            return addedItem;
         }
 
         [HttpPut("{id}")]
@@ -71,7 +71,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             }
             var todoItems = await _repository.ListAsync(r => r.UserName == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status);
 
-            return Ok(todoItems);
+            return todoItems.ToList();
         }
 
 
@@ -83,8 +83,8 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             if(todoItem is null){
                 return BadRequest();
             }
-            
-            return Ok(todoItem);
+
+            return todoItem;
         }
 
         [HttpDelete("{id}")]

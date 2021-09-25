@@ -22,9 +22,11 @@
 
   <ItemGroup>
     <None Remove="Common\Extensions\" />
+    <None Remove="Common\Dtos\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Common\Extensions\" />
+    <Folder Include="Common\Dtos\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PersonHub.Domain\PersonHub.Domain.csproj" />
