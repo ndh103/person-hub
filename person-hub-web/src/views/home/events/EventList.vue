@@ -1,8 +1,13 @@
 <template>
-  <h1>Events</h1>
   <AddEventForm @on-add-new-event="addNewEvent($event)" />
 
-  <div v-for="(event, index) in events" :key="index">{{ event.title }}</div>
+  <div
+    v-for="(event, index) in events"
+    :key="index"
+    class="border-b border-gray-400 px-4 py-2 mb-2"
+  >
+    {{ event.title }}
+  </div>
 </template>
 
 <script lang="ts">
@@ -51,7 +56,7 @@
           event.id = response.data.id
         }
 
-        this.events.push(event)
+        this.events.unshift(event)
       },
     },
   })

@@ -5,7 +5,7 @@ import store from './store'
 import '@/common/custom-extensions'
 
 import '@fortawesome/fontawesome-free/css/all.min.css'
-import './index.css'
+import './styles/index.css'
 import VCalendar from 'v-calendar'
 
 const app = createApp(App)

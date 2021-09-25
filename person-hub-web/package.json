@@ -13,6 +13,7 @@
     "@azure/msal-browser": "^2.17.0",
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@popperjs/core": "^2.10.1",
+    "@sipec/vue3-tags-input": "^3.0.4",
     "axios": "^0.21.4",
     "mosha-vue-toastify": "^1.0.23",
     "v-calendar": "^3.0.0-alpha.5",
