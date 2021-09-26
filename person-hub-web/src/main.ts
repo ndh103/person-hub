@@ -14,6 +14,7 @@ import httpBase from './common/http-base'
 app.config.globalProperties.$http = httpBase
 
 import { AuthPlugin, getAuthServiceInstance } from './auth/AuthServiceProvider'
+import VueAppFilterPlugin from './globals/filters/app-filters'
 
 //TODO: Move into the implement details of Auth0
 const options = {
@@ -56,6 +57,8 @@ router.beforeEach(async (to, from, next) => {
 app.use(router)
 
 app.use(store)
+
+app.use(VueAppFilterPlugin)
 
 // Additional Plugins
 app.use(VCalendar)

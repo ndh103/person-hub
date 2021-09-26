@@ -15,6 +15,7 @@
     "@popperjs/core": "^2.10.1",
     "@sipec/vue3-tags-input": "^3.0.4",
     "axios": "^0.21.4",
+    "dayjs": "^1.10.7",
     "mosha-vue-toastify": "^1.0.23",
     "v-calendar": "^3.0.0-alpha.5",
     "vue": "^3.2.6",
