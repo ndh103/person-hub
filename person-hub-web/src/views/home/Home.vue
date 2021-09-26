@@ -22,7 +22,9 @@
         "
         :class="[overlaySideBarStatus + '-sidebar']"
       ></aside-menu>
-      <main class="flex-grow p-4 h-full pt-10">
+      <main
+        class="flex-grow p-4 h-full pt-14 container mx-auto max-w-screen-lg"
+      >
         <router-view></router-view>
       </main>
     </div>

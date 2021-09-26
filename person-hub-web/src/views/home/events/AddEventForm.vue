@@ -1,24 +1,37 @@
 <template>
-  <div class="p-2 mb-4">
+  <div class="p-2">
     <div
       v-if="!isFormOpen"
-      class="hover:cursor-pointer hover:text-red-400"
+      class="hover:cursor-pointer hover:text-green-700 text-green-500"
       @click="openForm()"
     >
-      <PlusIcon class="inline-block" /> Add new event
+      <PlusIcon class="inline-block h-4 w-4" />
+      <span class="text-sm">Add new event</span>
     </div>
 
-    <div v-if="isFormOpen" class="border border-gray-400 px-4">
-      <div class="p-2 m-2 flex flex-row w-full">
+    <div
+      v-if="isFormOpen"
+      class="p-2 border border-gray-400 px-4 rounded border-opacity-50"
+    >
+      <div class="pb-2 flex flex-row w-full">
         <input
           v-model="event.title"
           type="text"
           placeholder="Title"
-          class="app-input"
+          class="app-input w-full"
         />
       </div>
 
-      <div class="p-2 m-2 flex flex-row w-full">
+      <div class="pb-2 flex flex-row w-full">
+        <textarea
+          v-model="event.description"
+          type="text"
+          placeholder="Description"
+          class="app-input w-full"
+        />
+      </div>
+
+      <div class="pb-2 flex flex-row w-full">
         <v-date-picker v-model="event.eventDate">
           <template #default="{ togglePopover }">
             <div class="flex flex-wrap">
@@ -31,15 +44,16 @@
             </div>
           </template>
         </v-date-picker>
+
+        <vue-tags-input
+          v-model="event.tags"
+          placeholder="add tags..."
+          :tags="tags"
+          @tags-changed="(newTags) => (tags = newTags)"
+        />
       </div>
 
-      <div class="p-2 m-2 flex flex-row w-full"></div>
-      <vue-tags-input
-        v-model="event.tags"
-        :tags="tags"
-        @tags-changed="(newTags) => (tags = newTags)"
-      />
-      <div>
+      <div class="pt-2">
         <button class="app-btn-primary" @click="submit()">Add</button>
         <button class="app-btn-secondary" @click="discardForm()">
           Discard

@@ -7,7 +7,7 @@
     class="border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25"
   >
     <div>
-      <span>{{ event.title }}</span>
+      <span class="text-sm">{{ event.title }}</span>
     </div>
 
     <div class="flex">

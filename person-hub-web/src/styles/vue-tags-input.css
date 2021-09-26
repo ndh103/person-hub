@@ -1,6 +1,7 @@
 /* style the background and the text color of the input ... */
 .vue-tags-input {
-  background: #324652;
+  @apply mx-1;
+  max-width: none !important;
 }
 
 .vue-tags-input .ti-new-tag-input {
@@ -9,13 +10,15 @@
 }
 
 .vue-tags-input .ti-input {
-  padding: 4px 10px;
   transition: border-bottom 200ms ease;
+  @apply border-0 border-b;
 }
 
 /* we cange the border color if the user focuses the input */
 .vue-tags-input.ti-focus .ti-input {
-  border: 1px solid #ebde6e;
+  /* border: 1px solid #ebde6e; */
+
+  @apply border-gray-200;
 }
 
 /* some stylings for the autocomplete layer */

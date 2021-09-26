@@ -10,6 +10,7 @@ module.exports = {
       cursor: ['disabled', 'hover'],
       visibility: ['hover', 'focus'],
       backgroundColor: ['active'],
+      borderWidth: ['hover', 'focus'],
     },
   },
   plugins: [],

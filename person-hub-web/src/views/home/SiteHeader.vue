@@ -1,7 +1,7 @@
 <template>
   <header
     class="
-      bg-red-600
+      bg-green-500
       text-white
       h-10
       flex

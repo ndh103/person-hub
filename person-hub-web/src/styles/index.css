@@ -8,11 +8,15 @@
 /* https://tailwindcomponents.com/component/buttons-4 */
 
 .app-btn-primary {
-  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border-0 focus:outline-none focus:ring transition text-white bg-green-500 hover:bg-green-600 active:bg-green-700 focus:ring-green-300;
+  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-green-600 border-green-600 hover:text-white hover:bg-green-600 active:bg-green-700 focus:ring-green-300;
 }
 
 .app-btn-secondary {
   @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-gray-600 border-gray-600 hover:text-white hover:bg-gray-600 active:bg-gray-700 focus:ring-gray-300;
+}
+
+.app-btn-danger {
+  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-red-600 border-red-600 hover:text-white hover:bg-red-600 active:bg-red-700 focus:ring-red-300;
 }
 
 .app-btn-datepicker {
@@ -21,7 +25,7 @@
 
 /* Input section */
 .app-input {
-  @apply px-3 py-2 mx-1 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200;
+  @apply px-3 py-2 mx-1 border-b border-gray-300 ring-0 focus:ring-0 outline-none focus:outline-none;
 }
 
 /* Chips */
