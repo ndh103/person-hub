@@ -3,9 +3,14 @@
     <add-new-todo-item
       @onAddNewItem="addNewTodoItem($event)"
     ></add-new-todo-item>
-    <button class="app-btn-primary" @click="fetchTodoItems()">
-      Refresh <RefreshIcon class="h-2 w-2 inline-block"></RefreshIcon>
-    </button>
+
+    <div
+      class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4"
+      @click="fetchTodoItems()"
+    >
+      <RefreshIcon class="h-4 w-4 inline-block" />
+      Refresh
+    </div>
 
     <draggable
       v-model="todoItemList"

@@ -1,9 +1,9 @@
 <template>
-  <div class="p-2 m-2 flex flex-row w-full">
+  <div class="mb-4 flex flex-row w-full">
     <input
       v-model="newTodoItem.title"
       type="text"
-      class="app-input"
+      class="app-input w-full"
       @keyup.enter="submitForm()"
     />
     <button class="app-btn-primary" @click="submitForm()">Add</button>

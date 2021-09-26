@@ -8,19 +8,19 @@
 /* https://tailwindcomponents.com/component/buttons-4 */
 
 .app-btn-primary {
-  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-green-600 border-green-600 hover:text-white hover:bg-green-600 active:bg-green-700 focus:ring-green-300;
+  @apply px-2 py-1 mx-1 rounded-md text-sm border focus:outline-none focus:ring transition text-green-600 border-green-600 hover:text-white hover:bg-green-600 active:bg-green-700 focus:ring-green-300;
 }
 
 .app-btn-secondary {
-  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-gray-600 border-gray-600 hover:text-white hover:bg-gray-600 active:bg-gray-700 focus:ring-gray-300;
+  @apply px-2 py-1 mx-1 rounded-md text-sm border focus:outline-none focus:ring transition text-gray-600 border-gray-600 hover:text-white hover:bg-gray-600 active:bg-gray-700 focus:ring-gray-300;
 }
 
 .app-btn-danger {
-  @apply px-3 py-2 mx-1 rounded-md text-sm font-medium border focus:outline-none focus:ring transition text-red-600 border-red-600 hover:text-white hover:bg-red-600 active:bg-red-700 focus:ring-red-300;
+  @apply px-2 py-1 mx-1 rounded-md text-sm border focus:outline-none focus:ring transition text-red-600 border-red-600 hover:text-white hover:bg-red-600 active:bg-red-700 focus:ring-red-300;
 }
 
 .app-btn-datepicker {
-  @apply flex  items-center  bg-gray-100  hover:bg-gray-200  text-sm text-gray-600  font-semibold  h-8  px-2  m-1  rounded-lg  border-2 border-transparent  focus:border-indigo-600 focus:outline-none;
+  @apply flex items-center bg-gray-100 hover:bg-gray-200 text-sm text-gray-600 font-semibold h-8 px-2 m-1 rounded-lg border-2 border-transparent  focus:border-indigo-600 focus:outline-none;
 }
 
 /* Input section */
