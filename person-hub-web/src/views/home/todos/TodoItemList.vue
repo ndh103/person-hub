@@ -1,16 +1,16 @@
 <template>
-  <div>
+  <div class="pt-4">
     <add-new-todo-item
       @onAddNewItem="addNewTodoItem($event)"
     ></add-new-todo-item>
 
-    <div
+    <span
       class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4"
       @click="fetchTodoItems()"
     >
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
-    </div>
+    </span>
 
     <draggable
       v-model="todoItemList"
