@@ -4,24 +4,38 @@
   <div
     v-for="(event, index) in events"
     :key="index"
-    class="border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25"
+    class="
+      event-item-row
+      border-b border-gray-400
+      px-4
+      py-2
+      mb-2
+      border-opacity-25
+    "
   >
     <div>
-      <span class="text-sm">{{ event.title }}</span>
+      <span>{{ event.title }}</span>
     </div>
 
-    <div class="flex">
+    <div class="flex justify-between">
       <span class="text-xs self-end">{{
         $filters.formatDate(event.eventDate)
       }}</span>
-      <span class="flex-grow"></span>
 
-      <span
-        v-for="(tag, tagIndex) in event.tags"
-        :key="tagIndex"
-        class="app-chip-s1"
-        >{{ tag }}</span
-      >
+      <div>
+        <span
+          v-for="(tag, tagIndex) in event.tags"
+          :key="tagIndex"
+          class="app-chip-s1"
+          >{{ tag }}</span
+        >
+      </div>
+      <span class="w-4 h-4">
+        <TrashIcon
+          class="w-4 h-4 cursor-pointer hidden trash-icon"
+          @click="removeEvent(event)"
+        />
+      </span>
     </div>
   </div>
 </template>
@@ -33,11 +47,13 @@
   import AppStoreService from '@/store/application/applicationStoreService'
   import EventModel from './api-services/models/EventModel'
   import AddEventForm from './AddEventForm.vue'
+  import TrashIcon from '@/assets/trash-icon.svg?component'
   import dayjs from 'dayjs'
 
   export default defineComponent({
     components: {
       AddEventForm,
+      TrashIcon,
     },
     props: {},
     data() {
@@ -80,6 +96,21 @@
 
         this.events.unshift(event)
       },
+      async removeEvent(event: EventModel) {
+        var response = await EventApiService.delete(event.id).catch(() => {
+          return null
+        })
+
+        if (response) {
+          this.events = this.events.filter((r) => r.id != event.id)
+        }
+      },
     },
   })
 </script>
+
+<style scoped lang="postcss">
+  .event-item-row:hover .trash-icon {
+    display: inline-block;
+  }
+</style>

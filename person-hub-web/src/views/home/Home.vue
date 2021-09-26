@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="text-sm">
     <site-header></site-header>
 
     <div class="flex">
@@ -16,7 +16,6 @@
           top-0
           left-0
           pt-8
-          pl-8
           bg-gray-50
           lg:static lg:block
         "

@@ -6,7 +6,7 @@
       @click="openForm()"
     >
       <PlusIcon class="inline-block h-4 w-4" />
-      <span class="text-sm">Add new event</span>
+      <span>Add new event</span>
     </div>
 
     <div
