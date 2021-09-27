@@ -31,7 +31,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             }
 
             // Reset the id to prevent Id set from client side
-            todoItemModel.UserName = this.AuthenticatedUserEmail;
+            todoItemModel.UserId = this.AuthenticatedUserEmail;
             var addedItem =  await _repository.AddAsync(todoItemModel);
 
             return addedItem;
@@ -69,7 +69,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             {
                 return BadRequest();
             }
-            var todoItems = await _repository.ListAsync(r => r.UserName == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status);
+            var todoItems = await _repository.ListAsync(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status);
 
             return todoItems.ToList();
         }
@@ -78,7 +78,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> Get(int id)
         {
-            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserEmail && r.Id == id);
+            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
                 return BadRequest();
@@ -90,7 +90,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserName == AuthenticatedUserEmail && r.Id == id);
+            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
                 return BadRequest();

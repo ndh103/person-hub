@@ -13,6 +13,7 @@ namespace PersonHub.Infrastructure.DataAccess.Configurations.Events
         public void Configure(EntityTypeBuilder<Event> builder)
         {
             builder.Property(r=> r.Id).UseIdentityAlwaysColumn();
+            builder.Property(r=> r.UserId).IsRequired();
             builder.Property(r=>r.EventDate).IsRequired();
             builder.Property(r=>r.Title).IsRequired();
         }

@@ -7,38 +7,45 @@ using PersonHub.Domain.Interfaces;
 
 namespace PersonHub.Domain.EventsModule.Entities
 {
-    public class Event : BaseEntity, IAggregateRoot
+  public class Event : BaseEntity, IAggregateRoot
+  {
+    public string UserId { get; set; }
+    public string Title { get; set; }
+
+    public string Description { get; set; }
+
+    public DateTime EventDate { get; set; }
+
+    public string[] Tags { get; set; }
+
+    public Event(string userId, string title, string description, DateTime eventDate, string[] tags)
     {
-        public string Title { get; set; }
+      if (string.IsNullOrEmpty(userId))
+      {
+        throw new ArgumentNullException("UserId is required");
+      }
 
-        public string Description { get; set; }
+      if (string.IsNullOrEmpty(title))
+      {
+        throw new ArgumentNullException("Event Title is required");
+      }
 
-        public DateTime EventDate { get; set; }
-
-        public string[] Tags { get; set; }
-
-        public Event(string title, string description, DateTime eventDate, string[] tags)
-        {
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentNullException("Event Title is required");
-            }
-
-            Title = title;
-            Description = description;
-            EventDate = eventDate;
-            if (tags != null)
-            {
-                Tags = (string[])tags.Clone();
-            }
-        }
-
-        public void EnsureValidState()
-        {
-            if (string.IsNullOrEmpty(this.Title))
-            {
-                throw new ArgumentNullException("Event Title is required");
-            }
-        }
+      UserId = userId;
+      Title = title;
+      Description = description;
+      EventDate = eventDate;
+      if (tags != null)
+      {
+        Tags = (string[])tags.Clone();
+      }
     }
+
+    public void EnsureValidState()
+    {
+      if (string.IsNullOrEmpty(this.Title))
+      {
+        throw new ArgumentNullException("Event Title is required");
+      }
+    }
+  }
 }

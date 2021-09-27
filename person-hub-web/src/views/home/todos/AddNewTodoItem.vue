@@ -8,7 +8,7 @@
       @keyup.enter="submitForm()"
     />
 
-    <button class="app-btn-primary" @click="submitForm()">
+    <button class="app-btn-primary h-8 mt-2" @click="submitForm()">
       <PlusIcon class="w-4 h-4 inline" /> Add
     </button>
   </div>

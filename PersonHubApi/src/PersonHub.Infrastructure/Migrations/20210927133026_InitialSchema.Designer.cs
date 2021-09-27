@@ -10,7 +10,7 @@ using PersonHub.Infrastructure.DataAccess;
 namespace PersonHub.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonHubDbContext))]
-    [Migration("20210924013205_InitialSchema")]
+    [Migration("20210927133026_InitialSchema")]
     partial class InitialSchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,10 @@ namespace PersonHub.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Events");
@@ -57,15 +61,18 @@ namespace PersonHub.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ItemOrder")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
