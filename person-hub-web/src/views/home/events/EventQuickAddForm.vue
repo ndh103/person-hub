@@ -1,5 +1,5 @@
 <template>
-  <div class="p-2">
+  <div class="px-2 pb-6">
     <div v-if="!isFormOpen" class="app-action-link" @click="openForm()">
       <PlusIcon class="inline-block h-4 w-4" />
       <span>Add new event</span>

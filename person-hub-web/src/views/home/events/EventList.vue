@@ -13,8 +13,12 @@
       border-opacity-25
     "
   >
-    <div>
-      <span>{{ event.title }}</span>
+    <div class="pb-2">
+      <span
+        class="cursor-pointer hover:text-green-700"
+        @click="gotoDetails(event)"
+        >{{ event.title }}</span
+      >
     </div>
 
     <div class="flex justify-between">
@@ -31,13 +35,6 @@
         >
       </div>
       <span class="w-4 h-4">
-        <ArrowRightIcon
-          title="Go to event details"
-          class="w-4 h-4 cursor-pointer hidden trash-icon"
-          @click="gotoEventDetails(event)"
-        />
-      </span>
-      <span class="w-4 h-4">
         <TrashIcon
           title="Remove event"
           class="w-4 h-4 cursor-pointer hidden trash-icon"
@@ -50,20 +47,18 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
+  import dayjs from 'dayjs'
   import EventApiService from './api-services/EventApiService'
   import EventQueryModel from './api-services/models/EventQueryModel'
   import AppStoreService from '@/store/application/applicationStoreService'
   import EventModel from './api-services/models/EventModel'
   import EventQuickAddForm from './EventQuickAddForm.vue'
   import TrashIcon from '@/assets/trash-icon.svg?component'
-  import ArrowRightIcon from '@/assets/arrow-right-icon.svg?component'
-  import dayjs from 'dayjs'
 
   export default defineComponent({
     components: {
       EventQuickAddForm,
       TrashIcon,
-      ArrowRightIcon,
     },
     props: {},
     data() {
@@ -94,7 +89,10 @@
     },
     methods: {
       async addNewEvent(event: EventModel) {
+        AppStoreService.toggleLoading(true)
+
         var response = await EventApiService.add(event).finally(() => {
+          AppStoreService.toggleLoading(false)
           return null
         })
 
@@ -105,7 +103,10 @@
         this.events.unshift(event)
       },
       async removeEvent(event: EventModel) {
+        AppStoreService.toggleLoading(true)
+
         var response = await EventApiService.delete(event.id).finally(() => {
+          AppStoreService.toggleLoading(false)
           return null
         })
 
@@ -113,7 +114,7 @@
           this.events = this.events.filter((r) => r.id != event.id)
         }
       },
-      gotoEventDetails(event: EventModel) {
+      gotoDetails(event: EventModel) {
         this.$router.push({
           name: 'event-details',
           params: { eventId: event.id },
