@@ -15,6 +15,7 @@
     props: {
       todoItemId: {
         type: String,
+        default: '',
       },
     },
     data: function () {

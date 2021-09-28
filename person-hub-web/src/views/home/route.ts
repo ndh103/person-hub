@@ -1,7 +1,6 @@
 import Home from './Home.vue'
-import TodoItemList from './todos/TodoItemList.vue'
-import TodoItemDetail from './todos/TodoItemDetail.vue'
-import EventList from './events/EventList.vue'
+import eventRoutes from './events/route'
+import todoRoutes from './todos/route'
 
 const homeRoutes = [
   {
@@ -14,28 +13,10 @@ const homeRoutes = [
     children: [
       {
         path: '',
-        redirect: '/todos',
+        redirect: '/events',
       },
-      // Todos Path
-      {
-        path: '/todos',
-        name: 'todos-view',
-        component: TodoItemList,
-        props: true,
-      },
-      {
-        path: '/todos/:todoItemId',
-        name: 'todos-view-detail',
-        component: TodoItemDetail,
-        props: true,
-      },
-      // EVENT PATH
-      {
-        path: '/events',
-        name: 'events-view',
-        component: EventList,
-        props: true,
-      },
+      ...todoRoutes,
+      ...eventRoutes,
     ],
   },
 ]

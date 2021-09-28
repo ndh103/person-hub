@@ -1,5 +1,5 @@
 <template>
-  <AddEventForm @on-add-new-event="addNewEvent($event)" />
+  <EventQuickAddForm @on-add-new-event="addNewEvent($event)" />
 
   <div
     v-for="(event, index) in events"
@@ -31,7 +31,15 @@
         >
       </div>
       <span class="w-4 h-4">
+        <ArrowRightIcon
+          title="Go to event details"
+          class="w-4 h-4 cursor-pointer hidden trash-icon"
+          @click="gotoEventDetails(event)"
+        />
+      </span>
+      <span class="w-4 h-4">
         <TrashIcon
+          title="Remove event"
           class="w-4 h-4 cursor-pointer hidden trash-icon"
           @click="removeEvent(event)"
         />
@@ -46,14 +54,16 @@
   import EventQueryModel from './api-services/models/EventQueryModel'
   import AppStoreService from '@/store/application/applicationStoreService'
   import EventModel from './api-services/models/EventModel'
-  import AddEventForm from './AddEventForm.vue'
+  import EventQuickAddForm from './EventQuickAddForm.vue'
   import TrashIcon from '@/assets/trash-icon.svg?component'
+  import ArrowRightIcon from '@/assets/arrow-right-icon.svg?component'
   import dayjs from 'dayjs'
 
   export default defineComponent({
     components: {
-      AddEventForm,
+      EventQuickAddForm,
       TrashIcon,
+      ArrowRightIcon,
     },
     props: {},
     data() {
@@ -104,6 +114,12 @@
         if (response) {
           this.events = this.events.filter((r) => r.id != event.id)
         }
+      },
+      gotoEventDetails(event: EventModel) {
+        this.$router.push({
+          name: 'event-details',
+          params: { eventId: event.id },
+        })
       },
     },
   })

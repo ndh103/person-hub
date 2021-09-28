@@ -46,7 +46,6 @@
         </v-date-picker>
 
         <vue-tags-input
-          v-model="event.tags"
           placeholder="add tags..."
           :tags="tags"
           @tags-changed="(newTags) => (tags = newTags)"

@@ -28,7 +28,7 @@ namespace PersonHub.Api.Areas.LifeEvents.Controllers
       this.dbContext = dbContext;
     }
 
-    [HttpGet("id")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<Event>> Get(long id)
     {
       var eventEntity = await dbContext.Events.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
