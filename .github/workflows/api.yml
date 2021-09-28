@@ -69,7 +69,9 @@ jobs:
       env:
         Authentication.ActiveImplementation: ${{ env.AUTHENTICATION_TYPE }}
         ApplicationSetting.AppName: ${{ env.APP_NAME }}
-        DatabaseConnectionConfig.PersonHub.Password: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
+        DatabaseConnectionConfig.PersonHub.Host: ${{ env.POSTGRES_HOST }}
+        DatabaseConnectionConfig.PersonHub.UserName: ${{ env.POSTGRES_USER }}
+        DatabaseConnectionConfig.PersonHub.Password: ${{ env.POSTGRES_PASSWORD }}
 
     - name: Run Flyway Migration
       run: >-
