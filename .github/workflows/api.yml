@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_NAME: person-hub-api
-      POSTGRES_HOST: "ec2-34-193-101-0.compute-1.amazonaws.com"
+      POSTGRES_HOST: ${{ secrets.PERSON_HUB_DB_HOST }}
       POSTGRES_PORT: 5432
-      POSTGRES_DB: db6bibheb648q8
+      POSTGRES_DB: person-hub
       POSTGRES_SCHEMA: person-hub
-      POSTGRES_USER: bddygoeimcbvwr
-      POSTGRES_PASSWORD: ${{ secrets.PERSONHUB_POSTGRES_PASSWORD }}
+      POSTGRES_USER: ${{ secrets.PERSON_HUB_DB_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.PERSON_HUB_DB_PASSWORD }}
       HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
       HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       AUTHENTICATION_TYPE: Auth0

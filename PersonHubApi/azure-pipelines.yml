@@ -30,7 +30,7 @@ variables:
 - name: dockerRegistryPassword
   value: $(docker-registry-password)
 - name: POSTGRES_HOST
-  value: 'ec2-34-193-101-0.compute-1.amazonaws.com'
+  value: $(postgres-host)
 - name: POSTGRES_PORT
   value: 5432
 - name: POSTGRES_DB
@@ -38,7 +38,7 @@ variables:
 - name: POSTGRES_SCHEMA
   value: person-hub
 - name: POSTGRES_USER
-  value: bddygoeimcbvwr
+  value: $(postgres-user)
 - name: POSTGRES_PASSWORD
   value: $(postgres-password)
 - name: authentication-type
@@ -120,5 +120,8 @@ stages:
           -DOCKER_REGISTRY_SERVER_USERNAME personhub
           -DOCKER_REGISTRY_SERVER_URL personhub.azurecr.io
           -DOCKER_REGISTRY_SERVER_PASSWORD $(dockerRegistryPassword)
-          -DatabaseConnectionConfig__PersonHub__Password $(postgres-password)
+          -DatabaseConnectionConfig__PersonHub__Host $(POSTGRES_HOST)
+          -DatabaseConnectionConfig__PersonHub__Database $(POSTGRES_DB)
+          -DatabaseConnectionConfig__PersonHub__UserName $(POSTGRES_USER)
+          -DatabaseConnectionConfig__PersonHub__Password $(POSTGRES_PASSWORD)
           -Authentication__ActiveImplementation $(authentication-type)
