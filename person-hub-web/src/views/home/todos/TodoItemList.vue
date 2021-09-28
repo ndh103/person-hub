@@ -99,12 +99,10 @@
 
         const response = await todoItemApiService
           .query(TodoItemStatusEnum.Initial)
-          .catch(() => {
+          .finally(() => {
             appStoreService.toggleLoading(false)
             return null
           })
-
-        appStoreService.toggleLoading(false)
 
         if (response) {
           this.todoItemList = response.data

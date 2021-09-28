@@ -1,10 +1,6 @@
 <template>
   <div class="p-2">
-    <div
-      v-if="!isFormOpen"
-      class="hover:cursor-pointer hover:text-green-700 text-green-500"
-      @click="openForm()"
-    >
+    <div v-if="!isFormOpen" class="app-action-link" @click="openForm()">
       <PlusIcon class="inline-block h-4 w-4" />
       <span>Add new event</span>
     </div>

@@ -33,3 +33,11 @@
 .app-chip-s1 {
   @apply mr-1  py-1  px-2  bg-white  rounded-full  text-gray-700  border border-gray-300  text-xs;
 }
+
+
+
+/* Links  */
+
+.app-action-link{
+  @apply hover:cursor-pointer hover:text-green-700 text-green-500;
+}

@@ -1,12 +1,23 @@
 <template>
+  <div class="flex">
+    <div class="app-action-link" @click="goBack()">
+      <ArrowLeftIcon class="h-4 w-4 inline-block" /> back
+    </div>
+    <span class="flex-grow"></span>
+
+    <button class="app-btn-primary" @click="save()">Save</button>
+    <button class="app-btn-secondary" @click="cancel()">Cancel</button>
+  </div>
+
   <div v-if="!event.id">Loading...</div>
+
   <div v-if="event.id" class="p-2">
     <div class="pb-2 flex flex-row w-full">
       <input
         v-model="event.title"
         type="text"
         placeholder="Title"
-        class="app-input w-full"
+        class="app-input w-full text-xl"
       />
     </div>
 
@@ -15,7 +26,7 @@
         v-model="event.description"
         type="text"
         placeholder="Description"
-        class="app-input w-full"
+        class="app-input w-full no-border-bottom"
       />
     </div>
 
@@ -39,11 +50,6 @@
         @tags-changed="(newTags) => (tags = newTags)"
       />
     </div>
-
-    <div class="pt-2">
-      <button class="app-btn-primary" @click="save()">Save</button>
-      <button class="app-btn-secondary" @click="cancel()">Cancel</button>
-    </div>
   </div>
 </template>
 <script lang="ts">
@@ -51,10 +57,13 @@
   import EventModel from './api-services/models/EventModel'
   import VueTagsInput from '@sipec/vue3-tags-input'
   import EventApiService from './api-services/EventApiService'
+  import applicationStoreService from '@/store/application/applicationStoreService'
+  import ArrowLeftIcon from '@/assets/arrow-left-icon.svg?component'
 
   export default defineComponent({
     components: {
       VueTagsInput,
+      ArrowLeftIcon,
     },
     props: {
       eventId: {
@@ -71,7 +80,7 @@
       }
     },
     async created() {
-      var response = await EventApiService.get(this.eventId).catch(() => {
+      var response = await EventApiService.get(this.eventId).finally(() => {
         return null
       })
 
@@ -80,19 +89,31 @@
 
         this.event.eventDate = new Date(this.event.eventDate)
 
-        this.tags = this.event.tags
+        this.tags = this.event.tags.map((tag) => {
+          return {
+            text: tag,
+          }
+        })
       }
     },
     methods: {
       async save() {
         this.event.tags = this.tags.map((r) => r.text)
 
-        await EventApiService.update(this.eventId, this.event).catch(() => {
-          //TODO: handle loading here
+        applicationStoreService.toggleLoading(true)
+
+        await EventApiService.update(this.eventId, this.event).finally(() => {
+          applicationStoreService.toggleLoading(false)
+          return null
         })
       },
       cancel() {
-        //TODO: navigate back
+        this.goBack()
+      },
+      goBack() {
+        this.$router.push({
+          name: 'events-view',
+        })
       },
       dateSelected(e, toogleFunc) {
         toogleFunc({ ref: e.target })
@@ -100,3 +121,9 @@
     },
   })
 </script>
+
+<style scoped lang="postcss">
+  .no-border-bottom {
+    @apply border-b-0 !important;
+  }
+</style>

@@ -83,12 +83,10 @@
 
       AppStoreService.toggleLoading(true)
 
-      var response = await EventApiService.query(queryModel).catch(() => {
+      var response = await EventApiService.query(queryModel).finally(() => {
         AppStoreService.toggleLoading(false)
         return null
       })
-
-      AppStoreService.toggleLoading(false)
 
       if (response) {
         this.events = response.data as Array<EventModel>
@@ -96,18 +94,18 @@
     },
     methods: {
       async addNewEvent(event: EventModel) {
-        var response = await EventApiService.add(event).catch(() => {
+        var response = await EventApiService.add(event).finally(() => {
           return null
         })
 
         if (response) {
-          event.id = response.data.id
+          event.id = (response.data as EventModel).id
         }
 
         this.events.unshift(event)
       },
       async removeEvent(event: EventModel) {
-        var response = await EventApiService.delete(event.id).catch(() => {
+        var response = await EventApiService.delete(event.id).finally(() => {
           return null
         })
 
