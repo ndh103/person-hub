@@ -1,10 +1,5 @@
 <template>
   <div class="px-2 pb-6">
-    <div v-if="!isFormOpen" class="app-action-link" @click="openForm()">
-      <PlusIcon class="inline-block h-4 w-4" />
-      <span>Add new event</span>
-    </div>
-
     <div
       v-if="isFormOpen"
       class="p-2 border border-gray-400 px-4 rounded border-opacity-50"
@@ -59,13 +54,11 @@
 </template>
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import PlusIcon from '@/assets/plus-icon.svg?component'
   import EventModel from './api-services/models/EventModel'
   import VueTagsInput from '@sipec/vue3-tags-input'
 
   export default defineComponent({
     components: {
-      PlusIcon,
       VueTagsInput,
     },
     emits: ['onAddNewEvent'],

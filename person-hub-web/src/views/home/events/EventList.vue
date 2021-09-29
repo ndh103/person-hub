@@ -1,5 +1,24 @@
 <template>
-  <EventQuickAddForm @on-add-new-event="addNewEvent($event)" />
+  <EventQuickAddForm
+    ref="addTodoForm"
+    @on-add-new-event="addNewEvent($event)"
+  />
+
+  <!-- Action bar -->
+  <div v-if="!isQuickAddFormOpen" class="flex">
+    <span class="app-action-link" @click="openForm()">
+      <PlusIcon class="inline-block h-4 w-4" />
+      <span>Add new event</span>
+    </span>
+    <span class="flex-grow"></span>
+    <span
+      class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4"
+      @click="fetchEvents()"
+    >
+      <RefreshIcon class="h-4 w-4 inline-block" />
+      Refresh
+    </span>
+  </div>
 
   <div
     v-for="(event, index) in events"
@@ -46,7 +65,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent } from 'vue'
+  import { defineComponent, ref } from 'vue'
   import dayjs from 'dayjs'
   import EventApiService from './api-services/EventApiService'
   import EventQueryModel from './api-services/models/EventQueryModel'
@@ -55,22 +74,30 @@
   import EventQuickAddForm from './EventQuickAddForm.vue'
   import TrashIcon from '@/assets/trash-icon.svg?component'
   import eventStoreService from './store/eventStoreService'
+  import RefreshIcon from '@/assets/refresh-icon.svg?component'
+  import PlusIcon from '@/assets/plus-icon.svg?component'
 
   export default defineComponent({
     components: {
       EventQuickAddForm,
       TrashIcon,
+      RefreshIcon,
+      PlusIcon,
     },
     props: {},
     data() {
-      return {}
+      return {
+        isFormOpen: false,
+      }
     },
     computed: {
-      eventDateDisplay(eventDate) {
-        return dayjs(eventDate).format('dd mm yyyy')
-      },
       events() {
         return eventStoreService.state.events
+      },
+      isQuickAddFormOpen() {
+        var form = this.$refs.addTodoForm as any
+
+        return form.isFormOpen
       },
     },
     async created() {
@@ -144,6 +171,10 @@
           name: 'event-details',
           params: { eventId: event.id },
         })
+      },
+      openForm() {
+        var form = this.$refs.addTodoForm as any
+        form.openForm()
       },
     },
   })
