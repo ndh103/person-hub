@@ -13,7 +13,7 @@
     </span>
 
     <draggable
-      v-model="todoItemList"
+      v-model="todoItems"
       item-key="id"
       v-bind="dragOptions"
       handle=".handle-icon"
@@ -45,6 +45,8 @@
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import appStoreService from '@/store/application/applicationStoreService'
+  import todoStoreService from './store/todoStoreService'
+  import dayjs from 'dayjs'
 
   export default defineComponent({
     components: {
@@ -56,7 +58,6 @@
     props: {},
     data: function () {
       return {
-        todoItemList: [] as TodoItemModel[],
         drag: false,
       }
     },
@@ -67,14 +68,31 @@
           disabled: false,
         }
       },
+      todoItems() {
+        return todoStoreService.state.todoItems
+      },
     },
     created: async function () {
-      await this.fetchTodoItems()
+      if (!this.todoItems || this.todoItems.length == 0) {
+        await this.fetchTodoItems()
+      }
+
+      // Fetch new data if outdated for 5mins
+      if (todoStoreService.state.todoItemsUpdatedTime) {
+        var MILISECONDS_IN_MINUTE = 1000 * 60
+        var now = dayjs()
+        var updatedTime = dayjs(todoStoreService.state.todoItemsUpdatedTime)
+        const diffMinutes = now.diff(updatedTime) / MILISECONDS_IN_MINUTE
+
+        if (diffMinutes > 5) {
+          await this.fetchTodoItems()
+        }
+      }
     },
     methods: {
       addNewTodoItem: async function (todoItem: TodoItemModel) {
         // get the current order of the last item
-        const lastItem = this.todoItemList.last()
+        const lastItem = this.todoItems.last()
 
         const nextOrder = LexicoGraphicalUtility.generateMidString(
           lastItem ? lastItem.itemOrder : '',
@@ -82,7 +100,9 @@
         )
         todoItem.itemOrder = nextOrder
 
-        this.todoItemList.push(todoItem)
+        var updatedTodoItems = [...this.todoItems]
+        updatedTodoItems.push(todoItem)
+        todoStoreService.updateTodoItems(updatedTodoItems)
 
         const response = await todoItemApiService.add(todoItem)
 
@@ -90,9 +110,11 @@
         todoItem.id = response.data.id
       },
       onItemMarkedAsDone() {
-        this.todoItemList = this.todoItemList.filter(
+        var updatedTodoItems = [...this.todoItems].filter(
           (r) => r.status != TodoItemStatusEnum.Finished
         )
+
+        todoStoreService.updateTodoItems(updatedTodoItems)
       },
       fetchTodoItems: async function () {
         appStoreService.toggleLoading(true)
@@ -105,23 +127,24 @@
           })
 
         if (response) {
-          this.todoItemList = response.data
-          this.todoItemList.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+          var todoItems = response.data
+          todoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+          todoStoreService.updateTodoItems(todoItems)
         }
       },
       onDragEnd: async function (evt) {
         const newIndex = evt.newIndex
-        const prevItem = newIndex == 0 ? null : this.todoItemList[newIndex - 1]
+        const prevItem = newIndex == 0 ? null : this.todoItems[newIndex - 1]
         const nextItem =
-          newIndex == this.todoItemList.length - 1
+          newIndex == this.todoItems.length - 1
             ? null
-            : this.todoItemList[newIndex + 1]
+            : this.todoItems[newIndex + 1]
 
         const newOrder = LexicoGraphicalUtility.generateMidString(
           prevItem ? prevItem.itemOrder : '',
           nextItem ? nextItem.itemOrder : ''
         )
-        const item = this.todoItemList[newIndex]
+        const item = this.todoItems[newIndex]
         item.itemOrder = newOrder
 
         await todoItemApiService.update(item)
