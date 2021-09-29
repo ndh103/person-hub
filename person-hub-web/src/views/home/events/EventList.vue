@@ -50,10 +50,11 @@
   import dayjs from 'dayjs'
   import EventApiService from './api-services/EventApiService'
   import EventQueryModel from './api-services/models/EventQueryModel'
-  import AppStoreService from '@/store/application/applicationStoreService'
+  import appStoreService from '@/store/application/applicationStoreService'
   import EventModel from './api-services/models/EventModel'
   import EventQuickAddForm from './EventQuickAddForm.vue'
   import TrashIcon from '@/assets/trash-icon.svg?component'
+  import eventStoreService from './store/eventStoreService'
 
   export default defineComponent({
     components: {
@@ -62,37 +63,40 @@
     },
     props: {},
     data() {
-      return {
-        events: new Array<EventModel>(),
-      }
+      return {}
     },
     computed: {
       eventDateDisplay(eventDate) {
         return dayjs(eventDate).format('dd mm yyyy')
       },
+      events() {
+        return eventStoreService.state.events
+      },
     },
     async created() {
-      var queryModel = new EventQueryModel()
-      queryModel.limit = 100
-      queryModel.offset = 0
+      // first time, fetch the list
+      if (!this.events || this.events.length == 0) {
+        await this.fetchEvents()
+      }
 
-      AppStoreService.toggleLoading(true)
+      // If events data already loaded and the events list has been outdated for 5 mins --> fetch the list again
+      if (eventStoreService.state.eventsUpdatedTime) {
+        var MILISECONDS_IN_MINUTE = 1000 * 60
+        var now = dayjs()
+        var eventsUpdatedTime = dayjs(eventStoreService.state.eventsUpdatedTime)
+        const diffMinutes = now.diff(eventsUpdatedTime) / MILISECONDS_IN_MINUTE
 
-      var response = await EventApiService.query(queryModel).finally(() => {
-        AppStoreService.toggleLoading(false)
-        return null
-      })
-
-      if (response) {
-        this.events = response.data as Array<EventModel>
+        if (diffMinutes > 5) {
+          await this.fetchEvents()
+        }
       }
     },
     methods: {
       async addNewEvent(event: EventModel) {
-        AppStoreService.toggleLoading(true)
+        appStoreService.toggleLoading(true)
 
         var response = await EventApiService.add(event).finally(() => {
-          AppStoreService.toggleLoading(false)
+          appStoreService.toggleLoading(false)
           return null
         })
 
@@ -100,18 +104,39 @@
           event.id = (response.data as EventModel).id
         }
 
-        this.events.unshift(event)
+        var updatedEvents = [...this.events]
+        updatedEvents.unshift(event)
+
+        eventStoreService.updateEventList(updatedEvents)
       },
       async removeEvent(event: EventModel) {
-        AppStoreService.toggleLoading(true)
+        appStoreService.toggleLoading(true)
 
         var response = await EventApiService.delete(event.id).finally(() => {
-          AppStoreService.toggleLoading(false)
+          appStoreService.toggleLoading(false)
           return null
         })
 
         if (response) {
-          this.events = this.events.filter((r) => r.id != event.id)
+          var updatedEvents = [...this.events].filter((r) => r.id != event.id)
+          eventStoreService.updateEventList(updatedEvents)
+        }
+      },
+      async fetchEvents() {
+        var queryModel = new EventQueryModel()
+        queryModel.limit = 100
+        queryModel.offset = 0
+
+        appStoreService.toggleLoading(true)
+
+        var response = await EventApiService.query(queryModel).finally(() => {
+          appStoreService.toggleLoading(false)
+          return null
+        })
+
+        if (response) {
+          var events = response.data as Array<EventModel>
+          eventStoreService.updateEventList(events)
         }
       },
       gotoDetails(event: EventModel) {
