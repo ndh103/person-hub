@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, ref } from 'vue'
+  import { defineComponent } from 'vue'
   import dayjs from 'dayjs'
   import EventApiService from './api-services/EventApiService'
   import EventQueryModel from './api-services/models/EventQueryModel'
@@ -86,18 +86,18 @@
     },
     props: {},
     data() {
-      return {
-        isFormOpen: false,
-      }
+      return {}
     },
     computed: {
       events() {
         return eventStoreService.state.events
       },
       isQuickAddFormOpen() {
-        var form = this.$refs.addTodoForm as any
-
-        return form.isFormOpen
+        if (this.$refs) {
+          var form = this.$refs.addTodoForm as any
+          return form?.isFormOpen
+        }
+        return false
       },
     },
     async created() {
