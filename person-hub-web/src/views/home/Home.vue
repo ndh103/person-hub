@@ -5,7 +5,10 @@
     <div class="flex">
       <div
         class="hidden"
-        :class="[overlaySideBarStatus + '-sidebar-overlay']"
+        :class="[
+          applicationStoreService.state.overlaySidebarStatus +
+            '-sidebar-overlay',
+        ]"
       ></div>
       <aside-menu
         class="
@@ -19,7 +22,9 @@
           bg-gray-50
           lg:static lg:block
         "
-        :class="[overlaySideBarStatus + '-sidebar']"
+        :class="[
+          applicationStoreService.state.overlaySidebarStatus + '-sidebar',
+        ]"
       ></aside-menu>
       <main
         class="flex-grow p-4 h-full pt-14 container mx-auto max-w-screen-lg"
@@ -34,11 +39,10 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import { mapGetters } from 'vuex'
   import SiteHeader from './SiteHeader.vue'
-  import AppStoreConstant from '@/store/application/application-store-constant'
   import AsideMenu from './AsideMenu.vue'
   import Loading from '@/components/Loading.vue'
+  import applicationStoreService from '@/store/application/applicationStoreService'
 
   export default defineComponent({
     components: {
@@ -48,9 +52,9 @@
     },
     props: {},
     computed: {
-      ...mapGetters('application', {
-        overlaySideBarStatus: AppStoreConstant.GETTERS.overlaySideBarStatus,
-      }),
+      applicationStoreService() {
+        return applicationStoreService
+      },
     },
   })
 </script>

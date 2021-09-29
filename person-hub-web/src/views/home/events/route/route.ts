@@ -1,5 +1,5 @@
-import EventList from './EventList.vue'
-import EventDetails from './EventDetails.vue'
+import EventList from '../EventList.vue'
+import EventDetails from '../EventDetails.vue'
 
 const eventRoutes = [
   {

@@ -1,46 +1,47 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import AppStoreConstant from './application-store-constant'
+export class AppModuleStoreState {
+  loggedInUser: any = {}
+  overlaySidebarStatus = 'closed'
+  isLoading = false
+}
 
-const { ACTIONS, MUTATIONS, GETTERS } = AppStoreConstant
+const mutations = {
+  setLoggedInUser(state: AppModuleStoreState, user: unknown): void {
+    state.loggedInUser = user
+  },
 
-const applicationStore = {
-  namespaced: true,
-  state: () => ({
-    loggedInUser: {},
-    overlaySidebarStatus: 'closed',
-    isLoading: false,
-  }),
-  mutations: {
-    [MUTATIONS.setLoggedInUser](state, user) {
-      state.loggedInUser = user
-    },
-    [MUTATIONS.toggleSideBar](state) {
-      if (state.overlaySidebarStatus == 'open') {
-        state.overlaySidebarStatus = 'closed'
-      } else {
-        state.overlaySidebarStatus = 'open'
-      }
-    },
-    [MUTATIONS.toggleLoading](state, isLoading) {
-      state.isLoading = isLoading
-    },
+  toggleSideBar(state: AppModuleStoreState): void {
+    if (state.overlaySidebarStatus == 'open') {
+      state.overlaySidebarStatus = 'closed'
+    } else {
+      state.overlaySidebarStatus = 'open'
+    }
   },
-  getters: {
-    [GETTERS.loggedInUser](state) {
-      return state.loggedInUser
-    },
-    [GETTERS.overlaySideBarStatus](state) {
-      return state.overlaySidebarStatus
-    },
-    [GETTERS.isLoading](state) {
-      return state.isLoading
-    },
-  },
-  actions: {
-    [ACTIONS.setLoggedInUser](context, user) {
-      context.commit(MUTATIONS.setLoggedInUser, user)
-    },
+
+  toggleLoading(state: AppModuleStoreState, isLoading: boolean): void {
+    state.isLoading = isLoading
   },
 }
 
-export default applicationStore
+export const appModuleStore = {
+  namespaced: true,
+  state(): AppModuleStoreState {
+    return new AppModuleStoreState()
+  },
+  getters: {
+    loggedInUser(state: AppModuleStoreState): any {
+      return state.loggedInUser
+    },
+    overlaySideBarStatus(state: AppModuleStoreState): string {
+      return state.overlaySidebarStatus
+    },
+    isLoading(state: AppModuleStoreState): boolean {
+      return state.isLoading
+    },
+  },
+  mutations,
+  actions: {
+    testSetLoading(context, isLoading: boolean): void {
+      context.commit(mutations.toggleLoading.name, isLoading)
+    },
+  },
+}

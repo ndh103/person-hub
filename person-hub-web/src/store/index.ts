@@ -1,12 +1,11 @@
 import { createStore } from 'vuex'
 
-import applicationStore from './application/application-store'
+import { appModuleStore } from './application/application-store'
+import { eventStore } from '@/views/home/events/store/event-store'
 
 export default createStore({
-  state: {},
-  mutations: {},
-  actions: {},
   modules: {
-    application: applicationStore,
+    application: appModuleStore,
+    events: eventStore,
   },
 })

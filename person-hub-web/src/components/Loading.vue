@@ -13,7 +13,7 @@
       z-10
       cursor-pointer
     "
-    :class="[isLoading ? 'block' : 'hidden']"
+    :class="[applicationStoreService.state.isLoading ? 'block' : 'hidden']"
   >
     <div
       class="
@@ -32,14 +32,13 @@
 </template>
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import { mapGetters } from 'vuex'
-  import AppStoreContant from '@/store/application/application-store-constant'
+  import applicationStoreService from '@/store/application/applicationStoreService'
 
   export default defineComponent({
     computed: {
-      ...mapGetters('application', {
-        isLoading: AppStoreContant.GETTERS.isLoading,
-      }),
+      applicationStoreService() {
+        return applicationStoreService
+      },
     },
   })
 </script>

@@ -1,5 +1,5 @@
-import TodoItemList from './TodoItemList.vue'
-import TodoItemDetail from './TodoItemDetail.vue'
+import TodoItemList from '../TodoItemList.vue'
+import TodoItemDetail from '../TodoItemDetail.vue'
 
 const todoRoutes = [
   {

@@ -1,6 +1,6 @@
 import Home from './Home.vue'
-import eventRoutes from './events/route'
-import todoRoutes from './todos/route'
+import eventRoutes from './events/route/route'
+import todoRoutes from './todos/route/route'
 
 const homeRoutes = [
   {
