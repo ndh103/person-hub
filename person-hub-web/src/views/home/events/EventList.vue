@@ -1,7 +1,7 @@
 <template>
   <EventQuickAddForm
     ref="addTodoForm"
-    @on-add-new-event="addNewEvent($event)"
+    @on-new-event-added="addNewEvent($event)"
   />
 
   <!-- Action bar -->
@@ -89,8 +89,8 @@
       return {}
     },
     computed: {
-      events() {
-        return eventStoreService.state.events
+      events(): Array<EventModel> {
+        return eventStoreService.state.events as Array<EventModel>
       },
       isQuickAddFormOpen() {
         if (this.$refs) {

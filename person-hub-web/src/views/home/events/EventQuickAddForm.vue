@@ -61,7 +61,7 @@
     components: {
       VueTagsInput,
     },
-    emits: ['onAddNewEvent'],
+    emits: ['onNewEventAdded'],
 
     data() {
       return {
@@ -79,7 +79,7 @@
         this.event.tags = this.tags.map((r) => r.text)
 
         //TODO: validate the event here
-        this.$emit('onAddNewEvent', { ...this.event })
+        this.$emit('onNewEventAdded', { ...this.event })
 
         this.isFormOpen = false
       },

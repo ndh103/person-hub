@@ -59,6 +59,7 @@
   import VueTagsInput from '@sipec/vue3-tags-input'
   import EventApiService from './api-services/EventApiService'
   import applicationStoreService from '@/store/application/applicationStoreService'
+  import eventStoreService from './store/eventStoreService'
   import ArrowLeftIcon from '@/assets/arrow-left-icon.svg?component'
 
   export default defineComponent({
@@ -72,7 +73,6 @@
         default: 0,
       },
     },
-    emits: ['onAddNewEvent'],
     data() {
       return {
         event: new EventModel(),
@@ -103,10 +103,22 @@
 
         applicationStoreService.toggleLoading(true)
 
-        await EventApiService.update(this.eventId, this.event).finally(() => {
+        var response = await EventApiService.update(
+          this.eventId,
+          this.event
+        ).finally(() => {
           applicationStoreService.toggleLoading(false)
           return null
         })
+
+        // Update the event in the store
+        if (response) {
+          var updatedEvents = [...eventStoreService.state.events]
+          updatedEvents[updatedEvents.findIndex((r) => r.id == this.event.id)] =
+            { ...this.event }
+
+          eventStoreService.updateEventList(updatedEvents)
+        }
       },
       cancel() {
         this.goBack()
