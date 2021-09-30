@@ -24,9 +24,10 @@
     <div class="pb-2 flex flex-row w-full">
       <textarea
         v-model="event.description"
+        rows="5"
         type="text"
         placeholder="Description"
-        class="app-input w-full no-border-bottom"
+        class="app-input w-full no-border-bottom h-auto"
       />
     </div>
 

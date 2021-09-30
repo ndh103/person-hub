@@ -49,7 +49,7 @@
         <span
           v-for="(tag, tagIndex) in event.tags"
           :key="tagIndex"
-          class="app-chip-s1"
+          class="app-chip-s1 inline-block mt-1"
           >{{ tag }}</span
         >
       </div>
