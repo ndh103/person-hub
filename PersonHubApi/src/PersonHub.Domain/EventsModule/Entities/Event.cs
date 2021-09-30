@@ -20,16 +20,6 @@ namespace PersonHub.Domain.EventsModule.Entities
 
     public Event(string userId, string title, string description, DateTime eventDate, string[] tags)
     {
-      if (string.IsNullOrEmpty(userId))
-      {
-        throw new ArgumentNullException("UserId is required");
-      }
-
-      if (string.IsNullOrEmpty(title))
-      {
-        throw new ArgumentNullException("Event Title is required");
-      }
-
       UserId = userId;
       Title = title;
       Description = description;
@@ -38,6 +28,8 @@ namespace PersonHub.Domain.EventsModule.Entities
       {
         Tags = (string[])tags.Clone();
       }
+
+      EnsureValidState();
     }
 
     public void EnsureValidState()
@@ -45,6 +37,26 @@ namespace PersonHub.Domain.EventsModule.Entities
       if (string.IsNullOrEmpty(this.Title))
       {
         throw new ArgumentNullException("Event Title is required");
+      }
+
+      if (this.Title.Length > 250)
+      {
+        throw new ArgumentNullException("Event Title should not exceed 250 characters");
+      }
+
+      if (!string.IsNullOrEmpty(this.Description) && this.Description.Length > 1000)
+      {
+        throw new ArgumentException("Event Description should not exceed 1000 characters");
+      }
+
+      if(this.Tags != null){
+        if(this.Tags.Length > 10){
+          throw new ArgumentException("Maximum Event Tags is 10");
+        }
+
+        if(this.Tags.Any(tag => tag.Length > 50)){
+          throw new ArgumentException("A tag should not exceed 50 characters");
+        }
       }
     }
   }

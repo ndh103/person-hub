@@ -15,5 +15,7 @@ namespace PersonHub.Domain.TodoModule.Entities
         public TodoItemStatus Status { get; set; }
 
         public string ItemOrder {get;set;}
+
+        //TODO: implement EnsureValidState method
     }
 }

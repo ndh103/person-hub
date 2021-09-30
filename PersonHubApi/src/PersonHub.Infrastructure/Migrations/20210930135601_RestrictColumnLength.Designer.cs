@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PersonHub.Infrastructure.DataAccess;
@@ -9,9 +10,10 @@ using PersonHub.Infrastructure.DataAccess;
 namespace PersonHub.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonHubDbContext))]
-    partial class PersonHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210930135601_RestrictColumnLength")]
+    partial class RestrictColumnLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

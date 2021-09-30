@@ -13,9 +13,10 @@ namespace PersonHub.Infrastructure.DataAccess.Configurations.Events
         public void Configure(EntityTypeBuilder<Event> builder)
         {
             builder.Property(r=> r.Id).UseIdentityAlwaysColumn();
-            builder.Property(r=> r.UserId).IsRequired();
+            builder.Property(r=> r.UserId).IsRequired().HasMaxLength(100);
             builder.Property(r=>r.EventDate).IsRequired();
-            builder.Property(r=>r.Title).IsRequired();
+            builder.Property(r=>r.Title).IsRequired().HasMaxLength(250);
+            builder.Property(r=>r.Description).HasMaxLength(1000);
         }
     }
 }
