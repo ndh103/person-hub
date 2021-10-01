@@ -51,6 +51,8 @@
         return this.$route.name == routeName
       },
       navigateToRoute(routeName) {
+        this.toggleSideBar()
+
         if (!this.isRouteActive(routeName)) {
           this.$router.push({ name: routeName })
         }
