@@ -2,7 +2,11 @@
   <div
     id="overlay"
     class="
+      items-center
+      justify-center
+      flex-row
       fixed
+      flex
       w-full
       h-full
       top-0
@@ -17,15 +21,12 @@
   >
     <div
       class="
-        absolute
-        top-1/3
-        left-1/2
         loader
         ease-linear
         rounded-full
         border-8 border-t-8 border-white
-        h-24
-        w-24
+        h-16
+        w-16
       "
     ></div>
   </div>
@@ -45,7 +46,7 @@
 
 <style lang="postcss" scoped>
   .loader {
-    border-top-color: #3498db;
+    border-top-color: #10b981;
     -webkit-animation: spinner 1.5s linear infinite;
     animation: spinner 1.5s linear infinite;
   }
