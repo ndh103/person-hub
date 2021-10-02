@@ -1,8 +1,5 @@
 <template>
-  <EventQuickAddForm
-    ref="addTodoForm"
-    @on-new-event-added="addNewEvent($event)"
-  />
+  <EventQuickAddForm ref="addTodoForm" @on-new-event-added="addNewEvent($event)" />
 
   <!-- Action bar -->
   <div v-if="!isQuickAddFormOpen" class="flex">
@@ -11,54 +8,25 @@
       <span>Add new event</span>
     </span>
     <span class="flex-grow"></span>
-    <span
-      class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4"
-      @click="fetchEvents()"
-    >
+    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchEvents()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
   </div>
 
-  <div
-    v-for="(event, index) in events"
-    :key="index"
-    class="
-      event-item-row
-      border-b border-gray-400
-      px-4
-      py-2
-      mb-2
-      border-opacity-25
-    "
-  >
+  <div v-for="(event, index) in events" :key="index" class="event-item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
     <div class="pb-2">
-      <span
-        class="cursor-pointer hover:text-green-700"
-        @click="gotoDetails(event)"
-        >{{ event.title }}</span
-      >
+      <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event)">{{ event.title }}</span>
     </div>
 
     <div class="flex justify-between">
-      <span class="text-xs self-end">{{
-        $filters.formatDate(event.eventDate)
-      }}</span>
+      <span class="text-xs self-end">{{ $filters.formatDate(event.eventDate) }}</span>
 
       <div>
-        <span
-          v-for="(tag, tagIndex) in event.tags"
-          :key="tagIndex"
-          class="app-chip-s1 mt-1 hidden sm:inline-block"
-          >{{ tag }}</span
-        >
+        <span v-for="(tag, tagIndex) in event.tags" :key="tagIndex" class="app-chip-s1 mt-1 hidden sm:inline-block">{{ tag }}</span>
       </div>
       <span :id="'popper-button' + index" class="w-4 h-4">
-        <DotsHorizontalIcon
-          title="open action menu"
-          class="w-4 h-4 cursor-pointer hidden action-menu"
-          @click="openPopperMenu('popperMenu' + index)"
-        />
+        <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />
       </span>
       <Popper
         :id="'popper-menu' + index"
@@ -68,57 +36,14 @@
         placement="left"
       >
         <template #body>
-          <div
-            class="
-              bg-white
-              border
-              mr-3
-              block
-              z-50
-              font-normal
-              leading-normal
-              text-sm
-              max-w-xs
-              text-left
-              no-underline
-              break-words
-              rounded-lg
-            "
-          >
+          <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
             <div>
               <div class="text-gray-700 p-2">
-                <p
-                  class="
-                    text-sm
-                    p-2
-                    font-normal
-                    block
-                    w-full
-                    whitespace-nowrap
-                    bg-transparent
-                    text-gray-700
-                    hover:bg-gray-100
-                    rounded
-                    cursor-pointer
-                  "
-                  @click="gotoDetails(event)"
-                >
+                <p class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer" @click="gotoDetails(event)">
                   <ArrowRightIcon class="w-4 h-4 inline-block" /> Go to details
                 </p>
                 <p
-                  class="
-                    text-sm
-                    p-2
-                    font-normal
-                    block
-                    w-full
-                    whitespace-nowrap
-                    bg-transparent
-                    text-red-500
-                    hover:bg-gray-100
-                    rounded
-                    cursor-pointer
-                  "
+                  class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
                   @click="onDeleteAction(event)"
                 >
                   <TrashIcon class="w-4 h-4 inline-block" /> Delete event
@@ -134,9 +59,7 @@
       <template #body>Are you sure you want to delete this event? </template>
       <template #footer>
         <div class="mx-4 mb-4 flex flex-row-reverse">
-          <button class="app-btn-secondary" @click="cancelDelete()">
-            Cancel
-          </button>
+          <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
           <button class="app-btn-danger" @click="deleteEvent()">Delete</button>
         </div>
       </template>
@@ -280,16 +203,11 @@
       },
       async deleteEvent() {
         this.deleteModal.toggleModal(false)
-        var response = await EventApiService.delete(
-          this.tobeDeletedEventId,
-          true
-        )
+        var response = await EventApiService.delete(this.tobeDeletedEventId, true)
 
         if (response) {
           var updatedEvents = [...eventStoreService.state.events]
-          updatedEvents = updatedEvents.filter(
-            (r) => r.id != this.tobeDeletedEventId
-          )
+          updatedEvents = updatedEvents.filter((r) => r.id != this.tobeDeletedEventId)
 
           eventStoreService.updateEventList(updatedEvents)
         }

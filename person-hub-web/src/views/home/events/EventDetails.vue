@@ -1,8 +1,6 @@
 <template>
   <div class="flex">
-    <div class="app-action-link" @click="goBack()">
-      <ArrowLeftIcon class="h-4 w-4 inline-block" /> back
-    </div>
+    <div class="app-action-link" @click="goBack()"><ArrowLeftIcon class="h-4 w-4 inline-block" /> back</div>
     <span class="flex-grow"></span>
 
     <button class="app-btn-primary" @click="save()">Save</button>
@@ -13,49 +11,29 @@
 
   <div v-if="event.id" class="p-2">
     <div class="pb-2 flex flex-row w-full">
-      <input
-        v-model="event.title"
-        type="text"
-        placeholder="Title"
-        class="app-input w-full text-xl"
-      />
+      <input v-model="event.title" type="text" placeholder="Title" class="app-input w-full text-xl" />
     </div>
 
     <div class="pb-2 flex flex-row w-full">
-      <textarea
-        v-model="event.description"
-        rows="5"
-        type="text"
-        placeholder="Description"
-        class="app-input w-full no-border-bottom h-auto"
-      />
+      <textarea v-model="event.description" rows="5" type="text" placeholder="Description" class="app-input w-full no-border-bottom h-auto" />
     </div>
 
     <div class="pb-2 flex flex-row w-full">
       <v-date-picker v-model="event.eventDate">
         <template #default="{ togglePopover }">
           <div class="flex flex-wrap">
-            <button
-              class="app-btn-datepicker"
-              @click.stop="dateSelected($event, togglePopover)"
-            >
+            <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
               {{ event.eventDate.toLocaleDateString() }}
             </button>
           </div>
         </template>
       </v-date-picker>
 
-      <vue-tags-input
-        placeholder="add tags..."
-        :tags="tags"
-        @tags-changed="(newTags) => (tags = newTags)"
-      />
+      <vue-tags-input placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
     </div>
 
     <div class="flex flex-row-reverse">
-      <button class="app-btn-danger" @click="onDeleteAction()">
-        Remove event
-      </button>
+      <button class="app-btn-danger" @click="onDeleteAction()">Remove event</button>
     </div>
 
     <div>
@@ -63,15 +41,8 @@
         <template #body>Are you sure you want to delete this event? </template>
         <template #footer>
           <div class="mx-4 mb-4 flex flex-row-reverse">
-            <button
-              class="app-btn-secondary"
-              @click="deleteModal.toggleModal(false)"
-            >
-              Cancel
-            </button>
-            <button class="app-btn-danger" @click="deleteEvent()">
-              Delete
-            </button>
+            <button class="app-btn-secondary" @click="deleteModal.toggleModal(false)">Cancel</button>
+            <button class="app-btn-danger" @click="deleteEvent()">Delete</button>
           </div>
         </template>
       </Modal>
@@ -130,17 +101,12 @@
       async save() {
         this.event.tags = this.tags.map((r) => r.text)
 
-        var response = await EventApiService.update(
-          this.eventId,
-          this.event,
-          true
-        )
+        var response = await EventApiService.update(this.eventId, this.event, true)
 
         // Update the event in the store
         if (response) {
           var updatedEvents = [...eventStoreService.state.events]
-          updatedEvents[updatedEvents.findIndex((r) => r.id == this.event.id)] =
-            { ...this.event }
+          updatedEvents[updatedEvents.findIndex((r) => r.id == this.event.id)] = { ...this.event }
 
           eventStoreService.updateEventList(updatedEvents)
         }

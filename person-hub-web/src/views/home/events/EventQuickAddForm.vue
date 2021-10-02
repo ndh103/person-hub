@@ -1,53 +1,31 @@
 <template>
   <div class="px-2 pb-6">
-    <div
-      v-if="isFormOpen"
-      class="p-2 border border-gray-400 px-4 rounded border-opacity-50"
-    >
+    <div v-if="isFormOpen" class="p-2 border border-gray-400 px-4 rounded border-opacity-50">
       <div class="pb-2 flex flex-row w-full">
-        <input
-          v-model="event.title"
-          type="text"
-          placeholder="Title"
-          class="app-input w-full"
-        />
+        <input v-model="event.title" type="text" placeholder="Title" class="app-input w-full" />
       </div>
 
       <div class="pb-2 flex flex-row w-full">
-        <textarea
-          v-model="event.description"
-          type="text"
-          placeholder="Description"
-          class="app-input w-full"
-        />
+        <textarea v-model="event.description" type="text" placeholder="Description" class="app-input w-full" />
       </div>
 
       <div class="pb-2 flex flex-row w-full">
         <v-date-picker v-model="event.eventDate">
           <template #default="{ togglePopover }">
             <div class="flex flex-wrap">
-              <button
-                class="app-btn-datepicker"
-                @click.stop="dateSelected($event, togglePopover)"
-              >
+              <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
                 {{ event.eventDate.toLocaleDateString() }}
               </button>
             </div>
           </template>
         </v-date-picker>
 
-        <vue-tags-input
-          placeholder="add tags..."
-          :tags="tags"
-          @tags-changed="(newTags) => (tags = newTags)"
-        />
+        <vue-tags-input placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
       </div>
 
       <div class="pt-2">
         <button class="app-btn-primary" @click="submit()">Add</button>
-        <button class="app-btn-secondary" @click="discardForm()">
-          Discard
-        </button>
+        <button class="app-btn-secondary" @click="discardForm()">Discard</button>
       </div>
     </div>
   </div>

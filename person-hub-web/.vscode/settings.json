@@ -10,7 +10,11 @@
     "titleBar.activeBackground": "#8957ea",
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#8957ea99",
-    "titleBar.inactiveForeground": "#e7e7e799"
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "editorGroup.border": "#a984f0",
+    "panel.border": "#a984f0",
+    "sash.hoverBorder": "#a984f0",
+    "sideBar.border": "#a984f0"
   },
   "peacock.color": "#8957ea",
   "editor.codeActionsOnSave": {
@@ -20,5 +24,6 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
