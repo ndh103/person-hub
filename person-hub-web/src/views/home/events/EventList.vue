@@ -53,13 +53,94 @@
           >{{ tag }}</span
         >
       </div>
-      <span class="w-4 h-4">
+      <span :id="'popper-button' + index" class="w-4 h-4">
         <DotsHorizontalIcon
           title="open action menu"
           class="w-4 h-4 cursor-pointer hidden action-menu"
+          @click="openPopperMenu('popperMenu' + index)"
         />
       </span>
+      <Popper
+        :id="'popper-menu' + index"
+        :ref="'popperMenu' + index"
+        :trigger-element-selector="'#popper-button' + index"
+        :popper-element-selector="'#popper-menu' + index"
+        placement="left"
+      >
+        <template #body>
+          <div
+            class="
+              bg-white
+              border
+              mr-3
+              block
+              z-50
+              font-normal
+              leading-normal
+              text-sm
+              max-w-xs
+              text-left
+              no-underline
+              break-words
+              rounded-lg
+            "
+          >
+            <div>
+              <div class="text-gray-700 p-2">
+                <p
+                  class="
+                    text-sm
+                    p-2
+                    font-normal
+                    block
+                    w-full
+                    whitespace-nowrap
+                    bg-transparent
+                    text-gray-700
+                    hover:bg-gray-100
+                    rounded
+                    cursor-pointer
+                  "
+                  @click="gotoDetails(event)"
+                >
+                  <ArrowRightIcon class="w-4 h-4 inline-block" /> Go to details
+                </p>
+                <p
+                  class="
+                    text-sm
+                    p-2
+                    font-normal
+                    block
+                    w-full
+                    whitespace-nowrap
+                    bg-transparent
+                    text-red-500
+                    hover:bg-gray-100
+                    rounded
+                    cursor-pointer
+                  "
+                  @click="onDeleteAction(event)"
+                >
+                  <TrashIcon class="w-4 h-4 inline-block" /> Delete event
+                </p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </Popper>
     </div>
+
+    <Modal ref="deleteModal" title="Confirm deletion">
+      <template #body>Are you sure you want to delete this event? </template>
+      <template #footer>
+        <div class="mx-4 mb-4 flex flex-row-reverse">
+          <button class="app-btn-secondary" @click="cancelDelete()">
+            Cancel
+          </button>
+          <button class="app-btn-danger" @click="deleteEvent()">Delete</button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -75,6 +156,10 @@
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import PlusIcon from '@/assets/plus-icon.svg?component'
   import DotsHorizontalIcon from '@/assets/dots-horizontal-icon.svg?component'
+  import Popper from '@/components/Popper.vue'
+  import TrashIcon from '@/assets/trash-icon.svg?component'
+  import ArrowRightIcon from '@/assets/arrow-right-icon.svg?component'
+  import Modal from '@/components/Modal.vue'
 
   export default defineComponent({
     components: {
@@ -82,10 +167,16 @@
       DotsHorizontalIcon,
       RefreshIcon,
       PlusIcon,
+      Popper,
+      TrashIcon,
+      ArrowRightIcon,
+      Modal,
     },
     props: {},
     data() {
-      return {}
+      return {
+        tobeDeletedEventId: 0,
+      }
     },
     computed: {
       events(): Array<EventModel> {
@@ -97,6 +188,9 @@
           return form?.isFormOpen
         }
         return false
+      },
+      deleteModal() {
+        return this.$refs.deleteModal as any
       },
     },
     async created() {
@@ -167,6 +261,41 @@
       openForm() {
         var form = this.$refs.addTodoForm as any
         form.openForm()
+      },
+      openPopperMenu(refName) {
+        var menu = this.$refs[refName] as any
+        menu.togglePopper(true)
+      },
+      closePopperMenu(refName) {
+        var menu = this.$refs[refName] as any
+        menu.togglePopper(false)
+      },
+      onDeleteAction(event) {
+        this.tobeDeletedEventId = event.id
+        this.deleteModal.toggleModal(true)
+      },
+      cancelDelete() {
+        this.tobeDeletedEventId = 0
+        this.deleteModal.toggleModal(false)
+      },
+      async deleteEvent() {
+        this.deleteModal.toggleModal(false)
+        var response = await EventApiService.delete(
+          this.tobeDeletedEventId,
+          true
+        )
+
+        if (response) {
+          var updatedEvents = [...eventStoreService.state.events]
+          updatedEvents = updatedEvents.filter(
+            (r) => r.id != this.tobeDeletedEventId
+          )
+
+          eventStoreService.updateEventList(updatedEvents)
+        }
+
+        // Reset tobe deleted Id
+        this.tobeDeletedEventId = 0
       },
     },
   })
