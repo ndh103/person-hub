@@ -49,15 +49,14 @@
         <span
           v-for="(tag, tagIndex) in event.tags"
           :key="tagIndex"
-          class="app-chip-s1 inline-block mt-1"
+          class="app-chip-s1 mt-1 hidden sm:inline-block"
           >{{ tag }}</span
         >
       </div>
       <span class="w-4 h-4">
-        <TrashIcon
-          title="Remove event"
-          class="w-4 h-4 cursor-pointer hidden trash-icon"
-          @click="removeEvent(event)"
+        <DotsHorizontalIcon
+          title="open action menu"
+          class="w-4 h-4 cursor-pointer hidden action-menu"
         />
       </span>
     </div>
@@ -72,15 +71,15 @@
   import appStoreService from '@/store/application/applicationStoreService'
   import EventModel from './api-services/models/EventModel'
   import EventQuickAddForm from './EventQuickAddForm.vue'
-  import TrashIcon from '@/assets/trash-icon.svg?component'
   import eventStoreService from './store/eventStoreService'
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import PlusIcon from '@/assets/plus-icon.svg?component'
+  import DotsHorizontalIcon from '@/assets/dots-horizontal-icon.svg?component'
 
   export default defineComponent({
     components: {
       EventQuickAddForm,
-      TrashIcon,
+      DotsHorizontalIcon,
       RefreshIcon,
       PlusIcon,
     },
@@ -120,12 +119,7 @@
     },
     methods: {
       async addNewEvent(event: EventModel) {
-        appStoreService.toggleLoading(true)
-
-        var response = await EventApiService.add(event).finally(() => {
-          appStoreService.toggleLoading(false)
-          return null
-        })
+        var response = await EventApiService.add(event, true)
 
         if (response) {
           event.id = (response.data as EventModel).id
@@ -139,10 +133,9 @@
       async removeEvent(event: EventModel) {
         appStoreService.toggleLoading(true)
 
-        var response = await EventApiService.delete(event.id).finally(() => {
-          appStoreService.toggleLoading(false)
-          return null
-        })
+        var response = await EventApiService.delete(event.id, true)
+
+        appStoreService.toggleLoading(false)
 
         if (response) {
           var updatedEvents = [...this.events].filter((r) => r.id != event.id)
@@ -156,10 +149,9 @@
 
         appStoreService.toggleLoading(true)
 
-        var response = await EventApiService.query(queryModel).finally(() => {
-          appStoreService.toggleLoading(false)
-          return null
-        })
+        var response = await EventApiService.query(queryModel, true)
+
+        appStoreService.toggleLoading(false)
 
         if (response) {
           var events = response.data as Array<EventModel>
@@ -181,7 +173,7 @@
 </script>
 
 <style scoped lang="postcss">
-  .event-item-row:hover .trash-icon {
+  .event-item-row:hover .action-menu {
     display: inline-block;
   }
 </style>

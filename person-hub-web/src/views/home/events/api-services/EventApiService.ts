@@ -2,26 +2,50 @@ import http from '@/common/http-base'
 import { AxiosResponse } from 'axios'
 import EventModel from './models/EventModel'
 import EventQueryModel from './models/EventQueryModel'
+import ApiServiceBase from '@/common/ApiServiceBase'
 
 class EventApiService {
-  add(event: EventModel): Promise<AxiosResponse<unknown>> {
-    return http.post('life-events/events', event)
+  add(
+    event: EventModel,
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post('life-events/events', event)
+    }, shouldShowLoading)
   }
 
-  get(id: number): Promise<AxiosResponse<unknown>> {
-    return http.get(`life-events/events/${id}`)
+  get(id: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.get(`life-events/events/${id}`)
+    }, shouldShowLoading)
   }
 
-  query(queryModel: EventQueryModel): Promise<AxiosResponse<unknown>> {
-    return http.post(`life-events/events/query`, queryModel)
+  query(
+    queryModel: EventQueryModel,
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post(`life-events/events/query`, queryModel)
+    }, shouldShowLoading)
   }
 
-  update(id: number, event: EventModel): Promise<AxiosResponse<unknown>> {
-    return http.put(`life-events/events/${id}`, event)
+  update(
+    id: number,
+    event: EventModel,
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.put(`life-events/events/${id}`, event)
+    }, shouldShowLoading)
   }
 
-  delete(id: number): Promise<AxiosResponse<unknown>> {
-    return http.delete(`life-events/events/${id}`)
+  delete(
+    id: number,
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.delete(`life-events/events/${id}`)
+    }, shouldShowLoading)
   }
 }
 

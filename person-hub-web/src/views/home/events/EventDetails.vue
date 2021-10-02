@@ -51,6 +51,31 @@
         @tags-changed="(newTags) => (tags = newTags)"
       />
     </div>
+
+    <div class="flex flex-row-reverse">
+      <button class="app-btn-danger" @click="onDeleteAction()">
+        Remove event
+      </button>
+    </div>
+
+    <div>
+      <Modal ref="deleteModal" title="Confirm deletion">
+        <template #body>Are you sure you want to delete this event? </template>
+        <template #footer>
+          <div class="mx-4 mb-4 flex flex-row-reverse">
+            <button
+              class="app-btn-secondary"
+              @click="deleteModal.toggleModal(false)"
+            >
+              Cancel
+            </button>
+            <button class="app-btn-danger" @click="deleteEvent()">
+              Delete
+            </button>
+          </div>
+        </template>
+      </Modal>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -58,14 +83,15 @@
   import EventModel from './api-services/models/EventModel'
   import VueTagsInput from '@sipec/vue3-tags-input'
   import EventApiService from './api-services/EventApiService'
-  import applicationStoreService from '@/store/application/applicationStoreService'
   import eventStoreService from './store/eventStoreService'
   import ArrowLeftIcon from '@/assets/arrow-left-icon.svg?component'
+  import Modal from '@/components/Modal.vue'
 
   export default defineComponent({
     components: {
       VueTagsInput,
       ArrowLeftIcon,
+      Modal,
     },
     props: {
       eventId: {
@@ -80,10 +106,13 @@
         tags: [],
       }
     },
+    computed: {
+      deleteModal() {
+        return this.$refs.deleteModal as any
+      },
+    },
     async created() {
-      var response = await EventApiService.get(this.eventId).finally(() => {
-        return null
-      })
+      var response = await EventApiService.get(this.eventId, false)
 
       if (response) {
         this.event = response.data as EventModel
@@ -101,15 +130,11 @@
       async save() {
         this.event.tags = this.tags.map((r) => r.text)
 
-        applicationStoreService.toggleLoading(true)
-
         var response = await EventApiService.update(
           this.eventId,
-          this.event
-        ).finally(() => {
-          applicationStoreService.toggleLoading(false)
-          return null
-        })
+          this.event,
+          true
+        )
 
         // Update the event in the store
         if (response) {
@@ -130,6 +155,21 @@
       },
       dateSelected(e, toogleFunc) {
         toogleFunc({ ref: e.target })
+      },
+      onDeleteAction() {
+        this.deleteModal.toggleModal(true)
+      },
+      async deleteEvent() {
+        this.deleteModal.toggleModal(false)
+        var response = await EventApiService.delete(this.eventId, true)
+
+        if (response) {
+          var updatedEvents = [...eventStoreService.state.events]
+          updatedEvents = updatedEvents.filter((r) => r.id != this.eventId)
+
+          eventStoreService.updateEventList(updatedEvents)
+          this.goBack()
+        }
       },
     },
   })
