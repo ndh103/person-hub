@@ -2,31 +2,16 @@
   <aside>
     <div class="z-20 px-4">
       <div class="flex flex-row-reverse">
-        <span
-          class="hidden h-10 w-10 pr-2 cursor-pointer close-button"
-          @click="toggleSideBar()"
-        >
+        <span class="hidden h-10 w-10 pr-2 cursor-pointer close-button" @click="toggleSideBar(false)">
           <CloseIcon></CloseIcon>
         </span>
       </div>
 
       <p class="pt-10"></p>
-      <p
-        :class="[
-          'sidebar-menu-item',
-          isRouteActive('todos-view') ? 'active' : '',
-        ]"
-        @click="navigateToRoute('todos-view')"
-      >
+      <p :class="['sidebar-menu-item', isRouteActive('todos-view') ? 'active' : '']" @click="navigateToRoute('todos-view')">
         <ClipBoardListIcon class="w-4 h-4 mr-2 inline-block" />Todo Items
       </p>
-      <p
-        :class="[
-          'sidebar-menu-item',
-          isRouteActive('events-view') ? 'active' : '',
-        ]"
-        @click="navigateToRoute('events-view')"
-      >
+      <p :class="['sidebar-menu-item', isRouteActive('events-view') ? 'active' : '']" @click="navigateToRoute('events-view')">
         <TableIcon class="w-4 h-4 mr-2 inline-block" /> Events
       </p>
     </div>
@@ -51,14 +36,14 @@
         return this.$route.name == routeName
       },
       navigateToRoute(routeName) {
-        this.toggleSideBar()
+        this.toggleSideBar(false)
 
         if (!this.isRouteActive(routeName)) {
           this.$router.push({ name: routeName })
         }
       },
-      toggleSideBar() {
-        appStoreService.toggleSideBar()
+      toggleSideBar(isOpen: boolean | null = null) {
+        appStoreService.toggleSideBar(isOpen)
       },
     },
   })

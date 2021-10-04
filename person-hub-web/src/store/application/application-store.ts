@@ -9,11 +9,15 @@ const mutations = {
     state.loggedInUser = user
   },
 
-  toggleSideBar(state: AppModuleStoreState): void {
-    if (state.overlaySidebarStatus == 'open') {
-      state.overlaySidebarStatus = 'closed'
+  toggleSideBar(state: AppModuleStoreState, isOpen: boolean | null): void {
+    if (isOpen == null) {
+      if (state.overlaySidebarStatus == 'open') {
+        state.overlaySidebarStatus = 'closed'
+      } else {
+        state.overlaySidebarStatus = 'open'
+      }
     } else {
-      state.overlaySidebarStatus = 'open'
+      state.overlaySidebarStatus = isOpen ? 'open' : 'closed'
     }
   },
 

@@ -8,14 +8,11 @@ class AppStoreGetters {}
 class AppStoreService {
   toggleLoading(showLoading: boolean): void {
     // store.commit(`application/${mutations.toggleLoading.name}`, showLoading)
-    store.dispatch(
-      `application/${appModuleStore.actions.testSetLoading.name}`,
-      showLoading
-    )
+    store.dispatch(`application/${appModuleStore.actions.testSetLoading.name}`, showLoading)
   }
 
-  toggleSideBar(): void {
-    store.commit(`application/${appModuleStore.mutations.toggleSideBar.name}`)
+  toggleSideBar(isOpen: boolean | null = null): void {
+    store.commit(`application/${appModuleStore.mutations.toggleSideBar.name}`, isOpen)
   }
 
   state: AppModuleStoreState = state
