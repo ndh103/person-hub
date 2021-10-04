@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using PersonHub.Api.Areas.Todos.Controllers;
+using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Domain.Interfaces;
 using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
@@ -34,7 +35,12 @@ namespace PersonHub.UnitTest
                 HttpContext = new DefaultHttpContext() { User = user }
             };
 
-            var result = await controller.AddTodoItem(new TodoItem());
+            var result = await controller.AddTodoItem(new TodoItemDto(){
+                Title = "title",
+                Description = "description",
+                Status = TodoItemStatus.Todo,
+                ItemOrder = "item order"
+            });
 
             Assert.NotNull(result);
         }

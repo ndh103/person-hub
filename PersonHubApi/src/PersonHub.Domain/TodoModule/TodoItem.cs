@@ -16,6 +16,36 @@ namespace PersonHub.Domain.TodoModule.Entities
 
         public string ItemOrder {get;set;}
 
-        //TODO: implement EnsureValidState method
+        public TodoItem(string userId, string title, string description, TodoItemStatus status, string itemOrder){
+            this.UserId= userId;
+            this.Title = title;
+            this.Description = description;
+            this.Status = status;
+            this.ItemOrder = itemOrder;
+
+            EnsureValidState();
+        }
+
+        public TodoItem(){
+            
+        }
+
+        public void EnsureValidState(){
+            if(string.IsNullOrWhiteSpace(UserId)){
+                throw new ArgumentException("TodoItem UserId is required");
+            }
+
+            if(string.IsNullOrWhiteSpace(Title)){
+                throw new ArgumentException("TodoItem Title is required");
+            }
+
+            if(!Enum.IsDefined(typeof(TodoItemStatus), Status)){
+                throw new ArgumentException("TodoItem status is invalid");
+            }
+
+            if(string.IsNullOrEmpty(ItemOrder)){
+                throw new ArgumentException("TodoItem ItemOrder is required");
+            }
+        }
     }
 }

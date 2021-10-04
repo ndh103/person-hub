@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
 using PersonHub.Domain.Interfaces;
 using PersonHub.Domain.TodoModule.Entities;
@@ -23,40 +24,41 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<TodoItem>> AddTodoItem(TodoItem todoItemModel)
+        public async Task<ActionResult<TodoItem>> AddTodoItem(TodoItemDto todoItemDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            // Reset the id to prevent Id set from client side
-            todoItemModel.UserId = this.AuthenticatedUserEmail;
-            var addedItem =  await _repository.AddAsync(todoItemModel);
+            var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder);
+            var addedItem =  await _repository.AddAsync(todoItemEntity);
 
             return addedItem;
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTodoItem(int id, TodoItem todoItemModel)
+        public async Task<IActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            var todoItem = await _repository.GetByIdAsync(id);
-            if (todoItem == null)
+            var todoItemEntity = await _repository.GetByIdAsync(id);
+            if (todoItemEntity == null)
             {
                 return NotFound();
             }
 
-            todoItem.Title = todoItemModel.Title;
-            todoItem.Description = todoItemModel.Description;
-            todoItem.Status = todoItemModel.Status;
-            todoItem.ItemOrder = todoItemModel.ItemOrder;
+            todoItemEntity.Title = todoItemDto.Title;
+            todoItemEntity.Description = todoItemDto.Description;
+            todoItemEntity.Status = todoItemDto.Status;
+            todoItemEntity.ItemOrder = todoItemDto.ItemOrder;
 
-            await _repository.UpdateAsync(todoItem);
+            todoItemEntity.EnsureValidState();
+
+            await _repository.UpdateAsync(todoItemEntity);
 
             return Ok();
         }
@@ -81,7 +83,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
-                return BadRequest();
+                return NotFound();
             }
 
             return todoItem;
@@ -93,7 +95,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
 
             if(todoItem is null){
-                return BadRequest();
+                return NotFound();
             }
 
             await _repository.DeleteAsync(todoItem);

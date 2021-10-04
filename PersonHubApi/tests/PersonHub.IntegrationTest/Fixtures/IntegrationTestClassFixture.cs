@@ -27,7 +27,7 @@ namespace PersonHub.IntegrationTest.Fixtures
             {
                 Host = "localhost",
                 Port = 5432,
-                Database = "person-hub-db-test",
+                Database = "person-hub-test",
                 Username = "postgres",
                 Password = "P@ssw0rd",
                 SearchPath = "public"
