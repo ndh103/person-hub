@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace PersonHub.Domain.Entities
 {
@@ -6,6 +7,7 @@ namespace PersonHub.Domain.Entities
   // Using non-generic integer types for simplicity and to ease caching logic
   public abstract class BaseEntity
   {
+    [JsonInclude]
     public virtual long Id { get; protected set; }
   }
 }

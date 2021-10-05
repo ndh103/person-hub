@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
 using PersonHub.Domain.Interfaces;
 using PersonHub.Domain.TodoModule.Entities;
+using PersonHub.Infrastructure.DataAccess;
 
 namespace PersonHub.Api.Areas.Todos.Controllers
 {
@@ -16,11 +18,11 @@ namespace PersonHub.Api.Areas.Todos.Controllers
     [Authorize]
     public class ItemsController : ApiControllerBase
     {
-        private IAsyncRepository<TodoItem> _repository { get; }
+        private readonly PersonHubDbContext dbContext;
 
-        public ItemsController(IAsyncRepository<TodoItem> repository)
+        public ItemsController(PersonHubDbContext dbContext)
         {
-            _repository = repository;
+            this.dbContext = dbContext;
         }
 
         [HttpPost("")]
@@ -32,9 +34,11 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             }
 
             var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder);
-            var addedItem =  await _repository.AddAsync(todoItemEntity);
 
-            return addedItem;
+            await dbContext.AddAsync(todoItemEntity);
+            await dbContext.SaveChangesAsync();
+            
+            return todoItemEntity;
         }
 
         [HttpPut("{id}")]
@@ -45,7 +49,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
                 return BadRequest(ModelState);
             }
 
-            var todoItemEntity = await _repository.GetByIdAsync(id);
+            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r =>r.Id == id && r.UserId == AuthenticatedUserEmail);
             if (todoItemEntity == null)
             {
                 return NotFound();
@@ -58,7 +62,7 @@ namespace PersonHub.Api.Areas.Todos.Controllers
 
             todoItemEntity.EnsureValidState();
 
-            await _repository.UpdateAsync(todoItemEntity);
+            await dbContext.SaveChangesAsync();
 
             return Ok();
         }
@@ -71,18 +75,19 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             {
                 return BadRequest();
             }
-            var todoItems = await _repository.ListAsync(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status);
+            var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
 
-            return todoItems.ToList();
+            return todoItems;
         }
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> Get(int id)
         {
-            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
+            var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
 
-            if(todoItem is null){
+            if (todoItem is null)
+            {
                 return NotFound();
             }
 
@@ -92,13 +97,15 @@ namespace PersonHub.Api.Areas.Todos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var todoItem = await _repository.FirstOrDefaultAsync(r =>r.UserId == AuthenticatedUserEmail && r.Id == id);
+            var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
 
-            if(todoItem is null){
+            if (todoItem is null)
+            {
                 return NotFound();
             }
 
-            await _repository.DeleteAsync(todoItem);
+            dbContext.TodoItems.Remove(todoItem);
+            await dbContext.SaveChangesAsync();
             return Ok();
         }
     }

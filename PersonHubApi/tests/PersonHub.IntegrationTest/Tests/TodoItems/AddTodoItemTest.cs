@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Headers;
@@ -10,13 +11,13 @@ using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.IntegrationTest.Fixtures;
 using Xunit;
 
-namespace PersonHub.IntegrationTest.Tests
+namespace PersonHub.IntegrationTest.Tests.TodoItems
 {
     [Collection("Test collection")]
 
-    public class TodoItemApiTest : TestBaseClass
+    public class AddTodoItemTest : TestBaseClass
     {
-        public TodoItemApiTest(IntegrationTestClassFixture fixture) : base(fixture)
+        public AddTodoItemTest(IntegrationTestClassFixture fixture) : base(fixture)
         {
         }
 
@@ -26,9 +27,9 @@ namespace PersonHub.IntegrationTest.Tests
             var todoItemDto = new TodoItemDto()
             {
                 Title = "title",
-                Description = "description",
+                Description = DateTime.Now.ToString(),
                 Status = TodoItemStatus.Todo,
-                ItemOrder = "item order"
+                ItemOrder = "item order 1"
             };
 
             var response = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
@@ -36,6 +37,7 @@ namespace PersonHub.IntegrationTest.Tests
 
             var result = await response.Content.ReadFromJsonAsync<TodoItem>();
 
+            Assert.True(result.Id > 0);
             Assert.Equal(todoItemDto.Title, result.Title);
             Assert.Equal(todoItemDto.Description, result.Description);
             Assert.Equal(todoItemDto.Status, result.Status);
