@@ -55,7 +55,7 @@
 .vue-tags-input .ti-tag {
   position: relative;
   background: #ebde6e !important;
-  color: #283944;
+  color: #283944 !important;
 }
 
 /* we defined a custom css class in the data model, now we are using it to style the tag */
