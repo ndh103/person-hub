@@ -1,5 +1,14 @@
 version: "3.9"
 services:
+  flyway:
+    container_name: flyway_person_hub
+    image: flyway/flyway:7.12.1-alpine
+    command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd -connectRetries=60 migrate
+    volumes:
+      - ./sql:/flyway/sql
+    depends_on:
+      - postgresdb
+
   postgresdb:
     image: postgres:latest
     container_name: person-hub-database
@@ -9,14 +18,4 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=P@ssw0rd
       - POSTGRES_DB=person-hub-test
-      - PGDATA=/data/postgres
     restart: on-failure
-
-  flyway:
-    container_name: flyway_person_hub
-    image: flyway/flyway:7.12.1-alpine
-    command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd -connectRetries=60 migrate
-    volumes:
-      - ./sql:/flyway/sql
-    depends_on:
-      - postgresdb
