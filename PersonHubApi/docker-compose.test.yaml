@@ -10,8 +10,6 @@ services:
       - POSTGRES_PASSWORD=P@ssw0rd
       - POSTGRES_DB=person-hub-test
       - PGDATA=/data/postgres
-    volumes:
-      - postgres:/data/postgres
     restart: on-failure
 
   flyway:
@@ -19,10 +17,6 @@ services:
     image: flyway/flyway:7.12.1-alpine
     command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd -connectRetries=60 migrate
     volumes:
-      - sql:/flyway/sql
+      - ./sql:/flyway/sql
     depends_on:
       - postgresdb
-
-volumes:
-    postgres:
-    sql:
