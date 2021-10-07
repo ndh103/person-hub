@@ -3,7 +3,7 @@ services:
   flyway:
     container_name: flyway_person_hub
     image: flyway/flyway:7.12.1-alpine
-    command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd -connectRetries=60 migrate
+    command: -url=jdbc:postgresql://postgresdb:5432/person-hub-test -schemas="person-hub-test" -user=postgres -password=P@ssw0rd -connectRetries=60 migrate
     volumes:
       - ./sql:/flyway/sql
     depends_on:
