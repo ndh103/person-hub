@@ -54,7 +54,7 @@
 /* default styles for all the tags */
 .vue-tags-input .ti-tag {
   position: relative;
-  background: #ebde6e;
+  background: #ebde6e !important;
   color: #283944;
 }
 
