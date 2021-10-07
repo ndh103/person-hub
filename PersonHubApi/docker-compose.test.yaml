@@ -12,8 +12,6 @@ services:
       - PGDATA=/data/postgres
     volumes:
       - postgres:/data/postgres
-    depends_on:
-      - flyway
     restart: on-failure
 
   flyway:
@@ -22,6 +20,8 @@ services:
     command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd migrate
     volumes:
       - sql:/flyway/sql
+    depends_on:
+      - postgresdb
     restart: on-failure
 
 volumes:
