@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  postgresql:
+  postgresdb:
     image: postgres:latest
     container_name: person-hub-database
     ports:
@@ -12,6 +12,16 @@ services:
       - PGDATA=/data/postgres
     volumes:
       - postgres:/data/postgres
+    depends_on:
+      - flyway
+    restart: on-failure
+
+  flyway:
+    container_name: flyway_person_hub
+    image: flyway/flyway:7.12.1-alpine
+    command: -url=jdbc:postgresql://postgresdb:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd migrate
+    volumes:
+      - sql:/flyway/sql
     restart: on-failure
 
 volumes:

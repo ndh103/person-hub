@@ -22,7 +22,8 @@ namespace PersonHub.IntegrationTest.Fixtures
 
         public IntegrationTestClassFixture()
         {
-            const bool shouldRunFlyway = true;
+            //TODO: remove those codes
+            const bool shouldRunFlyway = false;
             if (shouldRunFlyway)
             {
                 //TODO: Read configuration from appsettings instead of hardcode here
