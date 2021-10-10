@@ -18,6 +18,9 @@ namespace PersonHub.Infrastructure.DataAccess.Configurations.Events
             builder.Property(r=>r.Title).IsRequired().HasMaxLength(250);
             builder.Property(r=>r.Description).HasMaxLength(1000);
 
+            builder.Property(r => r.StartDate).HasColumnType("timestamptz");
+            builder.Property(r => r.FinishDate).HasColumnType("timestamptz");
+
             builder.HasMany<FinisherItemLog>(r => r.Logs).WithOne().HasForeignKey(r =>r.FinisherItemId).OnDelete(DeleteBehavior.Cascade);
         }
     }

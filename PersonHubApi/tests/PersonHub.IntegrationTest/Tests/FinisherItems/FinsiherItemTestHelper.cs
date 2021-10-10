@@ -18,7 +18,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
                 Title = "Test title" + randomText,
                 Description ="Test Description" + randomText,
                 Status = Domain.FinisherModule.FinisherItemStatus.Planning,
-                StartDate = DateTime.UtcNow,
+                StartDate = DateTime.Now,
                 FinishDate = null,
                 Tags = new string[]{"tag 1", "tag "+ randomText}
             };
@@ -29,7 +29,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             return new FinisherItemLogDto(){
                 Content = "content" + randomText,
-                CreatedDate = DateTime.UtcNow,
+                CreatedDate = DateTime.Now,
             };
         }
 

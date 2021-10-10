@@ -165,7 +165,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
             }
 
             logEntity.Content = logDto.Content;
-            logEntity.CreatedDate = DateTime.UtcNow;
+            logEntity.CreatedDate = DateTime.Now;
 
             var entityState = logEntity.CheckValidState();
             if (entityState.HasError)

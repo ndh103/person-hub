@@ -14,7 +14,7 @@ namespace PersonHub.Infrastructure.DataAccess.Configurations.Events
         public void Configure(EntityTypeBuilder<FinisherItemLog> builder)
         {
             builder.Property(r=> r.Id).UseIdentityAlwaysColumn();
-            builder.Property(r =>r.CreatedDate).IsRequired();
+            builder.Property(r =>r.CreatedDate).IsRequired().HasColumnType("timestamptz");
             builder.Property(r=>r.Content).IsRequired();
         }
     }
