@@ -7,3 +7,10 @@ services:
     command: -url=jdbc:postgresql://host.docker.internal:5432/person-hub -schemas="person-hub" -user=postgres -password=P@ssw0rd migrate
     volumes:
       - ../sql:/flyway/sql
+
+  flyway-test:
+    container_name: flyway_person_hub_test
+    image: flyway/flyway:7.12.1-alpine
+    command: -url=jdbc:postgresql://host.docker.internal:5432/person-hub-test -schemas="person-hub-test" -user=postgres -password=P@ssw0rd migrate
+    volumes:
+      - ../sql:/flyway/sql
