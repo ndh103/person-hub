@@ -37,7 +37,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public static void AssertCompare(FinisherItemRequestDto requestDto, FinisherItem entity){
             Assert.True(requestDto.Title == entity.Title, "Title is not equal");
             Assert.True(requestDto.Description == entity.Description, "Description is not equal");
-            Assert.True(requestDto.StartDate == entity.StartDate, "StartDate is not equal");
+            Assert.True(requestDto.StartDate == entity.StartDate, $"StartDate is not equal. Expected Date {requestDto.StartDate}. Read date {entity.StartDate}");
             Assert.True(requestDto.FinishDate == entity.FinishDate, "FinishDate is not equal");
 
             Assert.True(requestDto.Tags.Count() == entity.Tags.Count(), "Tags are not equal");
