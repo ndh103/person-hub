@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -34,18 +35,14 @@ namespace PersonHub.Domain.FinisherModule
         private string[] _tags = new string[] { };
 
         [JsonInclude]
-        [NotMapped]
         public IReadOnlyCollection<string> Tags => _tags.ToList().AsReadOnly();
 
-        private List<FinisherItemLog> _logs { get; set; } = new List<FinisherItemLog>();
+        private readonly List<FinisherItemLog> _logs = new List<FinisherItemLog>();
 
         [JsonInclude]
         public IReadOnlyCollection<FinisherItemLog> Logs => _logs.AsReadOnly();
 
-        private FinisherItem()
-        {
-
-        }
+        private FinisherItem() { }
 
         public FinisherItem(string userId, string title, string description, DateTime? startDate, string[] tags, FinisherItemStatus status)
         {
@@ -137,7 +134,7 @@ namespace PersonHub.Domain.FinisherModule
                     result.AddError("Maximum Tags is 10");
                 }
 
-                if (this.Tags.Any(tag => tag.Length > 50))
+                if (this._tags.Any(tag => tag.Length > 50))
                 {
                     result.AddError("A tag should not exceed 50 characters");
                 }

@@ -2,12 +2,23 @@
   <QuickAddForm ref="quickAddForm" @on-new-item-added="addNewItem($event)" />
 
   <!-- Action bar -->
-  <div v-if="!isQuickAddFormOpen" class="flex">
-    <span class="app-action-link" @click="openForm()">
+  <div v-if="!isQuickAddFormOpen" class="flex px-2 pb-3">
+    <div class="app-btn-group-container" role="group">
+      <button :class="[filteredStatus == FinisherItemStatus.Planning ? 'btn-group-active' : '']" class="app-btn-group-left" @click="filterByStatus(FinisherItemStatus.Planning)">
+        Planning
+      </button>
+      <button :class="[filteredStatus == FinisherItemStatus.Started ? 'btn-group-active' : '']" class="app-btn-group-center" @click="filterByStatus(FinisherItemStatus.Started)">
+        Started
+      </button>
+      <button :class="[filteredStatus == FinisherItemStatus.Finished ? 'btn-group-active' : '']" class="app-btn-group-right" @click="filterByStatus(FinisherItemStatus.Finished)">
+        Finished
+      </button>
+    </div>
+    <span class="flex-grow"></span>
+    <span class="app-action-link mr-2" @click="openForm()">
       <PlusIcon class="inline-block h-4 w-4" />
       <span>Add new item</span>
     </span>
-    <span class="flex-grow"></span>
     <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchItems()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
@@ -90,6 +101,7 @@
 
   import TrashIcon from '@/assets/trash-icon.svg?component'
   import ArrowRightIcon from '@/assets/arrow-right-icon.svg?component'
+  import FinisherItemStatus from './api-services/models/FinisherItemStatus'
 
   export default defineComponent({
     components: {
@@ -106,6 +118,7 @@
     data() {
       return {
         toBeDeletedItemId: 0,
+        filteredStatus: FinisherItemStatus.Planning,
       }
     },
     computed: {
@@ -121,6 +134,9 @@
       },
       deleteModal() {
         return this.$refs.deleteModal as any
+      },
+      FinisherItemStatus() {
+        return FinisherItemStatus
       },
     },
     async created() {
@@ -167,6 +183,7 @@
         var query = new FinisherItemQuery()
         query.limit = 100
         query.offset = 0
+        query.status = this.filteredStatus
 
         var response = await finisherItemApiService.query(query, true)
         if (response) {
@@ -214,6 +231,11 @@
         // Reset tobe deleted Id
         this.toBeDeletedItemId = 0
       },
+      async filterByStatus(status: FinisherItemStatus) {
+        this.filteredStatus = status
+
+        this.fetchItems()
+      },
     },
   })
 </script>
@@ -221,5 +243,9 @@
 <style scoped lang="postcss">
   .item-row:hover .action-menu {
     display: inline-block;
+  }
+
+  .btn-group-active {
+    @apply bg-green-500 text-white;
   }
 </style>

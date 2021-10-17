@@ -32,6 +32,18 @@ class FinisherItemApiService {
     }, shouldShowLoading)
   }
 
+  finish(
+    itemId: number,
+    finishActionRequest: {
+      finishDate: Date
+    },
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post(`${baseUrl}/${itemId}/finish`, finishActionRequest)
+    }, shouldShowLoading)
+  }
+
   delete(id: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
       return http.delete(`${baseUrl}/${id}`)

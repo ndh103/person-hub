@@ -19,6 +19,12 @@
     </div>
 
     <div class="pb-2 flex flex-row w-full">
+      <div class="flex justify-center items-center m-1 font-medium py-1 px-2 rounded-full text-blue-700 bg-blue-100 border border-blue-300">
+        <div class="text-xs font-normal leading-none max-w-full flex-initial">{{ itemStatus }}</div>
+      </div>
+    </div>
+
+    <div class="pb-2 flex flex-row w-full">
       <v-date-picker v-model="item.startDate">
         <template #default="{ togglePopover }">
           <div class="flex flex-wrap">
@@ -33,7 +39,7 @@
     </div>
 
     <div class="flex flex-row-reverse">
-      <button class="app-btn-primary" @click="onMarkAsDoneAction()">Mark as done</button>
+      <button class="app-btn-primary" @click="onFinishItem()">Mark as done</button>
       <button class="app-btn-danger" @click="onDeleteAction()">Remove item</button>
     </div>
 
@@ -48,7 +54,21 @@
     </Modal>
 
     <Modal ref="modalFinish" title="Finish an item">
-      <template #body>Finish this item</template>
+      <template #body>
+        <div>Finish the item</div>
+        <div>
+          <!-- TODO: move this to a dedicated component -->
+          <v-date-picker v-model="itemFinishDate">
+            <template #default="{ togglePopover }">
+              <div class="flex flex-wrap">
+                <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
+                  {{ itemFinishDate.toLocaleDateString() }}
+                </button>
+              </div>
+            </template>
+          </v-date-picker>
+        </div>
+      </template>
       <template #footer>
         <div class="mx-4 mb-4 flex flex-row-reverse">
           <button class="app-btn-secondary" @click="modalFinish.toggleModal(false)">Cancel</button>
@@ -66,6 +86,7 @@
   import FinisherItem from './api-services/models/FinisherItem'
   import finisherItemApiService from './api-services/finisherItemApiService'
   import finisherListStoreService from './store/finisherListStoreService'
+  import FinisherItemStatus from './api-services/models/FinisherItemStatus'
 
   export default defineComponent({
     components: {
@@ -84,6 +105,7 @@
         item: new FinisherItem(),
         tag: '',
         tags: [],
+        itemFinishDate: new Date(),
       }
     },
     computed: {
@@ -92,6 +114,9 @@
       },
       modalFinish() {
         return this.$refs.modalFinish as any
+      },
+      itemStatus() {
+        return FinisherItemStatus[this.item.status]
       },
     },
     async created() {
@@ -137,8 +162,9 @@
       onDeleteAction() {
         this.modalDelete.toggleModal(true)
       },
-      onMarkAsDoneAction() {
-        //TODO: open mark as done modal
+      onFinishItem() {
+        this.itemFinishDate = new Date()
+        this.modalFinish.toggleModal(true)
       },
       async deleteItem() {
         this.modalDelete.toggleModal(false)
@@ -152,10 +178,18 @@
           this.goBack()
         }
       },
-      async finishItem(){
-        this.modalFinish.toogleModal(false)
-        
-      }
+      async finishItem() {
+        this.modalFinish.toggleModal(false)
+
+        var response = await finisherItemApiService.finish(this.itemId, { finishDate: this.itemFinishDate }, true)
+
+        if (response) {
+          var updatedItems = [...finisherListStoreService.state.finisherItems]
+          updatedItems[updatedItems.findIndex((r) => r.id == this.item.id)] = { ...this.item }
+
+          finisherListStoreService.updateFinisherItems(updatedItems)
+        }
+      },
     },
   })
 </script>

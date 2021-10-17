@@ -60,7 +60,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
 
             var resultItems = await dbContext.FinisherItems.Where(r => r.UserId == AuthenticatedUserEmail)
                                                     .Where(r => r.Status == queryDto.Status)
-                                                    .OrderByDescending(r => r.StartDate).Skip(queryDto.Offset).Take(queryDto.Limit).ToListAsync();
+                                                    .Skip(queryDto.Offset).Take(queryDto.Limit).ToListAsync();
 
             return resultItems;
         }
@@ -72,9 +72,9 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
             var startDate = itemDto.Status != FinisherItemStatus.Planning ? itemDto.StartDate : null;
             var finisherItemEntity = new FinisherItem(AuthenticatedUserEmail, itemDto.Title, itemDto.Description, startDate, itemDto.Tags, itemDto.Status);
 
-            if (finisherItemEntity.HasError)
+            if (finisherItemEntity.HasError())
             {
-                return BadRequest(finisherItemEntity.Errors.First());
+                return BadRequest(finisherItemEntity.Errors().First());
             }
 
             await dbContext.FinisherItems.AddAsync(finisherItemEntity);
@@ -84,7 +84,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
             return finisherItemEntity;
         }
 
-        [HttpPost("/{itemId}/finish")]
+        [HttpPost("{itemId}/finish")]
         public async Task<ActionResult> FinishAnItem(int itemId, FinishItemActionRequestDto finishItemActionRequestDto)
         {
             var finisherItemEntity = await dbContext.FinisherItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
@@ -94,10 +94,12 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return NotFound();
             }
 
-            if (finisherItemEntity.Status == FinisherItemStatus.Finished)
-            {
-                return BadRequest("Item is already finished");
+            finisherItemEntity.Finish(finishItemActionRequestDto.FinishDate);
+            if(finisherItemEntity.HasError()){
+                return BadRequest(finisherItemEntity.Errors().First());
             }
+
+            await dbContext.SaveChangesAsync();
 
             return Ok();
         }
@@ -119,11 +121,9 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
             }
 
             var logEntity = new FinisherItemLog(itemId, logDto.Content);
-
-            var entityState = logEntity.CheckValidState();
-            if (entityState.HasError)
+            if (logEntity.HasError())
             {
-                return BadRequest(entityState.Errors.First());
+                return BadRequest(logEntity.Errors().First());
             }
 
             itemEntity.AddLog(logEntity);
@@ -143,16 +143,11 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return NotFound();
             }
 
-            if (finisherItemEntity.Status == FinisherItemStatus.Finished)
-            {
-                return BadRequest("No more update of the finished item");
-            }
-
             finisherItemEntity.Update(dto.Title, dto.Description, dto.StartDate, dto.Tags, dto.Status);
 
-            if (finisherItemEntity.HasError)
+            if (finisherItemEntity.HasError())
             {
-                return BadRequest(finisherItemEntity.Errors.First());
+                return BadRequest(finisherItemEntity.Errors().First());
             }
 
             dbContext.FinisherItems.Update(finisherItemEntity);
@@ -183,13 +178,10 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return BadRequest("Log item not found");
             }
 
-            logEntity.Content = logDto.Content;
-            logEntity.CreatedDate = DateTime.Now;
-
-            var entityState = logEntity.CheckValidState();
-            if (entityState.HasError)
+            logEntity.Update(logDto.Content);
+            if (logEntity.HasError())
             {
-                return BadRequest(entityState.Errors.First());
+                return BadRequest(logEntity.Errors().First());
             }
 
             await dbContext.SaveChangesAsync();
@@ -225,8 +217,8 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
 
             finisherItemEntity.RemoveLog(logId);
 
-            if(finisherItemEntity.HasError){
-                return BadRequest(finisherItemEntity.Errors.First());
+            if(finisherItemEntity.HasError()){
+                return BadRequest(finisherItemEntity.Errors().First());
             }
 
             await dbContext.SaveChangesAsync();

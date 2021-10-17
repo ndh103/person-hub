@@ -13,11 +13,9 @@ namespace PersonHub.Domain.Entities
         [JsonInclude]
         public virtual long Id { get; protected set; }
 
-        [NotMapped]
-        public bool HasError => _entityState.HasError;
+        public bool HasError() => _entityState.HasError;
 
-        [NotMapped]
-        public IReadOnlyCollection<string> Errors => _entityState.Errors;
+        public IReadOnlyCollection<string> Errors() => _entityState.Errors;
 
         [NotMapped]
         protected EntityState _entityState = new EntityState();

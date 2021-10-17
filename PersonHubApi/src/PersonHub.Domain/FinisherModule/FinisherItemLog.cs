@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using PersonHub.Domain.Entities;
 using PersonHub.Domain.Shared;
@@ -9,12 +10,14 @@ namespace PersonHub.Domain.FinisherModule
 {
     public class FinisherItemLog : BaseEntity
     {
+        [JsonInclude]
         public long FinisherItemId { get; set; }
 
-        public string Content { get; set; }
+        [JsonInclude]
+        public string Content { get; private set; }
 
-        public DateTime CreatedDate { get; set; }
-
+        [JsonInclude]
+        public DateTime CreatedDate { get; private set; }
         public FinisherItemLog(long finisherItemId, string content)
         {
             this.FinisherItemId = finisherItemId;
@@ -22,16 +25,18 @@ namespace PersonHub.Domain.FinisherModule
             this.CreatedDate = DateTime.Now;
         }
 
-        public EntityState CheckValidState()
-        {
-            var result = new EntityState();
+        public void Update(string content){
+            this.Content = content;
 
+            CheckValidState();
+        }
+
+        private void CheckValidState()
+        {
             if (string.IsNullOrEmpty(this.Content))
             {
-                result.AddError("Content is required");
+                _entityState.AddError("Content is required");
             }
-
-            return result;
         }
     }
 }

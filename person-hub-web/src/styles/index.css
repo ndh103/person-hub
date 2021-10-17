@@ -40,3 +40,19 @@
 .app-action-link{
   @apply hover:cursor-pointer hover:text-green-700 text-green-500;
 }
+
+/* Button Group */
+.app-btn-group-container{
+  @apply flex justify-center rounded-lg text-xs;
+}
+.app-btn-group-left{
+  @apply bg-white text-green-500 hover:bg-green-500 hover:text-white border border-r-0 border-green-500 rounded-l-lg px-2 py-1 mx-0 outline-none h-6;
+}
+
+.app-btn-group-center{
+  @apply bg-white text-green-500 hover:bg-green-500 hover:text-white border border-green-500 px-2 py-1 mx-0 outline-none h-6;
+}
+
+.app-btn-group-right{
+  @apply bg-white text-green-500 hover:bg-green-500 hover:text-white border border-l-0 border-green-500 rounded-r-lg px-2 py-1 mx-0 outline-none h-6;
+}
