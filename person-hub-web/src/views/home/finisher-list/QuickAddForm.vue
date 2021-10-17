@@ -38,6 +38,7 @@
   import FinisherItem from './api-services/models/FinisherItem'
   import VueTagsInput from '@sipec/vue3-tags-input'
   import Switch from '@/components/Switch.vue'
+  import FinisherItemStatus from './api-services/models/FinisherItemStatus'
 
   export default defineComponent({
     components: {
@@ -61,6 +62,8 @@
     methods: {
       submit() {
         this.item.tags = this.tags.map((r) => r.text)
+
+        this.item.status = this.isStarted ? FinisherItemStatus.Started : FinisherItemStatus.Planning
 
         //TODO: validate the event here
         this.$emit('onNewItemAdded', { ...this.item })

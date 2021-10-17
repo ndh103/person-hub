@@ -30,8 +30,16 @@
 
 /* Chips */
 
-.app-chip-s1 {
+.app-chip-simple {
   @apply mr-1  py-1  px-2  bg-white  rounded-full  text-gray-700  border border-gray-300  text-xs;
+}
+
+.app-chip-primary {
+  @apply mr-1  py-1  px-2  bg-green-100  rounded-full  text-green-700  border border-green-300  text-xs;
+}
+
+.app-chip-pink {
+  @apply mr-1  py-1  px-2  bg-pink-100  rounded-full  text-pink-700  border border-pink-300  text-xs;
 }
 
 

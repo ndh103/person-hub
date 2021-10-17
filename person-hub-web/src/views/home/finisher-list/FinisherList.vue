@@ -34,7 +34,7 @@
       <span class="text-xs self-end">{{ $filters.formatDate(item.startDate) }}</span>
 
       <div>
-        <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-s1 mt-1 hidden sm:inline-block">{{ tag }}</span>
+        <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
       </div>
       <span :id="'popper-button' + index" class="w-4 h-4">
         <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />

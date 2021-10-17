@@ -19,9 +19,7 @@
     </div>
 
     <div class="pb-2 flex flex-row w-full">
-      <div class="flex justify-center items-center m-1 font-medium py-1 px-2 rounded-full text-blue-700 bg-blue-100 border border-blue-300">
-        <div class="text-xs font-normal leading-none max-w-full flex-initial">{{ itemStatus }}</div>
-      </div>
+      <span :class="itemStatusClass">{{ itemStatus }}</span>
     </div>
 
     <div class="pb-2 flex flex-row w-full">
@@ -117,6 +115,17 @@
       },
       itemStatus() {
         return FinisherItemStatus[this.item.status]
+      },
+      itemStatusClass() {
+        switch (this.item.status) {
+          case FinisherItemStatus.Planning:
+            return 'app-chip-simple'
+          case FinisherItemStatus.Started:
+            return 'app-chip-primary'
+          case FinisherItemStatus.Finished:
+            return 'app-chip-pink'
+        }
+        return ''
       },
     },
     async created() {
