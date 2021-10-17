@@ -33,7 +33,6 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             updateRequestDto.Title = "updated title";
             updateRequestDto.Description = "updated desc";
             updateRequestDto.Status = FinisherItemStatus.Finished;
-            updateRequestDto.FinishDate = DateTime.Now;
 
             var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{addedItem.Id}", updateRequestDto);
             updateResponse.EnsureSuccessStatusCode();

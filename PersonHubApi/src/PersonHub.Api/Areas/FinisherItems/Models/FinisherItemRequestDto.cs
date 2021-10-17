@@ -14,8 +14,6 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
 
         public DateTime? StartDate { get; set; }
 
-        public DateTime? FinishDate { get; set; }
-
         public FinisherItemStatus Status { get; set; }
 
         public string[] Tags { get; set; }

@@ -7,7 +7,7 @@ namespace PersonHub.Domain.Shared
 {
     public class EntityState
     {
-        public bool HasError { get; set; } = false;
+        public bool HasError { get; private set; } = false;
 
         private List<string> _errors = new List<string>();
 

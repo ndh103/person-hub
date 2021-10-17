@@ -14,6 +14,9 @@
       <p :class="['sidebar-menu-item', isRouteActive('events-view') ? 'active' : '']" @click="navigateToRoute('events-view')">
         <TableIcon class="w-4 h-4 mr-2 inline-block" /> Events
       </p>
+      <p :class="['sidebar-menu-item', isRouteActive('finisher-list-view') ? 'active' : '']" @click="navigateToRoute('finisher-list-view')">
+        <ClipBoardCheckIcon class="w-4 h-4 mr-2 inline-block" /> Finisher list
+      </p>
     </div>
   </aside>
 </template>
@@ -24,12 +27,14 @@
   import appStoreService from '@/store/application/applicationStoreService'
   import TableIcon from '@/assets/table-icon.svg?component'
   import ClipBoardListIcon from '@/assets/clipboard-list-icon.svg?component'
+  import ClipBoardCheckIcon from '@/assets/clipboard-check-icon.svg?component'
 
   export default defineComponent({
     components: {
       CloseIcon,
       TableIcon,
       ClipBoardListIcon,
+      ClipBoardCheckIcon,
     },
     methods: {
       isRouteActive: function (routeName: string) {

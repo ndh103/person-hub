@@ -68,12 +68,13 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
         [HttpPost()]
         public async Task<ActionResult<FinisherItem>> Add(FinisherItemRequestDto itemDto, CancellationToken cancellationToken)
         {
-            var finisherItemEntity = new FinisherItem(AuthenticatedUserEmail, itemDto.Title, itemDto.Description, itemDto.StartDate, itemDto.Tags, itemDto.Status);
+            // If Planning, shoud have no Start Date
+            var startDate = itemDto.Status != FinisherItemStatus.Planning ? itemDto.StartDate : null;
+            var finisherItemEntity = new FinisherItem(AuthenticatedUserEmail, itemDto.Title, itemDto.Description, startDate, itemDto.Tags, itemDto.Status);
 
-            var entityState = finisherItemEntity.CheckValidState();
-            if (entityState.HasError)
+            if (finisherItemEntity.HasError)
             {
-                return BadRequest(entityState.Errors.First());
+                return BadRequest(finisherItemEntity.Errors.First());
             }
 
             await dbContext.FinisherItems.AddAsync(finisherItemEntity);
@@ -82,6 +83,25 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
 
             return finisherItemEntity;
         }
+
+        [HttpPost("/{itemId}/finish")]
+        public async Task<ActionResult> FinishAnItem(int itemId, FinishItemActionRequestDto finishItemActionRequestDto)
+        {
+            var finisherItemEntity = await dbContext.FinisherItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
+
+            if (finisherItemEntity == null)
+            {
+                return NotFound();
+            }
+
+            if (finisherItemEntity.Status == FinisherItemStatus.Finished)
+            {
+                return BadRequest("Item is already finished");
+            }
+
+            return Ok();
+        }
+
 
         [HttpPost("{itemId}/logs")]
         public async Task<ActionResult<FinisherItemLog>> AddLog(long itemId, FinisherItemLogDto logDto, CancellationToken cancellationToken)
@@ -106,7 +126,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return BadRequest(entityState.Errors.First());
             }
 
-            itemEntity.Logs.Add(logEntity);
+            itemEntity.AddLog(logEntity);
 
             await dbContext.SaveChangesAsync();
 
@@ -123,17 +143,16 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return NotFound();
             }
 
-            finisherItemEntity.Title = dto.Title;
-            finisherItemEntity.Description = dto.Description;
-            finisherItemEntity.StartDate = dto.StartDate;
-            finisherItemEntity.FinishDate = dto.FinishDate;
-            finisherItemEntity.Status = dto.Status;
-            finisherItemEntity.Tags = dto.Tags;
-
-            var entityState = finisherItemEntity.CheckValidState();
-            if (entityState.HasError)
+            if (finisherItemEntity.Status == FinisherItemStatus.Finished)
             {
-                return BadRequest(entityState.Errors.First());
+                return BadRequest("No more update of the finished item");
+            }
+
+            finisherItemEntity.Update(dto.Title, dto.Description, dto.StartDate, dto.Tags, dto.Status);
+
+            if (finisherItemEntity.HasError)
+            {
+                return BadRequest(finisherItemEntity.Errors.First());
             }
 
             dbContext.FinisherItems.Update(finisherItemEntity);
@@ -150,7 +169,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return BadRequest("Content is required");
             }
 
-            var itemEntity = dbContext.FinisherItems.Include(r=>r.Logs).FirstOrDefault(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
+            var itemEntity = dbContext.FinisherItems.Include(r => r.Logs).FirstOrDefault(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
 
             if (itemEntity == null)
             {
@@ -197,20 +216,18 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
         [HttpDelete("{itemId}/logs/{logId}")]
         public async Task<ActionResult> DeleteLog(int itemId, int logId)
         {
-            var finisherItemEntity = dbContext.FinisherItems.Include(r=>r.Logs).FirstOrDefault(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
+            var finisherItemEntity = dbContext.FinisherItems.Include(r => r.Logs).FirstOrDefault(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
 
             if (finisherItemEntity == null)
             {
                 return NotFound("Item not found");
             }
 
-            var logItem = finisherItemEntity.Logs.FirstOrDefault(r => r.Id == logId);
-            if (logItem == null)
-            {
-                return NotFound("Log Item not found");
-            }
+            finisherItemEntity.RemoveLog(logId);
 
-            finisherItemEntity.Logs.Remove(logItem);
+            if(finisherItemEntity.HasError){
+                return BadRequest(finisherItemEntity.Errors.First());
+            }
 
             await dbContext.SaveChangesAsync();
 

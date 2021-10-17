@@ -1,6 +1,7 @@
 import Home from './Home.vue'
 import eventRoutes from './events/route/route'
 import todoRoutes from './todos/route/route'
+import finisherRoutes from './finisher-list/route/route'
 
 const homeRoutes = [
   {
@@ -17,6 +18,7 @@ const homeRoutes = [
       },
       ...todoRoutes,
       ...eventRoutes,
+      ...finisherRoutes,
     ],
   },
 ]
