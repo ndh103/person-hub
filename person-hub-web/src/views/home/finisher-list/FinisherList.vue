@@ -19,7 +19,7 @@
       <PlusIcon class="inline-block h-4 w-4" />
       <span>Add new item</span>
     </span>
-    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchItems()">
+    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchItems(filteredStatus)">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
@@ -118,12 +118,14 @@
     data() {
       return {
         toBeDeletedItemId: 0,
-        filteredStatus: FinisherItemStatus.Planning,
       }
     },
     computed: {
+      filteredStatus() {
+        return finisherListStoreService.state.filteredStatus
+      },
       items(): Array<FinisherItem> {
-        return finisherListStoreService.state.finisherItems as Array<FinisherItem>
+        return finisherListStoreService.state.finisherItems.filter((r) => r.status == this.filteredStatus)
       },
       isQuickAddFormOpen() {
         if (this.$refs) {
@@ -140,23 +142,7 @@
       },
     },
     async created() {
-      // first time, fetch the list
-      if (!this.items || this.items.length == 0) {
-        await this.fetchItems()
-      }
-
-      //TODO: those logic should be reusable
-      // If events data already loaded and the events list has been outdated for 5 mins --> fetch the list again
-      if (finisherListStoreService.state.finisherItemsUpdatedTime) {
-        var MILISECONDS_IN_MINUTE = 1000 * 60
-        var now = dayjs()
-        var updatedTime = dayjs(finisherListStoreService.state.finisherItemsUpdatedTime)
-        const diffMinutes = now.diff(updatedTime) / MILISECONDS_IN_MINUTE
-
-        if (diffMinutes > 5) {
-          await this.fetchItems()
-        }
-      }
+      await this.fetchItemsWhenOutdated(this.filteredStatus)
     },
     methods: {
       async addNewItem(item: FinisherItem) {
@@ -166,31 +152,52 @@
           item.id = (response.data as FinisherItem).id
         }
 
-        var updatedItems = [...this.items]
-        updatedItems.unshift(item)
-
-        finisherListStoreService.updateFinisherItems(updatedItems)
+        finisherListStoreService.addFinisherItem(item)
       },
-      async removeItem(item: FinisherItem) {
-        var response = await finisherItemApiService.delete(item.id, true)
+      async deleteItem() {
+        this.deleteModal.toggleModal(false)
+        var response = await finisherItemApiService.delete(this.toBeDeletedItemId, true)
 
         if (response) {
-          var updatedItems = [...this.items].filter((r) => r.id != item.id)
-          finisherListStoreService.updateFinisherItems(updatedItems)
+          finisherListStoreService.removeFinisherItem(this.toBeDeletedItemId)
         }
+
+        // Reset tobe deleted Id
+        this.toBeDeletedItemId = 0
       },
-      async fetchItems() {
+      async fetchItems(status: FinisherItemStatus) {
         var query = new FinisherItemQuery()
         query.limit = 100
         query.offset = 0
-        query.status = this.filteredStatus
+        query.status = status
 
         var response = await finisherItemApiService.query(query, true)
         if (response) {
           var responseItems = response.data as Array<FinisherItem>
-          finisherListStoreService.updateFinisherItems(responseItems)
+          finisherListStoreService.updateFinisherItemsByStatus({
+            items: responseItems,
+            filteredStatus: status,
+          })
         }
       },
+      async fetchItemsWhenOutdated(status: FinisherItemStatus) {
+        var fetchTimeByStatus = finisherListStoreService.state.itemFetchTimeByStatus[status]
+
+        // If events data already loaded and the events list has been outdated for 5 mins --> fetch the list again
+        if (fetchTimeByStatus) {
+          var MILISECONDS_IN_MINUTE = 1000 * 60
+          var now = dayjs()
+          var fetchTime = dayjs(fetchTimeByStatus)
+          const diffMinutes = now.diff(fetchTime) / MILISECONDS_IN_MINUTE
+
+          if (diffMinutes > 5) {
+            await this.fetchItems(status)
+          }
+        } else {
+          await this.fetchItems(status)
+        }
+      },
+
       gotoDetails(itemId: number) {
         this.$router.push({
           name: 'finisher-item-details',
@@ -217,24 +224,9 @@
         this.toBeDeletedItemId = 0
         this.deleteModal.toggleModal(false)
       },
-      async deleteItem() {
-        this.deleteModal.toggleModal(false)
-        var response = await finisherItemApiService.delete(this.toBeDeletedItemId, true)
-
-        if (response) {
-          var updatedItems = [...finisherListStoreService.state.finisherItems]
-          updatedItems = updatedItems.filter((r) => r.id != this.toBeDeletedItemId)
-
-          finisherListStoreService.updateFinisherItems(updatedItems)
-        }
-
-        // Reset tobe deleted Id
-        this.toBeDeletedItemId = 0
-      },
       async filterByStatus(status: FinisherItemStatus) {
-        this.filteredStatus = status
-
-        this.fetchItems()
+        finisherListStoreService.updateFilteredStatus(status)
+        this.fetchItemsWhenOutdated(status)
       },
     },
   })

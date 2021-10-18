@@ -84,6 +84,26 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
             return finisherItemEntity;
         }
 
+        [HttpPost("{itemId}/start")]
+        public async Task<ActionResult> StartAnItem(int itemId, StartItemActionRequestDto startItemActionRequestDto)
+        {
+            var finisherItemEntity = await dbContext.FinisherItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
+
+            if (finisherItemEntity == null)
+            {
+                return NotFound();
+            }
+
+            finisherItemEntity.Start(startItemActionRequestDto.StartDate);
+            if(finisherItemEntity.HasError()){
+                return BadRequest(finisherItemEntity.Errors().First());
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
         [HttpPost("{itemId}/finish")]
         public async Task<ActionResult> FinishAnItem(int itemId, FinishItemActionRequestDto finishItemActionRequestDto)
         {

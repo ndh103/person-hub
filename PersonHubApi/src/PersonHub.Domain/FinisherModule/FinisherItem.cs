@@ -75,6 +75,22 @@ namespace PersonHub.Domain.FinisherModule
             CheckValidState();
         }
 
+        public void Start(DateTime startDate)
+        {
+            if (Status == FinisherItemStatus.Started)
+            {
+                this._entityState.AddError("The item is already started");
+            }
+
+            if (Status == FinisherItemStatus.Finished)
+            {
+                this._entityState.AddError("The item is already finished");
+            }
+
+            this.StartDate = startDate;
+            this.Status = FinisherItemStatus.Started;
+        }
+
         public void Finish(DateTime finishDate)
         {
             if (Status == FinisherItemStatus.Finished)

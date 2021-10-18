@@ -37,7 +37,8 @@
     </div>
 
     <div class="flex flex-row-reverse">
-      <button class="app-btn-primary" @click="onFinishItem()">Mark as done</button>
+      <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">Start this item</button>
+      <button v-if="item.status == FinisherItemStatus.Started" class="app-btn-primary" @click="onChangeStatusItem()">Mark as done</button>
       <button class="app-btn-danger" @click="onDeleteAction()">Remove item</button>
     </div>
 
@@ -51,16 +52,17 @@
       </template>
     </Modal>
 
-    <Modal ref="modalFinish" title="Finish an item">
+    <Modal ref="modalChangeStatus" title="Finish an item">
       <template #body>
-        <div>Finish the item</div>
+        <div v-if="item.status == FinisherItemStatus.Planning">Start the item</div>
+        <div v-if="item.status == FinisherItemStatus.Started">Finish the item</div>
         <div>
           <!-- TODO: move this to a dedicated component -->
-          <v-date-picker v-model="itemFinishDate">
+          <v-date-picker v-model="itemStatusDate">
             <template #default="{ togglePopover }">
               <div class="flex flex-wrap">
                 <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
-                  {{ itemFinishDate.toLocaleDateString() }}
+                  {{ itemStatusDate.toLocaleDateString() }}
                 </button>
               </div>
             </template>
@@ -69,8 +71,8 @@
       </template>
       <template #footer>
         <div class="mx-4 mb-4 flex flex-row-reverse">
-          <button class="app-btn-secondary" @click="modalFinish.toggleModal(false)">Cancel</button>
-          <button class="app-btn-danger" @click="finishItem()">Finish</button>
+          <button class="app-btn-secondary" @click="modalChangeStatus.toggleModal(false)">Cancel</button>
+          <button class="app-btn-danger" @click="changeItemStatus()">Finish</button>
         </div>
       </template>
     </Modal>
@@ -103,15 +105,18 @@
         item: new FinisherItem(),
         tag: '',
         tags: [],
-        itemFinishDate: new Date(),
+        itemStatusDate: new Date(),
       }
     },
     computed: {
+      FinisherItemStatus() {
+        return FinisherItemStatus
+      },
       modalDelete() {
         return this.$refs.modalDelete as any
       },
-      modalFinish() {
-        return this.$refs.modalFinish as any
+      modalChangeStatus() {
+        return this.$refs.modalChangeStatus as any
       },
       itemStatus() {
         return FinisherItemStatus[this.item.status]
@@ -151,10 +156,7 @@
 
         // Update the event in the store
         if (response) {
-          var updatedItems = [...finisherListStoreService.state.finisherItems]
-          updatedItems[updatedItems.findIndex((r) => r.id == this.item.id)] = { ...this.item }
-
-          finisherListStoreService.updateFinisherItems(updatedItems)
+          finisherListStoreService.updateFinisherItem(this.item)
         }
       },
       cancel() {
@@ -171,32 +173,44 @@
       onDeleteAction() {
         this.modalDelete.toggleModal(true)
       },
-      onFinishItem() {
-        this.itemFinishDate = new Date()
-        this.modalFinish.toggleModal(true)
+      onChangeStatusItem() {
+        this.itemStatusDate = new Date()
+        this.modalChangeStatus.toggleModal(true)
       },
       async deleteItem() {
         this.modalDelete.toggleModal(false)
         var response = await finisherItemApiService.delete(this.itemId, true)
 
         if (response) {
-          var updateItems = [...finisherListStoreService.state.finisherItems]
-          updateItems = updateItems.filter((r) => r.id != this.itemId)
-
-          finisherListStoreService.updateFinisherItems(updateItems)
+          finisherListStoreService.removeFinisherItem(this.itemId)
           this.goBack()
         }
       },
-      async finishItem() {
-        this.modalFinish.toggleModal(false)
+      async changeItemStatus() {
+        this.modalChangeStatus.toggleModal(false)
 
-        var response = await finisherItemApiService.finish(this.itemId, { finishDate: this.itemFinishDate }, true)
+        var response
+
+        if (this.item.status == FinisherItemStatus.Planning) {
+          response = await finisherItemApiService.start(this.itemId, { startDate: this.itemStatusDate }, true)
+
+          if (response) {
+            this.item.status = FinisherItemStatus.Started
+            this.item.startDate = this.itemStatusDate
+          }
+        } else if (this.item.status == FinisherItemStatus.Started) {
+          response = await finisherItemApiService.finish(this.itemId, { finishDate: this.itemStatusDate }, true)
+
+          if (response) {
+            this.item.status = FinisherItemStatus.Finished
+            this.item.finishDate = this.itemStatusDate
+          }
+        } else {
+          throw 'Status is not suported'
+        }
 
         if (response) {
-          var updatedItems = [...finisherListStoreService.state.finisherItems]
-          updatedItems[updatedItems.findIndex((r) => r.id == this.item.id)] = { ...this.item }
-
-          finisherListStoreService.updateFinisherItems(updatedItems)
+          finisherListStoreService.updateFinisherItem(this.item)
         }
       },
     },

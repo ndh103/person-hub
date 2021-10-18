@@ -32,6 +32,18 @@ class FinisherItemApiService {
     }, shouldShowLoading)
   }
 
+  start(
+    itemId: number,
+    startActionRequest: {
+      startDate: Date
+    },
+    shouldShowLoading = false
+  ): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post(`${baseUrl}/${itemId}/start`, startActionRequest)
+    }, shouldShowLoading)
+  }
+
   finish(
     itemId: number,
     finishActionRequest: {
