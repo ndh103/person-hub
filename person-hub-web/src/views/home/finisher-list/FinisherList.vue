@@ -31,7 +31,7 @@
     </div>
 
     <div class="flex justify-between">
-      <span class="text-xs self-end">{{ $filters.formatDate(item.startDate) }}</span>
+      <span v-if="item.startDate" class="text-xs self-end">{{ $filters.formatDate(item.startDate) }}</span>
 
       <div>
         <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>

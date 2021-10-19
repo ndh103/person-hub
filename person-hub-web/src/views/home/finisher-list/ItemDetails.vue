@@ -2,9 +2,9 @@
   <div class="flex">
     <div class="app-action-link" @click="goBack()"><ArrowLeftIcon class="h-4 w-4 inline-block" /> back</div>
     <span class="flex-grow"></span>
-
-    <button class="app-btn-primary" @click="save()">Save</button>
-    <button class="app-btn-secondary" @click="cancel()">Cancel</button>
+    <button class="app-btn-danger" @click="onDeleteAction()">Remove item</button>
+    <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">Start this item</button>
+    <button v-if="item.status == FinisherItemStatus.Started" class="app-btn-primary" @click="onChangeStatusItem()">Mark as done</button>
   </div>
 
   <div v-if="!item.id">Loading...</div>
@@ -35,16 +35,17 @@
         </template>
       </v-date-picker>
 
-      <span v-if="item.status == FinisherItemStatus.Finished" class="app-btn-datepicker">{{ formatDate(item.startDate) }} - {{ formatDate(item.finishDate) }}</span>
+      <span v-if="item.status == FinisherItemStatus.Finished" class="app-btn-datepicker"
+        >{{ $filters.formatDate(item.startDate) }} - {{ $filters.formatDate(item.finishDate) }}</span
+      >
     </div>
 
-    <div class="pb-6 mb-2 flex flex-row w-full border-b border-opacity-25"></div>
-
-    <div class="flex flex-row-reverse">
-      <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">Start this item</button>
-      <button v-if="item.status == FinisherItemStatus.Started" class="app-btn-primary" @click="onChangeStatusItem()">Mark as done</button>
-      <button class="app-btn-danger" @click="onDeleteAction()">Remove item</button>
+    <div class="flex flex-row-reverse mt-2">
+      <button class="app-btn-secondary" @click="cancel()">Cancel</button>
+      <button class="app-btn-primary" @click="save()">Save</button>
     </div>
+
+    <div class="mt-4 mb-2 flex flex-row w-full border-b border-opacity-25"></div>
 
     <Modal ref="modalDelete" title="Confirm deletion">
       <template #body>Are you sure you want to delete this item? </template>
@@ -66,7 +67,7 @@
             <template #default="{ togglePopover }">
               <div class="flex flex-wrap">
                 <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
-                  {{ formatDate(itemStatusDate) }}
+                  {{ $filters.formatDate(itemStatusDate) }}
                 </button>
               </div>
             </template>
@@ -159,9 +160,6 @@
       }
     },
     methods: {
-      formatDate(date: Date) {
-        return dayjs(date).format('DD MMM YY')
-      },
       async save() {
         this.item.tags = this.tags.map((r) => r.text)
 
