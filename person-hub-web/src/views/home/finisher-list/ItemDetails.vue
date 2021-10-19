@@ -9,7 +9,7 @@
 
   <div v-if="!item.id">Loading...</div>
 
-  <div v-if="item.id" class="p-2 border-b-2">
+  <div v-if="item.id" class="p-2">
     <div class="pb-2 flex flex-row w-full">
       <input v-model="item.title" type="text" placeholder="Title" class="app-input w-full text-xl" />
     </div>
@@ -18,12 +18,14 @@
       <textarea v-model="item.description" rows="5" type="text" placeholder="Description" class="app-input w-full no-border-bottom h-auto" />
     </div>
 
-    <div class="pb-2 flex flex-row w-full">
-      <span :class="itemStatusClass">{{ itemStatus }}</span>
-    </div>
+    <div class="pb-2 flex flex-row w-full items-center">
+      <vue-tags-input placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
 
-    <div class="pb-2 flex flex-row w-full">
-      <v-date-picker v-model="item.startDate">
+      <span class="flex-grow"></span>
+
+      <span :class="itemStatusClass" class="h-6">{{ itemStatus }}</span>
+
+      <v-date-picker v-if="item.status != FinisherItemStatus.Finished && item.startDate" v-model="item.startDate">
         <template #default="{ togglePopover }">
           <div class="flex flex-wrap">
             <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
@@ -33,8 +35,10 @@
         </template>
       </v-date-picker>
 
-      <vue-tags-input placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
+      <span v-if="item.status == FinisherItemStatus.Finished" class="app-btn-datepicker">{{ formatDate(item.startDate) }} - {{ formatDate(item.finishDate) }}</span>
     </div>
+
+    <div class="pb-6 mb-2 flex flex-row w-full border-b border-opacity-25"></div>
 
     <div class="flex flex-row-reverse">
       <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">Start this item</button>
@@ -52,7 +56,7 @@
       </template>
     </Modal>
 
-    <Modal ref="modalChangeStatus" title="Finish an item">
+    <Modal v-if="item.status != FinisherItemStatus.Finished" ref="modalChangeStatus" title="Finish an item">
       <template #body>
         <div v-if="item.status == FinisherItemStatus.Planning">Start the item</div>
         <div v-if="item.status == FinisherItemStatus.Started">Finish the item</div>
@@ -62,7 +66,7 @@
             <template #default="{ togglePopover }">
               <div class="flex flex-wrap">
                 <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
-                  {{ itemStatusDate.toLocaleDateString() }}
+                  {{ formatDate(itemStatusDate) }}
                 </button>
               </div>
             </template>
@@ -87,6 +91,7 @@
   import finisherItemApiService from './api-services/finisherItemApiService'
   import finisherListStoreService from './store/finisherListStoreService'
   import FinisherItemStatus from './api-services/models/FinisherItemStatus'
+  import dayjs from 'dayjs'
 
   export default defineComponent({
     components: {
@@ -138,8 +143,13 @@
 
       if (response) {
         this.item = response.data as FinisherItem
+        if (this.item.startDate) {
+          this.item.startDate = new Date(this.item.startDate)
+        }
 
-        this.item.startDate = new Date(this.item.startDate)
+        if (this.item.finishDate) {
+          this.item.finishDate = new Date(this.item.finishDate)
+        }
 
         this.tags = this.item.tags.map((tag) => {
           return {
@@ -149,6 +159,9 @@
       }
     },
     methods: {
+      formatDate(date: Date) {
+        return dayjs(date).format('DD MMM YY')
+      },
       async save() {
         this.item.tags = this.tags.map((r) => r.text)
 

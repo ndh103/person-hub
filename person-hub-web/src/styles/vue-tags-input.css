@@ -11,7 +11,7 @@
 
 .vue-tags-input .ti-input {
   transition: border-bottom 200ms ease;
-  @apply border-0 border-b !important;
+  @apply border-0 !important;
 }
 
 /* we cange the border color if the user focuses the input */
