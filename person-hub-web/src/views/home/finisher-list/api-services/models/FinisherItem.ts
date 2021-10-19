@@ -1,3 +1,4 @@
+import FinisherItemLog from './FinisherItemLog'
 import FinisherItemStatus from './FinisherItemStatus'
 
 export default class FinisherItem {
@@ -8,4 +9,5 @@ export default class FinisherItem {
   finishDate!: Date
   tags!: Array<string>
   status!: FinisherItemStatus
+  logs!: Array<FinisherItemLog>
 }

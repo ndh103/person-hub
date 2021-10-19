@@ -65,7 +65,7 @@ class FinisherItemApiService {
   // logs
   addLog(itemId: number, itemLog: FinisherItemLog, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
-      return http.post(`${baseUrl}/${itemId}/logs}`, itemLog)
+      return http.post(`${baseUrl}/${itemId}/logs`, itemLog)
     }, shouldShowLoading)
   }
 

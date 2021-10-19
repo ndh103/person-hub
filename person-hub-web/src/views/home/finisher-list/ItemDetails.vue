@@ -15,7 +15,7 @@
     </div>
 
     <div class="pb-2 flex flex-row w-full">
-      <textarea v-model="item.description" rows="5" type="text" placeholder="Description" class="app-input w-full no-border-bottom h-auto" />
+      <textarea v-model="item.description" rows="5" type="text" placeholder="Description" class="app-input w-full h-auto" />
     </div>
 
     <div class="pb-2 flex flex-row w-full items-center">
@@ -81,6 +81,29 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Logs Sections -->
+
+    <div class="pb-2 flex flex-row w-full">
+      <span class="mr-4"
+        >Today <br />
+        {{ $filters.formatDate(new Date()) }}</span
+      >
+      <textarea v-model="newLog" rows="5" type="text" placeholder="Add logs for today..." class="app-input h-auto flex-grow" />
+    </div>
+
+    <div class="flex flex-row-reverse mt-2">
+      <button class="app-btn-primary" @click="addLog()">Add Log</button>
+    </div>
+
+    <div v-for="log in item.logs" :key="log.id" class="pb-2 mt-4 mb-4 flex flex-row justify-start">
+      <div class="mr-2">
+        <p class="app-chip-simple h-6 w-24">{{ $filters.formatDate(log.createdDate) }}</p>
+      </div>
+      <div>
+        <p>{{ log.content }}</p>
+      </div>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -92,7 +115,7 @@
   import finisherItemApiService from './api-services/finisherItemApiService'
   import finisherListStoreService from './store/finisherListStoreService'
   import FinisherItemStatus from './api-services/models/FinisherItemStatus'
-  import dayjs from 'dayjs'
+  import FinisherItemLog from './api-services/models/FinisherItemLog'
 
   export default defineComponent({
     components: {
@@ -112,6 +135,7 @@
         tag: '',
         tags: [],
         itemStatusDate: new Date(),
+        newLog: '',
       }
     },
     computed: {
@@ -222,6 +246,19 @@
 
         if (response) {
           finisherListStoreService.updateFinisherItem(this.item)
+        }
+      },
+
+      async addLog() {
+        var itemLog = new FinisherItemLog()
+        itemLog.content = this.newLog
+        itemLog.createdDate = new Date()
+
+        var response = await finisherItemApiService.addLog(this.item.id, itemLog)
+
+        if (response) {
+          itemLog.id = (response.data as FinisherItemLog).id
+          this.item.logs.unshift(itemLog)
         }
       },
     },
