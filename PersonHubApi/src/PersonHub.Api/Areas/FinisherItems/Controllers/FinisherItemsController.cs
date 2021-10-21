@@ -29,7 +29,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
         [HttpGet("{itemId}")]
         public async Task<ActionResult<FinisherItem>> Get(long itemId)
         {
-            var finisherItemEntity = await dbContext.FinisherItems.Include(r => r.Logs).FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
+            var finisherItemEntity = await dbContext.FinisherItems.Include(r => r.Logs.OrderByDescending(l => l.CreatedDate)).FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == itemId);
 
             if (finisherItemEntity == null)
             {
