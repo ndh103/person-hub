@@ -39,9 +39,7 @@
 
         if (isShow) {
           const reference = document.querySelector(this.triggerElementSelector)
-          const popper = document.querySelector(
-            this.popperElementSelector
-          ) as HTMLElement
+          const popper = document.querySelector(this.popperElementSelector) as HTMLElement
 
           this.popperInstance = createPopper(reference, popper, {
             placement: this.placement as Placement,
