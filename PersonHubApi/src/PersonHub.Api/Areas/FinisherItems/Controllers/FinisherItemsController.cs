@@ -163,7 +163,7 @@ namespace PersonHub.Api.Areas.FinisherItems.Models
                 return NotFound();
             }
 
-            finisherItemEntity.Update(dto.Title, dto.Description, dto.StartDate, dto.Tags, dto.Status);
+            finisherItemEntity.Update(dto.Title, dto.Description, dto.StartDate, dto.Tags);
 
             if (finisherItemEntity.HasError())
             {

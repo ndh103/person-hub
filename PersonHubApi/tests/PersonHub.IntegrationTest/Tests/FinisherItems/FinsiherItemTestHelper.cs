@@ -37,7 +37,6 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.True(requestDto.Title == entity.Title, "Title is not equal");
             Assert.True(requestDto.Description == entity.Description, "Description is not equal");
 
-            Assert.True(TestHelper.EqualsUpToSeconds(requestDto.StartDate.Value, entity.StartDate.Value), $"StartDate is not equal. Expected Date {requestDto.StartDate} KindCase {requestDto.StartDate.Value.Kind} {requestDto.StartDate.Value.ToString("%K")}. Read date {entity.StartDate} KindCase {entity.StartDate.Value.Kind} {entity.StartDate.Value.ToString("%K")}");
             Assert.True(requestDto.Tags.Count() == entity.Tags.Count(), "Tags are not equal");
 
             if(requestDto.Tags.Count() > 0){

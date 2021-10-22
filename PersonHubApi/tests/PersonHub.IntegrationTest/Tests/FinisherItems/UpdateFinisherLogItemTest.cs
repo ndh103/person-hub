@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using PersonHub.Api.Areas.FinisherItems.Models;
 using PersonHub.Domain.FinisherModule;
@@ -25,11 +26,10 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
             var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
             response.EnsureSuccessStatusCode();
-
+            
             var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
 
             // Add log
-
             var itemLogRequest = FinsiherItemTestHelper.CreateFinisherItemLogDto();
             var addLogResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/logs", itemLogRequest);
             addLogResponse.EnsureSuccessStatusCode();

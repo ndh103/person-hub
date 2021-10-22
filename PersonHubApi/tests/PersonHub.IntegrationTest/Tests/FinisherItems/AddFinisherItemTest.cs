@@ -19,9 +19,10 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         }
 
         [Fact]
-        public async Task AddFinisherItem_ValidItem_ShouldSuccess()
+        public async Task AddFinisherItem_PlanningItem_ShouldSuccess()
         {
             var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            validItem.Status = FinisherItemStatus.Planning;
 
             var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
             response.EnsureSuccessStatusCode();
@@ -33,6 +34,30 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.NotNull(dbItem);
 
             FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+
+            // Planning Item should not have start date
+            Assert.Null(dbItem.StartDate);
+        }
+
+        [Fact]
+        public async Task AddFinisherItem_StartedItem_ShouldSuccess()
+        {
+            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            validItem.Status = FinisherItemStatus.Started;
+
+            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
+            response.EnsureSuccessStatusCode();
+
+            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+
+            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+
+            Assert.NotNull(dbItem);
+
+            FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+
+            // Started Item should have start date
+            Assert.True(TestHelper.EqualsUpToSeconds(validItem.StartDate.Value, dbItem.StartDate.Value), $"StartDate is not equal.");
         }
 
         [Theory]
@@ -40,7 +65,6 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task AddFinisherItem_InvalidItem_ShouldFail(FinisherItemRequestDto requestDto)
         {
             var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", requestDto);
-            
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 

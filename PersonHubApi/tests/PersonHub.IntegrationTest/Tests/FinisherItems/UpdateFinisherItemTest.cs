@@ -19,10 +19,12 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         }
 
         [Fact]
-        public async Task UpdateFinisherItemTest_ValidItem_ShouldSuccess()
+        public async Task UpdateFinisherPlanningItem_ValidData_ShouldSuccess()
         {
             // Arrange, exisiting item
             var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            validItem.Status = FinisherItemStatus.Planning;
+
             var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
             response.EnsureSuccessStatusCode();
 
@@ -30,9 +32,9 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             // Act, update the existing item
             var updateRequestDto = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            updateRequestDto.Title = "updated title";
-            updateRequestDto.Description = "updated desc";
-            updateRequestDto.Status = FinisherItemStatus.Finished;
+            // Not changing status and StartDate, just update title, Description and tags
+            updateRequestDto.Status = FinisherItemStatus.Planning;
+            updateRequestDto.StartDate = null;
 
             var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{addedItem.Id}", updateRequestDto);
             updateResponse.EnsureSuccessStatusCode();
@@ -42,6 +44,69 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.NotNull(dbItem);
 
             FinsiherItemTestHelper.AssertCompare(updateRequestDto, dbItem);
+        }
+
+        [Fact]
+        public async Task StartAnItem_ValidData_ShouldSuccess()
+        {
+            // Arrange, exisiting item
+            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            validItem.Status = FinisherItemStatus.Planning;
+
+            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
+            response.EnsureSuccessStatusCode();
+
+            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+
+            // Act, update the existing item
+            var startActionRequest = new StartItemActionRequestDto(){
+                StartDate = DateTime.Now
+            };
+            
+            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/start", startActionRequest);
+            startActionResponse.EnsureSuccessStatusCode();
+
+            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+
+            Assert.NotNull(dbItem);
+
+            Assert.Equal(FinisherItemStatus.Started, dbItem.Status);
+            Assert.True(TestHelper.EqualsUpToSeconds(startActionRequest.StartDate, dbItem.StartDate.Value));
+        }
+
+        [Fact]
+        public async Task FinishAnItem_ValidData_ShouldSuccess()
+        {
+            // Arrange, exisiting item
+            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            validItem.Status = FinisherItemStatus.Planning;
+
+            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
+            response.EnsureSuccessStatusCode();
+
+            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+
+            //Arrange, start the item
+            var startActionRequest = new StartItemActionRequestDto(){
+                StartDate = DateTime.Now
+            };
+            
+            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/start", startActionRequest);
+            startActionResponse.EnsureSuccessStatusCode();
+
+            // Act, finish the item
+            var finishActionRequest = new FinishItemActionRequestDto(){
+                FinishDate = DateTime.Now
+            };
+            var finishActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/finish", finishActionRequest);
+            finishActionResponse.EnsureSuccessStatusCode();
+
+            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+
+            Assert.NotNull(dbItem);
+
+            Assert.Equal(FinisherItemStatus.Finished, dbItem.Status);
+            Assert.True(TestHelper.EqualsUpToSeconds(finishActionRequest.FinishDate, dbItem.StartDate.Value));
         }
 
         [Theory]

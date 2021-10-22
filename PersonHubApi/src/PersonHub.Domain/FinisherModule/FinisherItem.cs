@@ -31,18 +31,37 @@ namespace PersonHub.Domain.FinisherModule
 
         [JsonInclude]
         public FinisherItemStatus Status { get; private set; }
-
+        
         private string[] _tags = new string[] { };
-
+        
         [JsonInclude]
-        public IReadOnlyCollection<string> Tags => _tags.ToList().AsReadOnly();
-
-        private readonly List<FinisherItemLog> _logs = new List<FinisherItemLog>();
-
+        [NotMapped]
+        public IReadOnlyCollection<string> Tags {
+            get{
+                return _tags.ToList().AsReadOnly();
+            }
+            private set{
+                _tags = value.ToArray();
+            }
+        }
+        
+        private List<FinisherItemLog> _logs = new List<FinisherItemLog>();
+        
         [JsonInclude]
-        public IReadOnlyCollection<FinisherItemLog> Logs => _logs.AsReadOnly();
+        public IReadOnlyCollection<FinisherItemLog> Logs{
+            get{
+                return _logs.AsReadOnly();
+            }
+            private set {
+                _logs = value.ToList();
+            }
+        }
 
-        private FinisherItem() { }
+        /// <summary>
+        /// This is just to overcome the Deserialize issue, when your real constructor does not have matching Property
+        /// This parameterless constructor should not be used in code
+        /// </summary>
+        public FinisherItem() { }
 
         public FinisherItem(string userId, string title, string description, DateTime? startDate, string[] tags, FinisherItemStatus status)
         {
@@ -60,7 +79,7 @@ namespace PersonHub.Domain.FinisherModule
             CheckValidState();
         }
 
-        public void Update(string title, string description, DateTime? startDate, string[] tags, FinisherItemStatus status)
+        public void Update(string title, string description, DateTime? startDate, string[] tags)
         {
             Title = title;
             Description = description;
@@ -69,8 +88,6 @@ namespace PersonHub.Domain.FinisherModule
             {
                 this._tags = (string[])tags.Clone();
             }
-
-            Status = status;
 
             CheckValidState();
         }
@@ -124,64 +141,60 @@ namespace PersonHub.Domain.FinisherModule
             this._logs.Remove(log);
         }
 
-        private EntityState CheckValidState()
+        private void CheckValidState()
         {
-            var result = new EntityState();
-
             if (string.IsNullOrEmpty(this.Title))
             {
-                result.AddError("Item Title is required");
+                this._entityState.AddError("Item Title is required");
             }
 
             if (this.Title.Length > 250)
             {
-                result.AddError("Item Title should not exceed 250 characters");
+                _entityState.AddError("Item Title should not exceed 250 characters");
             }
 
             if (!string.IsNullOrEmpty(this.Description) && this.Description.Length > 1000)
             {
-                result.AddError("Item Description should not exceed 1000 characters");
+                _entityState.AddError("Item Description should not exceed 1000 characters");
             }
 
             if (this._tags != null)
             {
                 if (this._tags.Length > 10)
                 {
-                    result.AddError("Maximum Tags is 10");
+                    _entityState.AddError("Maximum Tags is 10");
                 }
 
                 if (this._tags.Any(tag => tag.Length > 50))
                 {
-                    result.AddError("A tag should not exceed 50 characters");
+                    _entityState.AddError("A tag should not exceed 50 characters");
                 }
             }
 
             if (!Enum.IsDefined(typeof(FinisherItemStatus), Status))
             {
-                result.AddError("Item Status is invalid");
+                _entityState.AddError("Item Status is invalid");
             }
 
             if (Status == FinisherItemStatus.Planning && StartDate.HasValue)
             {
-                result.AddError("A Planning item should not have a start date");
+                _entityState.AddError("A Planning item should not have a start date");
             }
 
             if (Status != FinisherItemStatus.Planning && !StartDate.HasValue)
             {
-                result.AddError("And already started Item should have a StartDate");
+                _entityState.AddError("And already started Item should have a StartDate");
             }
 
             if (Status != FinisherItemStatus.Finished && FinishDate.HasValue)
             {
-                result.AddError("A not yet finished item should not have a finish date");
+                _entityState.AddError("A not yet finished item should not have a finish date");
             }
 
             if (Status == FinisherItemStatus.Finished && !FinishDate.HasValue)
             {
-                result.AddError("A finished item should have a FinishDate");
+                _entityState.AddError("A finished item should have a FinishDate");
             }
-
-            return result;
         }
     }
 }

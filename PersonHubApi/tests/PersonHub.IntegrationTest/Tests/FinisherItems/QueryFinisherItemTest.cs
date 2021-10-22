@@ -34,7 +34,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             var query = new QueryFinisherItemRequestDto()
             {
-                Limit = 10,
+                Limit = 100,
                 Offset = 0,
                 Status = addedItem.Status
             };
