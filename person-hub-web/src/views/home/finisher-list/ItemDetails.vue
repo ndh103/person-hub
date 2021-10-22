@@ -69,7 +69,7 @@
 
     <div class="pb-2 flex flex-row w-full items-center">
       <div>
-        <vue-tags-input v-if="isEditMode" placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
+        <vue-tags-input v-if="isEditMode" v-model="tag" placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
         <div v-else>
           <span v-for="tagItem in item.tags" :key="tagItem" class="app-chip-simple">{{ tagItem }}</span>
         </div>

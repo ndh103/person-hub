@@ -16,7 +16,7 @@
 
   <div v-for="(event, index) in events" :key="index" class="event-item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
     <div class="pb-2">
-      <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event)">{{ event.title }}</span>
+      <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
     </div>
 
     <div class="flex justify-between">
@@ -25,46 +25,44 @@
       <div>
         <span v-for="(tag, tagIndex) in event.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
       </div>
-      <span :id="'popper-button' + index" class="w-4 h-4">
-        <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />
+      <span id="popperMenuButton" class="w-4 h-4">
+        <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu(event.id)" />
       </span>
-      <Popper
-        :id="'popper-menu' + index"
-        :ref="'popperMenu' + index"
-        :trigger-element-selector="'#popper-button' + index"
-        :popper-element-selector="'#popper-menu' + index"
-        placement="left"
-      >
-        <template #body>
-          <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
-            <div>
-              <div class="text-gray-700 p-2">
-                <p class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer" @click="gotoDetails(event)">
-                  <ArrowRightIcon class="w-4 h-4 inline-block" /> Go to details
-                </p>
-                <p
-                  class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
-                  @click="onDeleteAction(event)"
-                >
-                  <TrashIcon class="w-4 h-4 inline-block" /> Delete event
-                </p>
-              </div>
-            </div>
-          </div>
-        </template>
-      </Popper>
     </div>
-
-    <Modal ref="deleteModal" title="Confirm deletion">
-      <template #body>Are you sure you want to delete this event? </template>
-      <template #footer>
-        <div class="mx-4 mb-4 flex flex-row-reverse">
-          <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
-          <button class="app-btn-danger" @click="deleteEvent()">Delete</button>
-        </div>
-      </template>
-    </Modal>
   </div>
+
+  <Popper id="popperMenu" ref="popperMenu" trigger-element-selector="#popperMenuButton" popper-element-selector="#popperMenu" placement="left">
+    <template #body>
+      <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
+        <div>
+          <div class="text-gray-700 p-2">
+            <p
+              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
+              @click="gotoDetails(currentPopperMenuEventId)"
+            >
+              <ArrowRightIcon class="w-4 h-4 inline-block" /> Go to details
+            </p>
+            <p
+              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
+              @click="onDeleteAction(currentPopperMenuEventId)"
+            >
+              <TrashIcon class="w-4 h-4 inline-block" /> Delete event
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </Popper>
+
+  <Modal ref="deleteModal" title="Confirm deletion">
+    <template #body>Are you sure you want to delete this event? </template>
+    <template #footer>
+      <div class="mx-4 mb-4 flex flex-row-reverse">
+        <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
+        <button class="app-btn-danger" @click="deleteEvent()">Delete</button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script lang="ts">
@@ -99,6 +97,7 @@
     data() {
       return {
         tobeDeletedEventId: 0,
+        currentPopperMenuEventId: 0,
       }
     },
     computed: {
@@ -175,10 +174,10 @@
           eventStoreService.updateEventList(events)
         }
       },
-      gotoDetails(event: EventModel) {
+      gotoDetails(eventId: number) {
         this.$router.push({
           name: 'event-details',
-          params: { eventId: event.id },
+          params: { eventId: eventId },
         })
       },
       openForm() {
@@ -193,8 +192,8 @@
         var menu = this.$refs[refName] as any
         menu.togglePopper(false)
       },
-      onDeleteAction(event) {
-        this.tobeDeletedEventId = event.id
+      onDeleteAction(eventId: number) {
+        this.tobeDeletedEventId = eventId
         this.deleteModal.toggleModal(true)
       },
       cancelDelete() {

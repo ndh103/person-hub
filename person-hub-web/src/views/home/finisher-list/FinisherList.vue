@@ -36,49 +36,44 @@
       <div>
         <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
       </div>
-      <span :id="'popper-button' + index" class="w-4 h-4">
-        <DotsHorizontalIcon title="open action menu" class="app-icon-standard cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />
+      <span id="popperMenuButton" class="w-4 h-4">
+        <DotsHorizontalIcon title="open action menu" class="app-icon-standard cursor-pointer hidden action-menu" @click="openPopperMenu(item.id)" />
       </span>
-      <Popper
-        :id="'popper-menu' + index"
-        :ref="'popperMenu' + index"
-        :trigger-element-selector="'#popper-button' + index"
-        :popper-element-selector="'#popper-menu' + index"
-        placement="left"
-      >
-        <template #body>
-          <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
-            <div>
-              <div class="text-gray-700 p-2">
-                <p
-                  class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
-                  @click="gotoDetails(item.id)"
-                >
-                  <ArrowRightIcon class="app-icon-standard" /> Go to details
-                </p>
-                <p
-                  class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
-                  @click="onDeleteAction(item)"
-                >
-                  <TrashIcon class="app-icon-standard" /> Delete item
-                </p>
-              </div>
-            </div>
-          </div>
-        </template>
-      </Popper>
     </div>
-
-    <Modal ref="deleteModal" title="Confirm deletion">
-      <template #body>Are you sure you want to delete this item? </template>
-      <template #footer>
-        <div class="mx-4 mb-4 flex flex-row-reverse">
-          <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
-          <button class="app-btn-danger" @click="deleteItem()">Delete</button>
-        </div>
-      </template>
-    </Modal>
   </div>
+
+  <Modal ref="deleteModal" title="Confirm deletion">
+    <template #body>Are you sure you want to delete this item? </template>
+    <template #footer>
+      <div class="mx-4 mb-4 flex flex-row-reverse">
+        <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
+        <button class="app-btn-danger" @click="deleteItem()">Delete</button>
+      </div>
+    </template>
+  </Modal>
+
+  <Popper id="popperMenu" ref="popperMenu" trigger-element-selector="#popperMenuButton" popper-element-selector="#popperMenu" placement="left">
+    <template #body>
+      <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
+        <div>
+          <div class="text-gray-700 p-2">
+            <p
+              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
+              @click="gotoDetails(currentPopperMenuItemId)"
+            >
+              <ArrowRightIcon class="app-icon-standard" /> Go to details
+            </p>
+            <p
+              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
+              @click="onDeleteAction(currentPopperMenuItemId)"
+            >
+              <TrashIcon class="app-icon-standard" /> Delete item
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </Popper>
 </template>
 
 <script lang="ts">
@@ -118,6 +113,7 @@
     data() {
       return {
         toBeDeletedItemId: 0,
+        currentPopperMenuItemId: 0,
       }
     },
     computed: {
@@ -126,6 +122,9 @@
       },
       items(): Array<FinisherItem> {
         return finisherListStoreService.state.finisherItems.filter((r) => r.status == this.filteredStatus)
+      },
+      quickAddForm() {
+        return this.$refs.quickAddForm as any
       },
       isQuickAddFormOpen() {
         if (this.$refs) {
@@ -139,6 +138,9 @@
       },
       FinisherItemStatus() {
         return FinisherItemStatus
+      },
+      popperMenu() {
+        return this.$refs.popperMenu as any
       },
     },
     async created() {
@@ -219,19 +221,18 @@
         })
       },
       openForm() {
-        var form = this.$refs.quickAddForm as any
-        form.openForm()
+        this.quickAddForm.openForm()
       },
-      openPopperMenu(refName) {
-        var menu = this.$refs[refName] as any
-        menu.togglePopper(true)
+      openPopperMenu(itemId: number) {
+        this.currentPopperMenuItemId = itemId
+
+        this.popperMenu.togglePopper(true)
       },
-      closePopperMenu(refName) {
-        var menu = this.$refs[refName] as any
-        menu.togglePopper(false)
+      closePopperMenu() {
+        this.popperMenu.togglePopper(false)
       },
-      onDeleteAction(item) {
-        this.toBeDeletedItemId = item.id
+      onDeleteAction(itemId: number) {
+        this.toBeDeletedItemId = itemId
         this.deleteModal.toggleModal(true)
       },
       cancelDelete() {

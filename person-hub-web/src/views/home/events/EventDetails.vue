@@ -29,7 +29,7 @@
         </template>
       </v-date-picker>
 
-      <vue-tags-input placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
+      <vue-tags-input v-model="tag" placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
     </div>
 
     <div class="flex flex-row-reverse">
