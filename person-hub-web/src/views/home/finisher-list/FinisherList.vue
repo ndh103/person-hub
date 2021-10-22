@@ -1,8 +1,6 @@
 <template>
-  <QuickAddForm ref="quickAddForm" @on-new-item-added="addNewItem($event)" />
-
   <!-- Action bar -->
-  <div v-if="!isQuickAddFormOpen" class="flex px-2 pb-3">
+  <div v-if="!isQuickAddFormOpen" class="flex px-2 pb-2 pt-4 top-10 sticky bg-white">
     <div class="app-btn-group-container" role="group">
       <button :class="[filteredStatus == FinisherItemStatus.Planning ? 'btn-group-active' : '']" class="app-btn-group-left" @click="filterByStatus(FinisherItemStatus.Planning)">
         Planning
@@ -25,55 +23,60 @@
     </span>
   </div>
 
-  <div v-for="(item, index) in items" :key="index" class="item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
-    <div class="pb-2">
-      <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(item.id)">{{ item.title }}</span>
-    </div>
+  <QuickAddForm ref="quickAddForm" @on-new-item-added="addNewItem($event)" />
 
-    <div class="flex justify-between">
-      <span v-if="item.startDate" class="text-xs self-end">{{ $filters.formatDate(item.startDate) }}</span>
-
-      <div>
-        <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
+  <!-- Item List -->
+  <div>
+    <div v-for="(item, index) in items" :key="index" class="item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
+      <div class="pb-2">
+        <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(item.id)">{{ item.title }}</span>
       </div>
-      <span id="popperMenuButton" class="w-4 h-4">
-        <DotsHorizontalIcon title="open action menu" class="app-icon-standard cursor-pointer hidden action-menu" @click="openPopperMenu(item.id)" />
-      </span>
-    </div>
-  </div>
 
-  <Modal ref="deleteModal" title="Confirm deletion">
-    <template #body>Are you sure you want to delete this item? </template>
-    <template #footer>
-      <div class="mx-4 mb-4 flex flex-row-reverse">
-        <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
-        <button class="app-btn-danger" @click="deleteItem()">Delete</button>
-      </div>
-    </template>
-  </Modal>
+      <div class="flex justify-between">
+        <span v-if="item.startDate" class="text-xs self-end">{{ $filters.formatDate(item.startDate) }}</span>
 
-  <Popper id="popperMenu" ref="popperMenu" trigger-element-selector="#popperMenuButton" popper-element-selector="#popperMenu" placement="left">
-    <template #body>
-      <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
         <div>
-          <div class="text-gray-700 p-2">
-            <p
-              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
-              @click="gotoDetails(currentPopperMenuItemId)"
-            >
-              <ArrowRightIcon class="app-icon-standard" /> Go to details
-            </p>
-            <p
-              class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
-              @click="onDeleteAction(currentPopperMenuItemId)"
-            >
-              <TrashIcon class="app-icon-standard" /> Delete item
-            </p>
+          <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
+        </div>
+        <span id="popperMenuButton" class="w-4 h-4">
+          <DotsHorizontalIcon title="open action menu" class="app-icon-standard cursor-pointer hidden action-menu" @click="openPopperMenu(item.id)" />
+        </span>
+      </div>
+    </div>
+
+    <Modal ref="deleteModal" title="Confirm deletion">
+      <template #body>Are you sure you want to delete this item? </template>
+      <template #footer>
+        <div class="mx-4 mb-4 flex flex-row-reverse">
+          <button class="app-btn-secondary" @click="cancelDelete()">Cancel</button>
+          <button class="app-btn-danger" @click="deleteItem()">Delete</button>
+        </div>
+      </template>
+    </Modal>
+
+    <Popper id="popperMenu" ref="popperMenu" trigger-element-selector="#popperMenuButton" popper-element-selector="#popperMenu" placement="left">
+      <template #body>
+        <div class="bg-white border mr-3 block z-50 font-normal leading-normal text-sm max-w-xs text-left no-underline break-words rounded-lg">
+          <div>
+            <div class="text-gray-700 p-2">
+              <p
+                class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
+                @click="gotoDetails(currentPopperMenuItemId)"
+              >
+                <ArrowRightIcon class="app-icon-standard" /> Go to details
+              </p>
+              <p
+                class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
+                @click="onDeleteAction(currentPopperMenuItemId)"
+              >
+                <TrashIcon class="app-icon-standard" /> Delete item
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </template>
-  </Popper>
+      </template>
+    </Popper>
+  </div>
 </template>
 
 <script lang="ts">

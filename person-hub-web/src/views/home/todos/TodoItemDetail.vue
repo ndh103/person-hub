@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b border-gray-400 border-opacity-25 p-4">
+  <div class="border-b border-gray-400 border-opacity-25">
     <p class="font-medium">{{ todoItem.title }}</p>
     <p class="font-light">{{ todoItem.description }}</p>
     <p class="font-light">{{ todoItem.status }}</p>

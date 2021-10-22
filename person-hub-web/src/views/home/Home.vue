@@ -3,34 +3,17 @@
     <site-header></site-header>
 
     <div class="flex">
-      <div
-        class="hidden"
-        :class="[
-          applicationStoreService.state.overlaySidebarStatus +
-            '-sidebar-overlay',
-        ]"
-      ></div>
+      <div class="hidden" :class="[applicationStoreService.state.overlaySidebarStatus + '-sidebar-overlay']"></div>
       <aside-menu
-        class="
-          flex-none
-          w-80
-          h-screen
-          fixed
-          top-0
-          left-0
-          pt-8
-          bg-gray-50
-          lg:static lg:block
-        "
-        :class="[
-          applicationStoreService.state.overlaySidebarStatus + '-sidebar',
-        ]"
+        class="flex-none w-80 h-screen fixed top-0 left-0 pt-8 bg-gray-50 lg:static lg:block"
+        :class="[applicationStoreService.state.overlaySidebarStatus + '-sidebar']"
       ></aside-menu>
-      <main
-        class="flex-grow p-4 h-full pt-14 container mx-auto max-w-screen-lg"
-      >
-        <router-view></router-view>
-      </main>
+
+      <div class="w-full h-screen overflow-auto">
+        <main class="flex-grow p-4 pt-16 container mx-auto max-w-screen-lg">
+          <router-view></router-view>
+        </main>
+      </div>
     </div>
 
     <Loading></Loading>

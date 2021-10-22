@@ -1,6 +1,4 @@
 <template>
-  <EventQuickAddForm ref="addTodoForm" @on-new-event-added="addNewEvent($event)" />
-
   <!-- Action bar -->
   <div v-if="!isQuickAddFormOpen" class="flex">
     <span class="app-action-link" @click="openForm()">
@@ -13,6 +11,8 @@
       Refresh
     </span>
   </div>
+
+  <EventQuickAddForm ref="addTodoForm" @on-new-event-added="addNewEvent($event)" />
 
   <div v-for="(event, index) in events" :key="index" class="event-item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
     <div class="pb-2">

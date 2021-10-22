@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-4">
+  <div>
     <add-new-todo-item @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
 
     <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchTodoItems()">
