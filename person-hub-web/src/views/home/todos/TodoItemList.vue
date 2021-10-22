@@ -1,13 +1,8 @@
 <template>
   <div class="pt-4">
-    <add-new-todo-item
-      @onAddNewItem="addNewTodoItem($event)"
-    ></add-new-todo-item>
+    <add-new-todo-item @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
 
-    <span
-      class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4"
-      @click="fetchTodoItems()"
-    >
+    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchTodoItems()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
@@ -23,11 +18,7 @@
     >
       <template #item="{ element }">
         <transition name="slide-fade">
-          <todo-item-overview
-            v-show="element.status != 1"
-            :todo-item-overview="element"
-            @onItemMarkedAsDone="onItemMarkedAsDone()"
-          ></todo-item-overview>
+          <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone()"></todo-item-overview>
         </transition>
       </template>
     </draggable>
@@ -94,10 +85,7 @@
         // get the current order of the last item
         const lastItem = this.todoItems.last()
 
-        const nextOrder = LexicoGraphicalUtility.generateMidString(
-          lastItem ? lastItem.itemOrder : '',
-          ''
-        )
+        const nextOrder = LexicoGraphicalUtility.generateMidString(lastItem ? lastItem.itemOrder : '', '')
         todoItem.itemOrder = nextOrder
 
         var updatedTodoItems = [...this.todoItems]
@@ -110,21 +98,17 @@
         todoItem.id = response.data.id
       },
       onItemMarkedAsDone() {
-        var updatedTodoItems = [...this.todoItems].filter(
-          (r) => r.status != TodoItemStatusEnum.Finished
-        )
+        var updatedTodoItems = [...this.todoItems].filter((r) => r.status != TodoItemStatusEnum.Finished)
 
         todoStoreService.updateTodoItems(updatedTodoItems)
       },
       fetchTodoItems: async function () {
         appStoreService.toggleLoading(true)
 
-        const response = await todoItemApiService
-          .query(TodoItemStatusEnum.Initial)
-          .finally(() => {
-            appStoreService.toggleLoading(false)
-            return null
-          })
+        const response = await todoItemApiService.query(TodoItemStatusEnum.Initial).finally(() => {
+          appStoreService.toggleLoading(false)
+          return null
+        })
 
         if (response) {
           var todoItems = response.data
@@ -135,15 +119,9 @@
       onDragEnd: async function (evt) {
         const newIndex = evt.newIndex
         const prevItem = newIndex == 0 ? null : this.todoItems[newIndex - 1]
-        const nextItem =
-          newIndex == this.todoItems.length - 1
-            ? null
-            : this.todoItems[newIndex + 1]
+        const nextItem = newIndex == this.todoItems.length - 1 ? null : this.todoItems[newIndex + 1]
 
-        const newOrder = LexicoGraphicalUtility.generateMidString(
-          prevItem ? prevItem.itemOrder : '',
-          nextItem ? nextItem.itemOrder : ''
-        )
+        const newOrder = LexicoGraphicalUtility.generateMidString(prevItem ? prevItem.itemOrder : '', nextItem ? nextItem.itemOrder : '')
         const item = this.todoItems[newIndex]
         item.itemOrder = newOrder
 

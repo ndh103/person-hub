@@ -16,11 +16,11 @@
     </div>
     <span class="flex-grow"></span>
     <span class="app-action-link mr-2" @click="openForm()">
-      <PlusIcon class="inline-block h-4 w-4" />
+      <PlusIcon class="app-icon-standard" />
       <span>Add new item</span>
     </span>
     <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchItems(filteredStatus)">
-      <RefreshIcon class="h-4 w-4 inline-block" />
+      <RefreshIcon class="app-icon-standard" />
       Refresh
     </span>
   </div>
@@ -37,7 +37,7 @@
         <span v-for="(tag, tagIndex) in item.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
       </div>
       <span :id="'popper-button' + index" class="w-4 h-4">
-        <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />
+        <DotsHorizontalIcon title="open action menu" class="app-icon-standard cursor-pointer hidden action-menu" @click="openPopperMenu('popperMenu' + index)" />
       </span>
       <Popper
         :id="'popper-menu' + index"
@@ -54,13 +54,13 @@
                   class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer"
                   @click="gotoDetails(item.id)"
                 >
-                  <ArrowRightIcon class="w-4 h-4 inline-block" /> Go to details
+                  <ArrowRightIcon class="app-icon-standard" /> Go to details
                 </p>
                 <p
                   class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer"
                   @click="onDeleteAction(item)"
                 >
-                  <TrashIcon class="w-4 h-4 inline-block" /> Delete item
+                  <TrashIcon class="app-icon-standard" /> Delete item
                 </p>
               </div>
             </div>
@@ -174,11 +174,25 @@
         var response = await finisherItemApiService.query(query, true)
         if (response) {
           var responseItems = response.data as Array<FinisherItem>
-          finisherListStoreService.updateFinisherItemsByStatus({
-            items: responseItems,
-            filteredStatus: status,
-          })
+
+          if (status == FinisherItemStatus.Finished)
+            // Sort by FinshDate Descending
+            responseItems.sort((first, second) => {
+              if (first.finishDate < second.finishDate) {
+                return 1
+              }
+
+              if (first.finishDate > second.finishDate) {
+                return -1
+              }
+              return 0
+            })
         }
+
+        finisherListStoreService.updateFinisherItemsByStatus({
+          items: responseItems,
+          filteredStatus: status,
+        })
       },
       async fetchItemsWhenOutdated(status: FinisherItemStatus) {
         var fetchTimeByStatus = finisherListStoreService.state.itemFetchTimeByStatus[status]

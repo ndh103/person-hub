@@ -53,7 +53,7 @@
 
 /* default styles for all the tags */
 .vue-tags-input .ti-tag {
-  @apply relative rounded-full bg-green-500 !important;
+  @apply relative mr-1  py-1  px-2  bg-white  rounded-full  text-gray-700  border border-gray-300  text-xs  !important;
 }
 
 .ti-content{

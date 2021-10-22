@@ -1,10 +1,23 @@
 <template>
   <div class="flex items-center">
-    <div class="app-action-link" @click="goBack()"><ArrowLeftIcon class="h-4 w-4 inline-block" /> back</div>
-    <span class="flex-grow"></span>
+    <div class="app-action-link" @click="goBack()"><ArrowLeftIcon class="app-icon-standard" /> back</div>
+
+    <div class="flex-grow flex justify-center items-center">
+      <span :class="itemStatusClass" class="h-6">{{ itemStatus }}</span>
+      <span v-if="item.status == FinisherItemStatus.Started" class="app-btn-datepicker">{{ $filters.formatDate(item.startDate) }}</span>
+      <span v-if="item.status == FinisherItemStatus.Finished" class="app-btn-datepicker"
+        >{{ $filters.formatDate(item.startDate) }} - {{ $filters.formatDate(item.finishDate) }}</span
+      >
+    </div>
+
     <div v-if="!isEditMode">
-      <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">Start this item</button>
-      <button v-if="item.status == FinisherItemStatus.Started" class="app-btn-primary" @click="onChangeStatusItem()">Mark as done</button>
+      <button v-if="item.status == FinisherItemStatus.Planning" class="app-btn-primary" @click="onChangeStatusItem()">
+        <RouteStartIcon class="app-icon-standard fill-current"></RouteStartIcon> Start this item
+      </button>
+      <button v-if="item.status == FinisherItemStatus.Started" class="app-btn-primary" @click="onChangeStatusItem()">
+        <GoalIcon class="app-icon-standard fill-current" />
+        Mark as done
+      </button>
     </div>
 
     <div v-if="isEditMode">
@@ -13,7 +26,7 @@
     </div>
 
     <span v-if="!isEditMode && item.status != FinisherItemStatus.Finished" id="popperMenuButton" class="w-4 h-4">
-      <DotsVerticalIcon title="open action menu" class="w-4 h-4 cursor-pointer action-menu" @click="openPopperMenu()" />
+      <DotsVerticalIcon title="open action menu" class="app-icon-standard cursor-pointer action-menu" @click="openPopperMenu()" />
     </span>
 
     <Popper
@@ -29,10 +42,10 @@
           <div>
             <div class="text-gray-700 p-2">
               <p class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100 rounded cursor-pointer" @click="toogleEditMode()">
-                <PencilIcon class="w-4 h-4 inline-block" /> Edit
+                <PencilIcon class="app-icon-standard" /> Edit
               </p>
               <p class="text-sm p-2 font-normal block w-full whitespace-nowrap bg-transparent text-red-500 hover:bg-gray-100 rounded cursor-pointer" @click="onDeleteAction()">
-                <TrashIcon class="w-4 h-4 inline-block" /> Delete item
+                <TrashIcon class="app-icon-standard" /> Delete item
               </p>
             </div>
           </div>
@@ -64,9 +77,7 @@
 
       <span class="flex-grow"></span>
 
-      <span :class="itemStatusClass" class="h-6">{{ itemStatus }}</span>
-
-      <v-date-picker v-if="item.status != FinisherItemStatus.Finished && item.startDate" v-model="item.startDate">
+      <v-date-picker v-if="item.status != FinisherItemStatus.Finished && item.startDate && isEditMode" v-model="item.startDate">
         <template #default="{ togglePopover }">
           <div class="flex flex-wrap">
             <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
@@ -75,13 +86,9 @@
           </div>
         </template>
       </v-date-picker>
-
-      <span v-if="item.status == FinisherItemStatus.Finished" class="app-btn-datepicker"
-        >{{ $filters.formatDate(item.startDate) }} - {{ $filters.formatDate(item.finishDate) }}</span
-      >
     </div>
 
-    <div class="mt-4 mb-2 flex flex-row w-full border-b border-opacity-25"></div>
+    <div class="mt-4 mb-4 flex flex-row w-full border-b border-opacity-25"></div>
 
     <Modal ref="modalDelete" title="Confirm deletion">
       <template #body>Are you sure you want to delete this item? </template>
@@ -93,22 +100,20 @@
       </template>
     </Modal>
 
-    <Modal v-if="item.status != FinisherItemStatus.Finished" ref="modalChangeStatus" :title="item.status == FinisherItemStatus.Planning ? 'Start an item' : 'Finish an item'">
+    <Modal v-if="item.status != FinisherItemStatus.Finished" ref="modalChangeStatus" :title="item.status == FinisherItemStatus.Planning ? 'Start item' : 'Finish item'">
       <template #body>
-        <div v-if="item.status == FinisherItemStatus.Planning">Start the item</div>
-        <div v-if="item.status == FinisherItemStatus.Started">Finish the item</div>
-        <div>
-          <!-- TODO: move this to a dedicated component -->
-          <v-date-picker v-model="itemStatusDate">
-            <template #default="{ togglePopover }">
-              <div class="flex flex-wrap">
-                <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
-                  {{ $filters.formatDate(itemStatusDate) }}
-                </button>
-              </div>
-            </template>
-          </v-date-picker>
-        </div>
+        <span v-if="item.status == FinisherItemStatus.Planning">Start the item at</span>
+        <span v-if="item.status == FinisherItemStatus.Started">Finish the item at</span>
+        <!-- TODO: move this to a dedicated component -->
+        <v-date-picker v-model="itemStatusDate" class="inline-block">
+          <template #default="{ togglePopover }">
+            <div class="flex flex-wrap">
+              <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
+                {{ $filters.formatDate(itemStatusDate) }}
+              </button>
+            </div>
+          </template>
+        </v-date-picker>
       </template>
       <template #footer>
         <div class="mx-4 mb-4 flex flex-row-reverse">
@@ -150,6 +155,8 @@
   import PencilIcon from '@/assets/pencil-icon.svg?component'
   import DotsVerticalIcon from '@/assets/dots-vertical-icon.svg?component'
   import TrashIcon from '@/assets/trash-icon.svg?component'
+  import RouteStartIcon from '@/assets/route-start-icon.svg?component'
+  import GoalIcon from '@/assets/goal-icon.svg?component'
   import Modal from '@/components/Modal.vue'
   import FinisherItem from './api-services/models/FinisherItem'
   import finisherItemApiService from './api-services/finisherItemApiService'
@@ -165,6 +172,8 @@
       PencilIcon,
       DotsVerticalIcon,
       TrashIcon,
+      RouteStartIcon,
+      GoalIcon,
       Modal,
       Popper,
     },

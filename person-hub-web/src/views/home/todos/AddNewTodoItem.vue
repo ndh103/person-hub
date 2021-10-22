@@ -1,16 +1,8 @@
 <template>
-  <div class="mb-4 flex flex-row">
-    <input
-      v-model="newTodoItem.title"
-      type="text"
-      class="app-input flex-grow"
-      placeholder="Add new todo item..."
-      @keyup.enter="submitForm()"
-    />
+  <div class="mb-4 flex flex-row items-center">
+    <input v-model="newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Add new todo item..." @keyup.enter="submitForm()" />
 
-    <button class="app-btn-primary h-8 mt-2" @click="submitForm()">
-      <PlusIcon class="w-4 h-4 inline" /> Add
-    </button>
+    <button class="app-btn-primary mt-2" @click="submitForm()"><PlusIcon class="app-icon-standard" /> Add</button>
   </div>
 </template>
 
