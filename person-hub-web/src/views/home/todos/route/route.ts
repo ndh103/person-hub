@@ -1,16 +1,16 @@
-import TodoItemList from '../TodoItemList.vue'
+import YourDayView from '../YourDayView.vue'
 import TodoItemDetail from '../TodoItemDetail.vue'
 
 const todoRoutes = [
   {
-    path: '/todos',
-    name: 'todos-view',
-    component: TodoItemList,
+    path: '/yourday',
+    name: 'yourday-view',
+    component: YourDayView,
     props: true,
   },
   {
     path: '/todos/:todoItemId',
-    name: 'todos-view-detail',
+    name: 'todos-item-detail',
     component: TodoItemDetail,
     props: true,
   },

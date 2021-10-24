@@ -1,4 +1,5 @@
 import TodoItemStatusEnum from './TodoItemStatusEnum'
+import TodoItemTypeEnum from './TodoItemTypeEnum'
 
 class TodoItemModel {
   id!: number
@@ -6,6 +7,8 @@ class TodoItemModel {
   title!: string
   description!: string
   status!: TodoItemStatusEnum
+  type!: TodoItemTypeEnum
+  createdDate: Date
   itemOrder!: string
 }
 

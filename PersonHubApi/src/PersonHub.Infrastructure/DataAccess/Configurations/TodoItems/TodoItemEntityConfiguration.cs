@@ -16,7 +16,10 @@ namespace PersonHub.Infrastructure.DataAccess.Configurations.TodoItems
             builder.Property(r=> r.Title).IsRequired().HasMaxLength(250);
             builder.Property(r=> r.Description).HasMaxLength(1000);
             builder.Property(r=> r.Status).IsRequired();
+            builder.Property(r=> r.Type).IsRequired();
             builder.Property(r=> r.ItemOrder).IsRequired();
+
+            builder.Property(r => r.CreatedDate).HasColumnType("timestamptz");
         }
     }
 }

@@ -112,7 +112,6 @@
       ArrowRightIcon,
       Modal,
     },
-    props: {},
     data() {
       return {
         toBeDeletedItemId: 0,

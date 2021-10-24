@@ -8,6 +8,9 @@ class TodoStoreService {
   updateTodoItems(todoItems: Array<TodoItemModel>) {
     store.commit(`todos/${todoStore.mutations.updateTodoItems.name}`, todoItems)
   }
+  addTodoItem(todoItem: TodoItemModel) {
+    store.commit(`todos/${todoStore.mutations.addTodoItem.name}`, todoItem)
+  }
 
   state = state
 }

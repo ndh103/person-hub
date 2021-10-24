@@ -33,34 +33,79 @@ namespace PersonHub.Api.Areas.Todos.Controllers
                 return BadRequest(ModelState);
             }
 
-            var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder);
+            var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.Type);
+            if (todoItemEntity.HasError())
+            {
+                return BadRequest(todoItemEntity.Errors().First());
+            }
 
             await dbContext.AddAsync(todoItemEntity);
             await dbContext.SaveChangesAsync();
-            
+
             return todoItemEntity;
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
+        public async Task<ActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r =>r.Id == id && r.UserId == AuthenticatedUserEmail);
+            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
             if (todoItemEntity == null)
             {
                 return NotFound();
             }
 
-            todoItemEntity.Title = todoItemDto.Title;
-            todoItemEntity.Description = todoItemDto.Description;
-            todoItemEntity.Status = todoItemDto.Status;
-            todoItemEntity.ItemOrder = todoItemDto.ItemOrder;
+            todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder);
+            if (todoItemEntity.HasError())
+            {
+                return BadRequest(todoItemEntity.Errors().First());
+            }
 
-            todoItemEntity.EnsureValidState();
+            await dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPost("{id}/done")]
+        public async Task<ActionResult> MarkItemAsDone(int id)
+        {
+            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
+            if (todoItemEntity == null)
+            {
+                return NotFound();
+            }
+
+            todoItemEntity.MarkAsDone();
+
+            if (todoItemEntity.HasError())
+            {
+                return BadRequest(todoItemEntity.Errors().First());
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPost("{id}/yourday")]
+        public async Task<ActionResult> AddToYourDay(int id)
+        {
+            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
+            if (todoItemEntity == null)
+            {
+                return NotFound();
+            }
+
+            todoItemEntity.AddToYourDay();
+
+            if (todoItemEntity.HasError())
+            {
+                return BadRequest(todoItemEntity.Errors().First());
+            }
 
             await dbContext.SaveChangesAsync();
 

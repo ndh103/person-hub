@@ -1,21 +1,8 @@
 <template>
-  <div
-    class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview"
-  >
-    <HandleIcon
-      class="inline-block invisible pr-1 handle-icon h-6 w-6"
-    ></HandleIcon>
-    <input
-      type="checkbox"
-      class="rounded text-green-500 mr-3"
-      @click="markAsDone()"
-    />
-    <span
-      class="font-medium cursor-pointer"
-      :class="{ 'line-through': todoItemOverview.status == 1 }"
-      @click="gotoDetail()"
-      >{{ todoItemOverview.title }}</span
-    >
+  <div class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview">
+    <HandleIcon class="inline-block invisible pr-1 handle-icon h-6 w-6"></HandleIcon>
+    <input type="checkbox" class="rounded text-green-500 mr-3" @click="markAsDone()" />
+    <span class="font-medium cursor-pointer" :class="{ 'line-through': todoItemOverview.status == 1 }" @click="gotoDetail()">{{ todoItemOverview.title }}</span>
   </div>
 </template>
 

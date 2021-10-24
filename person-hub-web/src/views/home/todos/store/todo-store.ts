@@ -14,12 +14,12 @@ export const todoStore = {
     }
   },
   mutations: {
-    updateTodoItems(
-      state: TodoModuleStoreState,
-      todoItems: Array<TodoItemModel>
-    ): void {
+    updateTodoItems(state: TodoModuleStoreState, todoItems: Array<TodoItemModel>): void {
       state.todoItems = [...todoItems]
       state.todoItemsUpdatedTime = new Date()
+    },
+    addTodoItem(state: TodoModuleStoreState, todoItem: TodoItemModel): void {
+      state.todoItems.push({ ...todoItem })
     },
   },
   actions: {},
