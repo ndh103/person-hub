@@ -19,6 +19,10 @@ class TodoItemApiService {
     return http.put(`todos/items/${todoItem.id}`, todoItem)
   }
 
+  markAsDone(todoItemId: number): Promise<AxiosResponse<unknown>> {
+    return http.post(`todos/items/${todoItemId}/done`)
+  }
+
   delete(todoItem: TodoItemModel): Promise<AxiosResponse<any>> {
     return http.delete(`challenges/${todoItem.id}`)
   }

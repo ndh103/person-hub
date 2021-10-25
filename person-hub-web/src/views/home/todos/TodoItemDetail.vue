@@ -8,8 +8,8 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import todoItemApiService from '@/api-services/todo-item-api-service'
-  import TodoItemModel from '@/api-services/models/TodoItemModel'
+  import todoItemApiService from './api-services/todo-item-api-service'
+  import TodoItemModel from './api-services/models/TodoItemModel'
 
   export default defineComponent({
     props: {
