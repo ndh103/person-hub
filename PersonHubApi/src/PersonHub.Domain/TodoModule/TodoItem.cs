@@ -80,12 +80,12 @@ namespace PersonHub.Domain.TodoModule.Entities
                 _entityState.AddError("TodoItem Title is required");
             }
 
-            if (Title.Length > 250)
+            if (!string.IsNullOrEmpty(Title) && Title.Length > 250)
             {
                 _entityState.AddError("Title exceeds the maximum characters of 250");
             }
 
-            if (Description.Length > 1000)
+            if (!string.IsNullOrEmpty(Description) && Description.Length > 1000)
             {
                 _entityState.AddError("Description exceeds the maximum characters of 1000");
             }
