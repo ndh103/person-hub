@@ -1,4 +1,4 @@
-import TodoItemModel from '@/api-services/models/TodoItemModel'
+import TodoItemModel from '@/views/home/todos/api-services/models/TodoItemModel'
 import store from '@/store/index'
 import { TodoModuleStoreState, todoStore } from './todo-store'
 
@@ -10,6 +10,10 @@ class TodoStoreService {
   }
   addTodoItem(todoItem: TodoItemModel) {
     store.commit(`todos/${todoStore.mutations.addTodoItem.name}`, todoItem)
+  }
+
+  removeTodoItem(todoItemId: number) {
+    store.commit(`todos/${todoStore.mutations.removeTodoItem.name}`, todoItemId)
   }
 
   state = state

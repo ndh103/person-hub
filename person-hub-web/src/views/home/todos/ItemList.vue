@@ -1,6 +1,6 @@
 <template>
   <div>
-    <add-new-todo-item @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
+    <add-new-todo-item :item-type="itemType" @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
 
     <draggable
       v-model="todoItems"
@@ -13,7 +13,7 @@
     >
       <template #item="{ element }">
         <transition name="slide-fade">
-          <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone()"></todo-item-overview>
+          <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
         </transition>
       </template>
     </draggable>
@@ -22,15 +22,15 @@
 
 <script lang="ts">
   import { defineComponent, PropType } from 'vue'
-  import TodoItemModel from '@/api-services/models/TodoItemModel'
+  import TodoItemModel from './api-services/models/TodoItemModel'
   import TodoItemOverview from '@/views/home/todos/TodoItemOverview.vue'
-  import todoItemApiService from '@/api-services/todo-item-api-service'
-  import TodoItemStatusEnum from '@/api-services/models/TodoItemStatusEnum'
+  import todoItemApiService from './api-services/todo-item-api-service'
   import AddNewTodoItem from './AddNewTodoItem.vue'
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import todoStoreService from './store/todoStoreService'
-  import TodoItemTypeEnum from '@/api-services/models/TodoItemTypeEnum'
+  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
+  import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
 
   export default defineComponent({
     components: {
@@ -66,8 +66,6 @@
     },
     methods: {
       addNewTodoItem: async function (todoItem: TodoItemModel) {
-        todoItem.type = this.itemType
-
         // get the current order of the last item
         const lastItem = this.todoItems.last()
 
@@ -82,10 +80,12 @@
           todoStoreService.addTodoItem(todoItem)
         }
       },
-      onItemMarkedAsDone() {
-        var updatedTodoItems = [...this.todoItems].filter((r) => r.status != TodoItemStatusEnum.Finished)
+      onItemMarkedAsDone(todoItem: TodoItemModel) {
+        todoItem.status = TodoItemStatusEnum.Finished
 
-        todoStoreService.updateTodoItems(updatedTodoItems)
+        setTimeout(() => {
+          todoStoreService.removeTodoItem(todoItem.id)
+        }, 500)
       },
       onDragEnd: async function (evt) {
         const newIndex = evt.newIndex

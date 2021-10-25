@@ -18,9 +18,9 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import todoItemApiService from '@/api-services/todo-item-api-service'
-  import TodoItemStatusEnum from '@/api-services/models/TodoItemStatusEnum'
-  import TodoItemTypeEnum from '@/api-services/models/TodoItemTypeEnum'
+  import todoItemApiService from './api-services/todo-item-api-service'
+  import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
+  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
   import appStoreService from '@/store/application/applicationStoreService'
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import todoStoreService from './store/todoStoreService'

@@ -1,20 +1,21 @@
 <template>
   <div class="mb-4 flex flex-row items-center">
-    <input v-model="newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Add new todo item..." @keyup.enter="submitForm()" />
-
-    <button class="app-btn-primary mt-2" @click="submitForm()"><PlusIcon class="app-icon-standard" /> Add</button>
+    <input v-model="newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Input and press enter to add new ..." @keyup.enter="submitForm()" />
   </div>
 </template>
 
 <script lang="ts">
-  import TodoItemModel from '@/api-services/models/TodoItemModel'
-  import TodoItemStatusEnum from '@/api-services/models/TodoItemStatusEnum'
-  import PlusIcon from '@/assets/plus-icon.svg?component'
-  import { defineComponent } from 'vue'
+  import TodoItemModel from './api-services/models/TodoItemModel'
+  import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
+  import { defineComponent, PropType } from 'vue'
+  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
 
   export default defineComponent({
-    components: {
-      PlusIcon,
+    props: {
+      itemType: {
+        type: Number as PropType<TodoItemTypeEnum>,
+        default: TodoItemTypeEnum.Todo,
+      },
     },
     emits: ['onAddNewItem'],
     data: function () {
@@ -28,6 +29,7 @@
           return
         }
 
+        this.newTodoItem.type = this.itemType
         this.newTodoItem.status = TodoItemStatusEnum.Initial
         this.$emit('onAddNewItem', { ...this.newTodoItem })
 

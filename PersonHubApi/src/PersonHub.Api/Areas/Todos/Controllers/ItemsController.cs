@@ -91,27 +91,6 @@ namespace PersonHub.Api.Areas.Todos.Controllers
             return Ok();
         }
 
-        [HttpPost("{id}/yourday")]
-        public async Task<ActionResult> AddToYourDay(int id)
-        {
-            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
-            if (todoItemEntity == null)
-            {
-                return NotFound();
-            }
-
-            todoItemEntity.AddToYourDay();
-
-            if (todoItemEntity.HasError())
-            {
-                return BadRequest(todoItemEntity.Errors().First());
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok();
-        }
-
         [HttpGet("status/{status}")]
         public async Task<ActionResult<IEnumerable<TodoItem>>> QueryByStatus(int status)
         {
