@@ -40,12 +40,12 @@
 </script>
 
 <style lang="postcss" scoped>
-  .todo-item-overview:hover >>> .handle-icon {
+  .todo-item-overview:hover .handle-icon {
     @apply visible;
   }
 
   /* Not show the handle icon when dragging */
-  .dragging >>> .handle-icon {
+  .dragging .handle-icon {
     @apply invisible !important;
   }
 </style>
