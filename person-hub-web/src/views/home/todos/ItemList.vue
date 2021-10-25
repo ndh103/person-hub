@@ -1,6 +1,6 @@
 <template>
   <div>
-    <add-new-todo-item :item-type="itemType" @onAddNewItem="addNewTodoItem($event)"></add-new-todo-item>
+    <quick-add :item-type="itemType" @onAddNewItem="addNewTodoItem($event)"></quick-add>
 
     <draggable
       v-model="todoItems"
@@ -25,7 +25,7 @@
   import TodoItemModel from './api-services/models/TodoItemModel'
   import TodoItemOverview from '@/views/home/todos/TodoItemOverview.vue'
   import todoItemApiService from './api-services/todo-item-api-service'
-  import AddNewTodoItem from './AddNewTodoItem.vue'
+  import QuickAdd from './QuickAdd.vue'
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import todoStoreService from './store/todoStoreService'
@@ -35,7 +35,7 @@
   export default defineComponent({
     components: {
       TodoItemOverview,
-      AddNewTodoItem,
+      QuickAdd,
       draggable,
     },
     props: {
