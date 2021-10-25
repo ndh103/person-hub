@@ -51,6 +51,7 @@
     data: function () {
       return {
         drag: false,
+        todoItems: new Array<TodoItemModel>(),
       }
     },
     computed: {
@@ -60,8 +61,10 @@
           disabled: false,
         }
       },
-      todoItems() {
-        return this.items
+    },
+    watch: {
+      items: function () {
+        this.todoItems = [...this.items]
       },
     },
     methods: {

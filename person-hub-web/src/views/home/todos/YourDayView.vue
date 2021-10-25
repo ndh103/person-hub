@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row-reverse">
-    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchTodoItems()">
+    <span class="hover:cursor-pointer hover:text-green-700 text-green-500" @click="fetchTodoItems()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
