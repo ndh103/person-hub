@@ -67,6 +67,9 @@
         this.todoItems = [...this.items]
       },
     },
+    created() {
+      this.todoItems = [...this.items]
+    },
     methods: {
       addNewTodoItem: async function (todoItem: TodoItemModel) {
         // get the current order of the last item

@@ -2,8 +2,6 @@ import TodoItemModel from '@/views/home/todos/api-services/models/TodoItemModel'
 import store from '@/store/index'
 import { TodoModuleStoreState, todoStore } from './todo-store'
 
-const state = store.state['todos'] as TodoModuleStoreState
-
 class TodoStoreService {
   updateTodoItems(todoItems: Array<TodoItemModel>) {
     store.commit(`todos/${todoStore.mutations.updateTodoItems.name}`, todoItems)
@@ -16,7 +14,9 @@ class TodoStoreService {
     store.commit(`todos/${todoStore.mutations.removeTodoItem.name}`, todoItemId)
   }
 
-  state = state
+  state = store.state['todos'] as TodoModuleStoreState
 }
 
-export default new TodoStoreService()
+const instance = new TodoStoreService()
+
+export default instance
