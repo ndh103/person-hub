@@ -28,6 +28,7 @@
   import dayjs from 'dayjs'
 
   import ItemList from './ItemList.vue'
+  import TodoItemModel from './api-services/models/TodoItemModel'
 
   export default defineComponent({
     components: {
@@ -72,7 +73,7 @@
         })
 
         if (response) {
-          var todoItems = response.data
+          var todoItems = response.data as Array<TodoItemModel>
           todoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
           todoStoreService.updateTodoItems(todoItems)
         }

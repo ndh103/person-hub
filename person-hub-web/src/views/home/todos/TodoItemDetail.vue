@@ -29,7 +29,7 @@
     methods: {
       fetchTodoItemDetail: async function () {
         const response = await todoItemApiService.get(this.todoItemId)
-        this.todoItem = response.data
+        this.todoItem = response.data as TodoItemModel
       },
     },
   })
