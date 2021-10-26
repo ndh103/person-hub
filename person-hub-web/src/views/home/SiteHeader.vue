@@ -2,7 +2,7 @@
   <header class="bg-green-500 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
     <div class="pl-4">
       <span @click="toggleSideBar()">
-        <MenuIcon class="inline-block h-7 w-7 lg:hidden"></MenuIcon>
+        <MenuIcon class="inline-block h-6 w-6 lg:hidden"></MenuIcon>
       </span>
       Person Hub
     </div>

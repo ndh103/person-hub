@@ -3,7 +3,7 @@
     <div class="z-20 px-4">
       <div class="flex flex-row-reverse">
         <span class="hidden h-10 w-10 pr-2 cursor-pointer close-button" @click="toggleSideBar(false)">
-          <CloseIcon></CloseIcon>
+          <CloseIcon class="w-4 h-4"></CloseIcon>
         </span>
       </div>
 

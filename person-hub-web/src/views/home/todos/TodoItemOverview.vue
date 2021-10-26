@@ -1,8 +1,16 @@
 <template>
-  <div class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview flex items-center">
-    <HandleIcon class="inline-block invisible pr-1 handle-icon h-6 w-6"></HandleIcon>
-    <input v-model="isChecked" type="checkbox" class="rounded text-green-500 mr-3" @click="markAsDone()" />
-    <span class="font-medium cursor-pointer" :class="{ 'line-through': isChecked }" @click="gotoDetail()">{{ todoItemOverview.title }}</span>
+  <div class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview flex">
+    <div>
+      <HandleIcon class="inline-block invisible pr-1 handle-icon h-5 w-5"></HandleIcon>
+    </div>
+
+    <div>
+      <input v-model="isChecked" type="checkbox" class="rounded text-green-500 mr-3 mt-1" @click="markAsDone()" />
+    </div>
+
+    <div>
+      <span class="font-medium cursor-pointer" :class="{ 'line-through': isChecked }" @click="gotoDetail()">{{ todoItemOverview.title }}</span>
+    </div>
   </div>
 </template>
 
