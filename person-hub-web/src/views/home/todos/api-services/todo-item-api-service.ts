@@ -1,30 +1,43 @@
 import TodoItemModel from './models/TodoItemModel'
 import http from '@/common/http-base'
 import { AxiosResponse } from 'axios'
+import ApiServiceBase from '@/common/ApiServiceBase'
 
 class TodoItemApiService {
-  add(todoItem: TodoItemModel): Promise<AxiosResponse<any>> {
-    return http.post('todos/items', todoItem)
+  add(todoItem: TodoItemModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post('todos/items', todoItem)
+    }, shouldShowLoading)
   }
 
-  query(status: number): Promise<AxiosResponse<any>> {
-    return http.get(`todos/items/status/${status}`)
+  query(status: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.get(`todos/items/status/${status}`)
+    }, shouldShowLoading)
   }
 
-  get(id: string): Promise<AxiosResponse<any>> {
-    return http.get(`todos/items/${id}`)
+  get(id: string, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.get(`todos/items/${id}`)
+    }, shouldShowLoading)
   }
 
-  update(todoItem: TodoItemModel): Promise<AxiosResponse<any>> {
-    return http.put(`todos/items/${todoItem.id}`, todoItem)
+  update(todoItem: TodoItemModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.put(`todos/items/${todoItem.id}`, todoItem)
+    }, shouldShowLoading)
   }
 
-  markAsDone(todoItemId: number): Promise<AxiosResponse<unknown>> {
-    return http.post(`todos/items/${todoItemId}/done`)
+  markAsDone(todoItemId: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.post(`todos/items/${todoItemId}/done`)
+    }, shouldShowLoading)
   }
 
-  delete(todoItem: TodoItemModel): Promise<AxiosResponse<any>> {
-    return http.delete(`challenges/${todoItem.id}`)
+  delete(todoItem: TodoItemModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.delete(`challenges/${todoItem.id}`)
+    }, shouldShowLoading)
   }
 }
 

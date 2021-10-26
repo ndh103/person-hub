@@ -82,7 +82,7 @@
 
         if (response) {
           // Update the todoItem from response
-          todoItem.id = response.data.id
+          todoItem.id = (response.data as TodoItemModel).id
           todoStoreService.addTodoItem(todoItem)
         }
       },

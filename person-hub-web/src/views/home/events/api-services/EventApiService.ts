@@ -5,10 +5,7 @@ import EventQueryModel from './models/EventQueryModel'
 import ApiServiceBase from '@/common/ApiServiceBase'
 
 class EventApiService {
-  add(
-    event: EventModel,
-    shouldShowLoading = false
-  ): Promise<AxiosResponse<unknown>> {
+  add(event: EventModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
       return http.post('life-events/events', event)
     }, shouldShowLoading)
@@ -20,29 +17,19 @@ class EventApiService {
     }, shouldShowLoading)
   }
 
-  query(
-    queryModel: EventQueryModel,
-    shouldShowLoading = false
-  ): Promise<AxiosResponse<unknown>> {
+  query(queryModel: EventQueryModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
       return http.post(`life-events/events/query`, queryModel)
     }, shouldShowLoading)
   }
 
-  update(
-    id: number,
-    event: EventModel,
-    shouldShowLoading = false
-  ): Promise<AxiosResponse<unknown>> {
+  update(id: number, event: EventModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
       return http.put(`life-events/events/${id}`, event)
     }, shouldShowLoading)
   }
 
-  delete(
-    id: number,
-    shouldShowLoading = false
-  ): Promise<AxiosResponse<unknown>> {
+  delete(id: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
       return http.delete(`life-events/events/${id}`)
     }, shouldShowLoading)
