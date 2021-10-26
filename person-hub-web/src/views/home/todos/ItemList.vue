@@ -78,12 +78,19 @@
         const nextOrder = LexicoGraphicalUtility.generateMidString(lastItem ? lastItem.itemOrder : '', '')
         todoItem.itemOrder = nextOrder
 
+        //temporary added to the list (before calling api)
+        this.todoItems.unshift(todoItem)
+
         const response = await todoItemApiService.add(todoItem)
 
         if (response) {
           // Update the todoItem from response
           todoItem.id = (response.data as TodoItemModel).id
           todoStoreService.addTodoItem(todoItem)
+        } else {
+          // in case of error, remove the item out of the list
+          var index = this.todoItems.findIndex((r) => r.itemOrder == todoItem.itemOrder)
+          this.todoItems.splice(index, 1)
         }
       },
       onItemMarkedAsDone(todoItem: TodoItemModel) {
