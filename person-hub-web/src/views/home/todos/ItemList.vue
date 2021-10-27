@@ -79,7 +79,7 @@
         todoItem.itemOrder = nextOrder
 
         //temporary added to the list (before calling api)
-        this.todoItems.unshift(todoItem)
+        this.todoItems.push(todoItem)
 
         const response = await todoItemApiService.add(todoItem)
 

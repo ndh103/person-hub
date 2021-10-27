@@ -6,18 +6,36 @@
     </span>
   </div>
   <div class="py-4">
-    <span class="text-lg block">Your Day</span>
+    <div class="flex items-center">
+      <SunIcon class="inline-block h-4 w-4 mr-2" />
+      <span class="text-lg"> Your Day</span>
+    </div>
     <ItemList :items="yourDayItems" :item-type="TodoItemTypeEnum.YourDay"></ItemList>
   </div>
 
   <div class="py-4">
-    <span class="text-lg block">Todos</span>
+    <div class="flex items-center">
+      <CalendarWeekIcon class="inline-block h-3 w-3 mr-2" />
+      <span class="text-lg"> Your Week</span>
+    </div>
+    <ItemList :items="yourWeekItems" :item-type="TodoItemTypeEnum.YourWeek"></ItemList>
+  </div>
+
+  <div class="py-4">
+    <div class="flex items-center">
+      <TodoListIcon class="inline-block h-4 w-4 mr-2" />
+      <span class="text-lg"> Todos</span>
+    </div>
     <ItemList :items="todoItems" :item-type="TodoItemTypeEnum.Todo"></ItemList>
   </div>
 </template>
 
 <script lang="ts">
   import { defineComponent } from 'vue'
+  import SunIcon from '@/assets/sun-icon.svg?component'
+  import CalendarWeekIcon from '@/assets/calendar-week-icon.svg?component'
+  import TodoListIcon from '@/assets/todo-list-icon.svg?component'
+
   import todoItemApiService from './api-services/todo-item-api-service'
   import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
   import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
@@ -34,6 +52,9 @@
     components: {
       ItemList,
       RefreshIcon,
+      SunIcon,
+      CalendarWeekIcon,
+      TodoListIcon,
     },
     computed: {
       todoItems() {
@@ -41,6 +62,9 @@
       },
       yourDayItems() {
         return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourDay)
+      },
+      yourWeekItems() {
+        return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourWeek)
       },
       TodoItemTypeEnum() {
         return TodoItemTypeEnum
