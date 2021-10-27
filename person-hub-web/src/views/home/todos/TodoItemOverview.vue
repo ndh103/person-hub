@@ -9,15 +9,10 @@
     </div>
 
     <div v-if="!isEditMode">
-      <a
-        v-if="isValidHttpUrl(todoItemOverview.title)"
-        class="font-medium cursor-pointer italic"
-        :class="{ 'line-through': isChecked }"
-        :href="todoItemOverview.title"
-        target="_blank"
-        >{{ todoItemOverview.title }}</a
-      >
-      <span v-else class="font-medium" :class="{ 'line-through': isChecked }">{{ todoItemOverview.title }}</span>
+      <a v-if="isValidHttpUrl(todoItemOverview.title)" class="cursor-pointer italic" :class="{ 'line-through': isChecked }" :href="todoItemOverview.title" target="_blank">{{
+        todoItemOverview.title
+      }}</a>
+      <span v-else :class="{ 'line-through': isChecked }">{{ todoItemOverview.title }}</span>
     </div>
 
     <div v-if="isEditMode" class="flex-grow">
@@ -79,7 +74,7 @@
         this.newTitle = this.todoItemOverview.title
         this.isEditMode = true
 
-        this.$nextTick(() => this.$refs.titleInput.focus())
+        this.$nextTick(() => (this.$refs.titleInput as any).focus())
       },
       async markAsDone() {
         var response = await todoItemApiService.markAsDone(this.todoItemOverview.id)
