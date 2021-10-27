@@ -9,7 +9,15 @@
     </div>
 
     <div>
-      <span class="font-medium cursor-pointer" :class="{ 'line-through': isChecked }" @click="gotoDetail()">{{ todoItemOverview.title }}</span>
+      <a
+        v-if="isValidHttpUrl(todoItemOverview.title)"
+        class="font-medium cursor-pointer italic"
+        :class="{ 'line-through': isChecked }"
+        :href="todoItemOverview.title"
+        target="_blank"
+        >{{ todoItemOverview.title }}</a
+      >
+      <span v-else class="font-medium" :class="{ 'line-through': isChecked }">{{ todoItemOverview.title }}</span>
     </div>
   </div>
 </template>
@@ -50,6 +58,17 @@
           // Error, reset the checkbox
           this.isChecked = false
         }
+      },
+      isValidHttpUrl(string) {
+        let url
+
+        try {
+          url = new URL(string)
+        } catch (_) {
+          return false
+        }
+
+        return url.protocol === 'http:' || url.protocol === 'https:'
       },
     },
   })
