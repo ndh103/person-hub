@@ -1,11 +1,11 @@
 <template>
   <div class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview flex">
     <div>
-      <HandleIcon class="inline-block invisible pr-1 handle-icon h-5 w-5"></HandleIcon>
+      <HandleIcon class="inline-block invisible pr-1 h-5 w-5" :class="[isEditMode ? 'edit-handle-icon' : 'handle-icon']"></HandleIcon>
     </div>
 
     <div>
-      <input v-model="isChecked" type="checkbox" class="rounded text-green-500 mr-3 mt-1" @click="markAsDone()" />
+      <input v-if="!isEditMode" v-model="isChecked" type="checkbox" class="rounded text-green-500 mr-3 mt-1" @click="markAsDone()" />
     </div>
 
     <div v-if="!isEditMode">
@@ -26,10 +26,10 @@
         <PencilIcon v-if="!isEditMode" class="h-4 w-4 block invisible cursor-pointer action-icon" @click="toggleEditMode()" />
       </div>
       <div class="pr-2">
-        <CloseIcon v-if="isEditMode" class="h-4 w-4 block invisible cursor-pointer action-icon" @click="cancelUpdateTitle()" />
+        <CloseIcon v-if="isEditMode" class="h-4 w-4 block cursor-pointer" @click="cancelUpdateTitle()" />
       </div>
       <div>
-        <SaveIcon v-if="isEditMode" class="h-4 w-4 block invisible cursor-pointer action-icon" @click="updateTitle()" />
+        <CheckIcon v-if="isEditMode" class="h-4 w-4 block cursor-pointer" @click="updateTitle()" />
       </div>
     </div>
   </div>
@@ -42,14 +42,14 @@
   import todoItemApiService from './api-services/todo-item-api-service'
   import HandleIcon from '@/assets/handle-icon.svg?component'
   import PencilIcon from '@/assets/pencil-icon.svg?component'
-  import SaveIcon from '@/assets/save-icon.svg?component'
   import CloseIcon from '@/assets/close-icon.svg?component'
+  import CheckIcon from '@/assets/check-icon.svg?component'
 
   export default defineComponent({
     components: {
       HandleIcon,
       PencilIcon,
-      SaveIcon,
+      CheckIcon,
       CloseIcon,
     },
     props: {
