@@ -1,13 +1,9 @@
-import createAuth0Client, {
-  Auth0Client,
-  Auth0ClientOptions,
-} from '@auth0/auth0-spa-js'
+import createAuth0Client, { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js'
 import AuthServiceInterface from './AuthServiceInterface'
 import UserInfo from './UserInfo'
 
 /** Define a default action to perform after authentication */
-const DEFAULT_REDIRECT_CALLBACK = () =>
-  window.history.replaceState({}, document.title, window.location.pathname)
+const DEFAULT_REDIRECT_CALLBACK = () => window.history.replaceState({}, document.title, window.location.pathname)
 
 export default class Auth0AuthService implements AuthServiceInterface {
   loading = true
@@ -50,10 +46,7 @@ export default class Auth0AuthService implements AuthServiceInterface {
 
     try {
       // If the user is returning to the app after authentication..
-      if (
-        window.location.search.includes('code=') &&
-        window.location.search.includes('state=')
-      ) {
+      if (window.location.search.includes('code=') && window.location.search.includes('state=')) {
         // handle the redirect and retrieve tokens
         const { appState } = await this.auth0Client.handleRedirectCallback()
 

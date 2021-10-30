@@ -25,11 +25,7 @@ const options = {
   scope: 'openid profile email',
   response_type: 'token id_token',
   onRedirectCallback: (appState) => {
-    router.push(
-      appState && appState.targetUrl
-        ? appState.targetUrl
-        : window.location.pathname
-    )
+    router.push(appState && appState.targetUrl ? appState.targetUrl : window.location.pathname)
   },
 }
 
