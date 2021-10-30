@@ -8,12 +8,16 @@ const httpInstance = axios.create({
 // Add a request interceptor
 httpInstance.interceptors.request.use(
   async function (request) {
-    const authService = await getAuthServiceInstance()
+    try {
+      const authService = await getAuthServiceInstance()
 
-    const token = await authService.getTokenSilently()
+      const token = await authService.getTokenSilently()
 
-    if (token) {
-      request.headers.Authorization = `Bearer ${token}`
+      if (token) {
+        request.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (error) {
+      console.log(error)
     }
 
     // Do something before request is sent
@@ -21,6 +25,7 @@ httpInstance.interceptors.request.use(
   },
   function (error) {
     console.log(error)
+
     // Do something with request error
     return Promise.reject(error)
   }
