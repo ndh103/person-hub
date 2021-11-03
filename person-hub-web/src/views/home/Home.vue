@@ -3,7 +3,7 @@
     <site-header></site-header>
 
     <div class="flex">
-      <div class="hidden" :class="[applicationStoreService.state.overlaySidebarStatus + '-sidebar-overlay']"></div>
+      <div class="hidden" :class="[applicationStoreService.state.overlaySidebarStatus + '-sidebar-overlay']" @click="toogleSideBar()"></div>
       <aside-menu
         class="flex-none w-80 h-screen fixed top-0 left-0 pt-8 bg-gray-50 lg:static lg:block"
         :class="[applicationStoreService.state.overlaySidebarStatus + '-sidebar']"
@@ -37,6 +37,11 @@
     computed: {
       applicationStoreService() {
         return applicationStoreService
+      },
+    },
+    methods: {
+      toogleSideBar() {
+        this.applicationStoreService.toggleSideBar()
       },
     },
   })
