@@ -8,6 +8,7 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PersonHub.Api.Common.DependencyInjections;
+using PersonHub.Api.Common.Middlewares;
 using PersonHub.Domain.Interfaces;
 using PersonHub.Infrastructure.DataAccess;
 using System;
@@ -59,6 +60,8 @@ namespace PersonHub.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
+
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
