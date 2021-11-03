@@ -8,9 +8,9 @@ const httpInstance = axios.create({
 // Add a request interceptor
 httpInstance.interceptors.request.use(
   async function (request) {
-    try {
-      const authService = await getAuthServiceInstance()
+    const authService = await getAuthServiceInstance()
 
+    try {
       const token = await authService.getTokenSilently()
 
       if (token) {
@@ -18,6 +18,8 @@ httpInstance.interceptors.request.use(
       }
     } catch (error) {
       console.log(error)
+
+      authService.loginWithRedirect()
     }
 
     // Do something before request is sent
@@ -37,7 +39,7 @@ httpInstance.interceptors.response.use(
     // Do something with response data
     return response
   },
-  function (error) {
+  async function (error) {
     // Do something with response error
     return Promise.reject(error)
   }
