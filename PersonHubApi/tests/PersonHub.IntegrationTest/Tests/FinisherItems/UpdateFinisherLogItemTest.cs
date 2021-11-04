@@ -12,7 +12,7 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.FinisherItems
 {
-    [Collection("Test collection")]
+    [Collection(CollectionFixtureDefinition.Name)]
     public class UpdateFinisherLogItemTest : TestBaseClass
     {
         public UpdateFinisherLogItemTest(IntegrationTestClassFixture fixture) : base(fixture)

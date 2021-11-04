@@ -11,7 +11,7 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.FinisherItems
 {
-    [Collection("Test collection")]
+    [Collection(CollectionFixtureDefinition.Name)]
     public class QueryFinisherItemTest : TestBaseClass
     {
         public QueryFinisherItemTest(IntegrationTestClassFixture fixture) : base(fixture)

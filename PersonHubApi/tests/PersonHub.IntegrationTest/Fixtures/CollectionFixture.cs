@@ -2,7 +2,11 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Fixtures
 {
-    [CollectionDefinition("Test collection")]
+    public static class CollectionFixtureDefinition{
+        public const string Name = "Test collection";
+    }
+
+    [CollectionDefinition(CollectionFixtureDefinition.Name)]
     public class DatabaseCollection : ICollectionFixture<IntegrationTestClassFixture>
     {
         // This class has no code, and is never created. Its purpose is simply
