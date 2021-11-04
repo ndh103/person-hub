@@ -19,7 +19,7 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
             this.connectionPool = connectionPool;
         }
 
-        public async Task<int> Insert(FinisherItemEntity itemEntity)
+        public async Task<int> InsertAsync(FinisherItemEntity itemEntity)
         {
             var recordId = await connection.ExecuteScalarAsync<int>(@"
                                             INSERT INTO ""FinisherItems""(""UserId"", ""Title"", ""Description"", ""StartDate"", ""FinishDate"", ""Status"", ""Tags"" ) 
@@ -40,7 +40,7 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
             return recordId;
         }
 
-        public async Task<int> InsertLog(FinisherItemLogEntity logEntity)
+        public async Task<int> InsertLogAsync(FinisherItemLogEntity logEntity)
         {
             var recordId = await connection.ExecuteScalarAsync<int>(@"
                                             INSERT INTO ""FinisherItemLog""(""FinisherItemId"", ""Content"", ""CreatedDate"") 
@@ -57,9 +57,35 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
             return recordId;
         }
 
+        public async Task<FinisherItemEntity> GetFinisherItemAsync(long itemId)
+        {
+            var result = await connection.QuerySingleOrDefaultAsync<FinisherItemEntity>(@"
+                SELECT * from ""FinisherItems""
+                WHERE ""Id"" = @ItemId
+            ", new
+            {
+                ItemId = itemId
+            });
+
+            return result;
+        }
+
+        public async Task<IEnumerable<FinisherItemLogEntity>> GetFinisherItemLogsAsync(long itemId)
+        {
+            var result = await connection.QueryAsync<FinisherItemLogEntity>(@"
+                SELECT * from ""FinisherItemLog""
+                WHERE ""FinisherItemId"" = @ItemId
+            ", new
+            {
+                ItemId = itemId
+            });
+
+            return result;
+        }
 
 
-        public async Task CleanUp()
+
+        public async Task CleanUpAsync()
         {
             await connection.ExecuteAsync("delete from FinisherItemLog");
             await connection.ExecuteAsync("delete from FinisherItems");

@@ -22,11 +22,11 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         {
             // Arrange, add finisher item
             var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
-            var addedItemId = await this.Fixture.FinisherItemDataAccess.Insert(item);
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             // Arrange, added log to the item
             var itemLog = FinsiherItemTestHelper.CreateFinisherItemLogEntity(addedItemId);
-            var addedItemLogId = await this.Fixture.FinisherItemDataAccess.InsertLog(itemLog);
+            var addedItemLogId = await this.Fixture.FinisherItemDataAccess.InsertLogAsync(itemLog);
 
             var responseItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItemId}");
 

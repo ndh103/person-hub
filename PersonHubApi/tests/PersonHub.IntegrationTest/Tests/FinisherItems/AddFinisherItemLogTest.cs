@@ -23,49 +23,26 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task AddFinisherItemLogTest_ValidItem_ShouldSuccess()
         {
             // Arrange , create an existing Item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-
-            var response = await Fixture.Client.PostAsJsonAsync(BaseApiPath, validItem);
-            response.EnsureSuccessStatusCode();
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            var addedId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             // Act, add log to the Finisher Item
             var requestLogDto = FinsiherItemTestHelper.CreateFinisherItemLogDto();
-
-            var addLogResponse = await Fixture.Client.PostAsJsonAsync($"{BaseApiPath}/{addedItem.Id}/logs", requestLogDto);
+            var addLogResponse = await Fixture.Client.PostAsJsonAsync($"{BaseApiPath}/{addedId}/logs", requestLogDto);
             addLogResponse.EnsureSuccessStatusCode();
 
             var addedLog = await addLogResponse.Content.ReadFromJsonAsync<FinisherItemLog>();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"{BaseApiPath}/{addedItem.Id}");
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedId);
+
+            var dbItemLogs = await this.Fixture.FinisherItemDataAccess.GetFinisherItemLogsAsync(addedId);
 
             Assert.NotNull(dbItem);
+            Assert.NotNull(dbItemLogs);
+            Assert.Equal(1, dbItemLogs.Count());
 
-            var dbLog = dbItem.Logs.FirstOrDefault();
-
-            Assert.True(dbLog != null, "DbLog is null");
-            Assert.True(requestLogDto.Content == dbLog.Content, "Log Content is not matched");
-            Assert.True(dbLog.CreatedDate != null, "Log CreatedDate should not be null");
-        }
-
-        [Fact]
-        public async Task AddFinisherItemLogTest_InvalidItem_ShouldFail()
-        {
-            // Arrange , create an existing Item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-
-            var response = await Fixture.Client.PostAsJsonAsync(BaseApiPath, validItem);
-            response.EnsureSuccessStatusCode();
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
-
-            // Act, add log to the Finisher Item
-            var requestLogDto = FinsiherItemTestHelper.CreateFinisherItemLogDto();
-            // Invalid logs, empty content
-            requestLogDto.Content = string.Empty;
-
-            var addLogResponse = await Fixture.Client.PostAsJsonAsync($"{BaseApiPath}/{addedItem.Id}/logs", requestLogDto);
-
-            Assert.True(addLogResponse.StatusCode == HttpStatusCode.BadRequest, "The response should be BadRequest");
+            Assert.True(requestLogDto.Content == dbItemLogs.First().Content, "Log Content is not matched");
+            Assert.True(dbItemLogs.First().CreatedDate != null, "Log CreatedDate should not be null");
         }
     }
 }

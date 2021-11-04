@@ -58,27 +58,5 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             // Started Item should have start date
             Assert.True(TestHelper.EqualsUpToSeconds(validItem.StartDate.Value, dbItem.StartDate.Value), $"StartDate is not equal.");
         }
-
-        [Theory]
-        [MemberData(nameof(InvalidFinisherItemData))]
-        public async Task AddFinisherItem_InvalidItem_ShouldFail(FinisherItemRequestDto requestDto)
-        {
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", requestDto);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        }
-
-
-        public static IEnumerable<object[]> InvalidFinisherItemData()
-        {
-            var missingTitleItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            missingTitleItem.Title = string.Empty;
-
-            yield return new object[] { missingTitleItem };
-
-            var outOfRangeStatusItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            outOfRangeStatusItem.Status = (FinisherItemStatus)(TestHelper.GetMaxValueOfEnum<FinisherItemStatus>() + 1);
-
-            yield return new object[] { outOfRangeStatusItem };
-        }
     }
 }
