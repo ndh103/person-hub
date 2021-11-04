@@ -11,7 +11,6 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.FinisherItems
 {
-    [Collection(CollectionFixtureDefinition.Name)]
     public class GetFinisherItemTest : TestBaseClass
     {
         public GetFinisherItemTest(IntegrationTestClassFixture fixture) : base(fixture)
@@ -22,26 +21,22 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task GetFinisherItemTest_HasData_ShouldSuccess()
         {
             // Arrange, add finisher item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.Insert(item);
 
             // Arrange, added log to the item
-            var itemLogRequest = FinsiherItemTestHelper.CreateFinisherItemLogDto();
-            var addLogResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/logs", itemLogRequest);
-            addLogResponse.EnsureSuccessStatusCode();
+            var itemLog = FinsiherItemTestHelper.CreateFinisherItemLogEntity(addedItemId);
+            var addedItemLogId = await this.Fixture.FinisherItemDataAccess.InsertLog(itemLog);
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            var responseItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItemId}");
 
-            Assert.NotNull(dbItem);
-            FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+            Assert.NotNull(responseItem);
+            FinsiherItemTestHelper.AssertCompare(item, responseItem);
 
-            var dbLog = dbItem.Logs.FirstOrDefault();
+            var dbLog = responseItem.Logs.FirstOrDefault();
 
             Assert.NotNull(dbLog);
-            Assert.True(dbLog.Content == itemLogRequest.Content, "Item Log Content does not match");
+            Assert.True(dbLog.Content == itemLog.Content, "Item Log Content does not match");
         }
     }
 }

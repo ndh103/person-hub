@@ -12,7 +12,6 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.TodoItems
 {
-    [Collection(CollectionFixtureDefinition.Name)]
 
     public class DeleteTodoItemTest : TestBaseClass
     {

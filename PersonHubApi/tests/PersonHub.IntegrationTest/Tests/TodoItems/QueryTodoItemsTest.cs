@@ -13,7 +13,6 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.TodoItems
 {
-    [Collection(CollectionFixtureDefinition.Name)]
 
     public class QueryTodoItemsTest : TestBaseClass
     {

@@ -4,8 +4,7 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests
 {
-    [CollectionDefinition("Database collection")]
-    public class TestBaseClass
+    public class TestBaseClass : IClassFixture<IntegrationTestClassFixture>
     {
         protected IntegrationTestClassFixture Fixture { get; }
         public TestBaseClass(IntegrationTestClassFixture fixture)

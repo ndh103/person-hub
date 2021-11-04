@@ -11,7 +11,6 @@ using Xunit;
 
 namespace PersonHub.IntegrationTest.Tests.FinisherItems
 {
-    [Collection(CollectionFixtureDefinition.Name)]
     public class AddFinisherItemLogTest : TestBaseClass
     {
         private const string BaseApiPath = "/finisher/items";

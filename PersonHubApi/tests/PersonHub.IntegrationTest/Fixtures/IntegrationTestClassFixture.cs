@@ -11,6 +11,11 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 using PersonHub.Api;
+using PersonHub.IntegrationTest.DataAccess;
+using Microsoft.Extensions.Configuration;
+using PersonHub.Api.Common.Configs;
+using Microsoft.Extensions.Options;
+using PersonHub.IntegrationTest.DataAccess.FinisherItems;
 
 namespace PersonHub.IntegrationTest.Fixtures
 {
@@ -20,53 +25,18 @@ namespace PersonHub.IntegrationTest.Fixtures
 
         public HttpClient Client;
 
+        public FinisherItemDataAccess FinisherItemDataAccess;
+
+        private IConfigurationRoot configuration;
+
         public IntegrationTestClassFixture()
         {
-            //TODO: remove those codes
-            bool shouldRunFlyway = false;
-            if (shouldRunFlyway)
-            {
-                //TODO: Read configuration from appsettings instead of hardcode here
-                var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
-                {
-                    Host = "localhost",
-                    Port = 5432,
-                    Database = "person-hub-test",
-                    Username = "postgres",
-                    Password = "P@ssw0rd",
-                    SearchPath = "public"
-                };
+            // Init config
+            this.configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.Test.json")
+                .Build();
 
-                using (var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString))
-                {
-                    connection.Execute(@"set Search_Path to ""public""; 
-                                            DROP SCHEMA IF EXISTS ""person-hub-test"" CASCADE; 
-                                            CREATE SCHEMA ""person-hub-test"";
-                                            grant usage on schema ""person-hub-test"" to public;
-                                            grant create on schema ""person-hub-test"" to public;
-                                            ");
-                }
-
-                connectionStringBuilder.SearchPath = "person-hub-test";
-                using (var connection = new NpgsqlConnection(connectionStringBuilder.ConnectionString))
-                {
-                    //TODO: Should found a robust way to get sql path
-                    string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"../../../../../sql");
-                    var files = Directory.GetFiles(path).OrderBy(r => r);
-                    var setSearchPathSql = "set Search_Path to \"person-hub-test\";";
-
-                    if (!files.Any())
-                    {
-                        throw new Exception("WRONG SQL PATH FOLDER");
-                    }
-
-                    foreach (var filePath in files)
-                    {
-                        string sqlContent = File.ReadAllText(filePath);
-                        connection.Execute(setSearchPathSql + sqlContent);
-                    }
-                }
-            }
+            var dbConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
 
             factory = new CustomWebAppFactory<IntegrationTestStartup>().WithWebHostBuilder(builder =>
             {
@@ -80,6 +50,11 @@ namespace PersonHub.IntegrationTest.Fixtures
 
             Client = factory.CreateClient();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", null);
+
+            IOptions<DatabaseConnectionConfig> dbConfigOptions = Options.Create(dbConfig);
+            var connectionPool = new DbConnectionPool(dbConfigOptions);
+
+            FinisherItemDataAccess = new FinisherItemDataAccess(connectionPool);
         }
 
         public void Dispose()

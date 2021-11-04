@@ -24,13 +24,6 @@ namespace PersonHub.IntegrationTest.Fixtures
                                     var configPath = Path.Combine(projectDir, "appsettings.Test.json");
 
                                     config.AddJsonFile(configPath, false, false);
-
-                                    var inMemorySettings = new Dictionary<string, string>
-                                    {
-                                       {"DatabaseConnectionConfig:PersonHub:SearchPath", "person-hub-test"},
-                                    };
-
-                                    config.AddInMemoryCollection(inMemorySettings);
                                 });
                             });
 
