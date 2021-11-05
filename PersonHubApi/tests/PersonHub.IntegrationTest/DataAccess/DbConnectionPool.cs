@@ -50,6 +50,7 @@ namespace PersonHub.IntegrationTest.DataAccess
             }
 
             this.connection = new NpgsqlConnection(this.connectionString);
+            this.connection.Open();
             return connection;
         }
     }

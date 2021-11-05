@@ -21,6 +21,16 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
 
         public async Task<int> InsertAsync(FinisherItemEntity itemEntity)
         {
+            if (itemEntity.StartDate.HasValue)
+            {
+                itemEntity.StartDate = itemEntity.StartDate.Value.ToUniversalTime();
+            }
+
+            if (itemEntity.FinishDate.HasValue)
+            {
+                itemEntity.FinishDate = itemEntity.FinishDate.Value.ToUniversalTime();
+            }
+
             var recordId = await connection.ExecuteScalarAsync<int>(@"
                                             INSERT INTO ""FinisherItems""(""UserId"", ""Title"", ""Description"", ""StartDate"", ""FinishDate"", ""Status"", ""Tags"" ) 
                                             VALUES(@UserId, @Title, @Description, @StartDate, @FinishDate, @Status, @Tags)
@@ -51,7 +61,7 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
                                             {
                                                 FinisherItemId = logEntity.FinisherItemId,
                                                 Content = logEntity.Content,
-                                                CreatedDate = logEntity.CreatedDate
+                                                CreatedDate = logEntity.CreatedDate.ToUniversalTime()
                                             });
 
             return recordId;
@@ -82,8 +92,6 @@ namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
 
             return result;
         }
-
-
 
         public async Task CleanUpAsync()
         {

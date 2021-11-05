@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using PersonHub.Api.Common.Configs;
 using Microsoft.Extensions.Options;
 using PersonHub.IntegrationTest.DataAccess.FinisherItems;
+using PersonHub.IntegrationTest.DataAccess.TodoItems;
 
 namespace PersonHub.IntegrationTest.Fixtures
 {
@@ -26,6 +27,8 @@ namespace PersonHub.IntegrationTest.Fixtures
         public HttpClient Client;
 
         public FinisherItemDataAccess FinisherItemDataAccess;
+
+        public TodoItemDataAccess TodoItemDataAccess;
 
         private IConfigurationRoot configuration;
 
@@ -55,6 +58,7 @@ namespace PersonHub.IntegrationTest.Fixtures
             var connectionPool = new DbConnectionPool(dbConfigOptions);
 
             FinisherItemDataAccess = new FinisherItemDataAccess(connectionPool);
+            TodoItemDataAccess = new TodoItemDataAccess(connectionPool);
         }
 
         public void Dispose()

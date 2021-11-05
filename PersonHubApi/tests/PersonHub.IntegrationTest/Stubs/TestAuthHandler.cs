@@ -9,6 +9,8 @@ namespace PersonHub.IntegrationTest.Stubs
 {
     public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        public static string TestUserEmail = "testuser@gmail.com";
+
         public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
@@ -21,7 +23,7 @@ namespace PersonHub.IntegrationTest.Stubs
 
             var claims = new[] {
                 new Claim(ClaimTypes.Name, "Test user"),
-                new Claim(emailClaimType, "testuser@gmail.com")
+                new Claim(emailClaimType, TestUserEmail)
             };
             var identity = new ClaimsIdentity(claims, "Test");
             var principal = new ClaimsPrincipal(identity);

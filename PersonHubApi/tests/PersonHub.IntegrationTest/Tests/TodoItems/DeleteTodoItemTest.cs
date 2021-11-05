@@ -22,47 +22,17 @@ namespace PersonHub.IntegrationTest.Tests.TodoItems
         [Fact]
         public async Task DeleteTodoItemTest_ValidItem_ShouldSuccess()
         {
-            var todoItemDto = new TodoItemDto()
-            {
-                Title = "title",
-                Description = "description v1",
-                Status = TodoItemStatus.Todo,
-                ItemOrder = "item order"
-            };
-
             // Arrange, prepare a existing todoItem
-            var addResponse = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
-            addResponse.EnsureSuccessStatusCode();
-            var addedTodoItem = await addResponse.Content.ReadFromJsonAsync<TodoItem>();
+            var todoItemEntity = TodoItemTestHelper.GenerateRandomTodoItemEntity();
+            var addedItemId = await this.Fixture.TodoItemDataAccess.Insert(todoItemEntity);
 
             // Act
-            var response = await Fixture.Client.DeleteAsync($"/todos/items/{addedTodoItem.Id}");
+            var response = await Fixture.Client.DeleteAsync($"/todos/items/{addedItemId}");
             response.EnsureSuccessStatusCode();
 
             // Assert
-            var getResponse = await Fixture.Client.GetAsync($"/todos/items/{addedTodoItem.Id}");
-            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
-        }
-
-        [Fact]
-        public async Task DeleteTodoItem_WrongId_NotFound()
-        {
-            // Arrange, prepare a existing todoItem
-            var notFoundId = 12345;
-            var response = await Fixture.Client.DeleteAsync($"/todos/items/{notFoundId}");
-
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
-        private static TodoItemDto CreateTodoItemDto()
-        {
-            return new TodoItemDto()
-            {
-                Title = "title",
-                Description = "description",
-                Status = TodoItemStatus.Todo,
-                ItemOrder = "item order"
-            };
+            var dbItem = await this.Fixture.TodoItemDataAccess.Get(addedItemId);
+            Assert.Null(dbItem);
         }
     }
 }
