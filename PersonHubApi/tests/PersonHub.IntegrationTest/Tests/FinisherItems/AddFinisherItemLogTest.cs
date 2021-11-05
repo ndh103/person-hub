@@ -30,11 +30,10 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             var requestLogDto = FinsiherItemTestHelper.CreateFinisherItemLogDto();
             var addLogResponse = await Fixture.Client.PostAsJsonAsync($"{BaseApiPath}/{addedId}/logs", requestLogDto);
             addLogResponse.EnsureSuccessStatusCode();
-
             var addedLog = await addLogResponse.Content.ReadFromJsonAsync<FinisherItemLog>();
 
+            // Assert
             var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedId);
-
             var dbItemLogs = await this.Fixture.FinisherItemDataAccess.GetFinisherItemLogsAsync(addedId);
 
             Assert.NotNull(dbItem);

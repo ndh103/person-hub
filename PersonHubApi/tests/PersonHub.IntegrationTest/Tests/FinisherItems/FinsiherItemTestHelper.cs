@@ -72,6 +72,18 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             }
         }
 
+        public static void AssertCompare(FinisherItemRequestDto requestDto, FinisherItemEntity entity){
+            Assert.True(requestDto.Title == entity.Title, "Title is not equal");
+            Assert.True(requestDto.Description == entity.Description, "Description is not equal");
+
+            Assert.True(requestDto.Tags.Count() == entity.Tags.Count(), "Tags are not equal");
+
+            if(requestDto.Tags.Count() > 0){
+
+                Assert.True(requestDto.Tags.All(r=> entity.Tags.Contains(r)), "Tags are not equal");
+            }
+        }
+
         public static void AssertCompare(FinisherItemEntity dbEntity, FinisherItem entity){
             Assert.True(dbEntity.Title == entity.Title, "Title is not equal");
             Assert.True(dbEntity.Description == entity.Description, "Description is not equal");

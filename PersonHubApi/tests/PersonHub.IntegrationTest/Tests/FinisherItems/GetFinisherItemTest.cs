@@ -27,9 +27,9 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             // Arrange, added log to the item
             var itemLog = FinsiherItemTestHelper.CreateFinisherItemLogEntity(addedItemId);
             var addedItemLogId = await this.Fixture.FinisherItemDataAccess.InsertLogAsync(itemLog);
-
             var responseItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItemId}");
 
+            // Assert
             Assert.NotNull(responseItem);
             FinsiherItemTestHelper.AssertCompare(item, responseItem);
 

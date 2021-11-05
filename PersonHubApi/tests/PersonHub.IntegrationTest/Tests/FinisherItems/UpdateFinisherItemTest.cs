@@ -21,24 +21,22 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task UpdateFinisherPlanningItem_ValidData_ShouldSuccess()
         {
             // Arrange, exisiting item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            validItem.Status = FinisherItemStatus.Planning;
-
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            item.Status = FinisherItemStatus.Planning;
+            
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             // Act, update the existing item
             var updateRequestDto = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+
             // Not changing status and StartDate, just update title, Description and tags
             updateRequestDto.Status = FinisherItemStatus.Planning;
             updateRequestDto.StartDate = null;
 
-            var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{addedItem.Id}", updateRequestDto);
+            var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{addedItemId}", updateRequestDto);
             updateResponse.EnsureSuccessStatusCode();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedItemId);
 
             Assert.NotNull(dbItem);
 
@@ -49,23 +47,20 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task StartAnItem_ValidData_ShouldSuccess()
         {
             // Arrange, exisiting item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            validItem.Status = FinisherItemStatus.Planning;
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            item.Status = FinisherItemStatus.Planning;
 
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             // Act, update the existing item
             var startActionRequest = new StartItemActionRequestDto(){
                 StartDate = DateTime.Now
             };
             
-            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/start", startActionRequest);
+            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/start", startActionRequest);
             startActionResponse.EnsureSuccessStatusCode();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedItemId);
 
             Assert.NotNull(dbItem);
 
@@ -77,30 +72,27 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task FinishAnItem_ValidData_ShouldSuccess()
         {
             // Arrange, exisiting item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            validItem.Status = FinisherItemStatus.Planning;
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            item.Status = FinisherItemStatus.Planning;
 
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             //Arrange, start the item
             var startActionRequest = new StartItemActionRequestDto(){
                 StartDate = DateTime.Now
             };
             
-            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/start", startActionRequest);
+            var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/start", startActionRequest);
             startActionResponse.EnsureSuccessStatusCode();
 
             // Act, finish the item
             var finishActionRequest = new FinishItemActionRequestDto(){
                 FinishDate = DateTime.Now
             };
-            var finishActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/finish", finishActionRequest);
+            var finishActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/finish", finishActionRequest);
             finishActionResponse.EnsureSuccessStatusCode();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedItemId);
 
             Assert.NotNull(dbItem);
 
@@ -108,48 +100,16 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.True(TestHelper.EqualsUpToSeconds(finishActionRequest.FinishDate, dbItem.StartDate.Value));
         }
 
-        [Theory]
-        [MemberData(nameof(InvalidFinisherItemData))]
-        public async Task UpdateFinisherItemTest_InvalidItem_ShouldFail(FinisherItemRequestDto requestDto)
-        {
-            // Arrange, exisiting item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
-
-            // Act
-            var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{addedItem.Id}", requestDto);
-
-            Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
-        }
-
         [Fact]
         public async Task UpdateFinisherItemTest_NotExistItem_ShouldFail()
         {
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-
+            var validUpdateRequest = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
             var notExistedId = 999;
 
             // Act
-            var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{notExistedId}", validItem);
+            var updateResponse = await Fixture.Client.PutAsJsonAsync($"/finisher/items/{notExistedId}", validUpdateRequest);
 
             Assert.Equal(HttpStatusCode.NotFound, updateResponse.StatusCode);
-        }
-
-
-        public static IEnumerable<object[]> InvalidFinisherItemData()
-        {
-            var missingTitleItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            missingTitleItem.Title = string.Empty;
-
-            yield return new object[] { missingTitleItem };
-
-            var outOfRangeStatusItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            outOfRangeStatusItem.Status = (FinisherItemStatus)(TestHelper.GetMaxValueOfEnum<FinisherItemStatus>() + 1);
-
-            yield return new object[] { outOfRangeStatusItem };
         }
     }
 }

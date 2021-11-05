@@ -20,19 +20,20 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         [Fact]
         public async Task AddFinisherItem_PlanningItem_ShouldSuccess()
         {
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            validItem.Status = FinisherItemStatus.Planning;
+            // Act
+            var item = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            item.Status = FinisherItemStatus.Planning;
 
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
+            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", item);
             response.EnsureSuccessStatusCode();
-
             var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            // Assert
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedItem.Id);
 
             Assert.NotNull(dbItem);
 
-            FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+            FinsiherItemTestHelper.AssertCompare(item, dbItem);
 
             // Planning Item should not have start date
             Assert.Null(dbItem.StartDate);
@@ -41,22 +42,22 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         [Fact]
         public async Task AddFinisherItem_StartedItem_ShouldSuccess()
         {
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            validItem.Status = FinisherItemStatus.Started;
+            var item = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
+            item.Status = FinisherItemStatus.Started;
 
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
+            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", item);
             response.EnsureSuccessStatusCode();
-
             var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
 
-            var dbItem = await Fixture.Client.GetFromJsonAsync<FinisherItem>($"/finisher/items/{addedItem.Id}");
+            // Assert
+            var dbItem = await this.Fixture.FinisherItemDataAccess.GetFinisherItemAsync(addedItem.Id);
 
             Assert.NotNull(dbItem);
 
-            FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+            FinsiherItemTestHelper.AssertCompare(item, dbItem);
 
             // Started Item should have start date
-            Assert.True(TestHelper.EqualsUpToSeconds(validItem.StartDate.Value, dbItem.StartDate.Value), $"StartDate is not equal.");
+            Assert.True(TestHelper.EqualsUpToSeconds(item.StartDate.Value, dbItem.StartDate.Value), $"StartDate is not equal.");
         }
     }
 }

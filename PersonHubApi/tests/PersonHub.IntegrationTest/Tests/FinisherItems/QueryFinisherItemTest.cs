@@ -21,21 +21,18 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
         public async Task QueryFinisherItemTest_HasData_ShouldSuccess()
         {
             // Arrange, add finisher item
-            var validItem = FinsiherItemTestHelper.CreateFinisherItemRequestDto();
-            var response = await Fixture.Client.PostAsJsonAsync("/finisher/items", validItem);
-            response.EnsureSuccessStatusCode();
-            var addedItem = await response.Content.ReadFromJsonAsync<FinisherItem>();
+            var item = FinsiherItemTestHelper.CreateFinisherItemEntity();
+            var addedItemId = await this.Fixture.FinisherItemDataAccess.InsertAsync(item);
 
             // Arrange, added log to the item
-            var itemLogRequest = FinsiherItemTestHelper.CreateFinisherItemLogDto();
-            var addLogResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItem.Id}/logs", itemLogRequest);
-            addLogResponse.EnsureSuccessStatusCode();
+            var itemLogRequest = FinsiherItemTestHelper.CreateFinisherItemLogEntity(addedItemId);
+            var addedLog = await this.Fixture.FinisherItemDataAccess.InsertLogAsync(itemLogRequest);
 
             var query = new QueryFinisherItemRequestDto()
             {
                 Limit = 100,
                 Offset = 0,
-                Status = addedItem.Status
+                Status = item.Status
             };
 
             var queryResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/query", query);
@@ -46,9 +43,9 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.NotNull(resultItems);
             Assert.True(resultItems.Count() >= 1);
 
-            var dbItem  = resultItems.FirstOrDefault(r => r.Id == addedItem.Id);
+            var dbItem  = resultItems.FirstOrDefault(r => r.Id == addedItemId);
 
-            FinsiherItemTestHelper.AssertCompare(validItem, dbItem);
+            FinsiherItemTestHelper.AssertCompare(item, dbItem);
 
             Assert.True(dbItem.Logs.Count == 0, "Should not include Logs");
         }
