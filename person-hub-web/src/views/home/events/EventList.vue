@@ -23,7 +23,7 @@
         <span class="app-chip-simple mt-1 hidden sm:inline-block">{{ $filters.toMonthName(monthEvent.month) }}</span>
       </div>
 
-      <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 px-6 py-2 mb-2 border-opacity-25">
+      <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 mx-6 py-2 mb-2 border-opacity-25">
         <div class="pb-2">
           <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
         </div>
