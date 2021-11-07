@@ -3,7 +3,7 @@
   <div v-if="!isQuickAddFormOpen" class="flex">
     <span class="app-action-link" @click="openForm()">
       <PlusIcon class="inline-block h-4 w-4" />
-      <span>Add new event</span>
+      <span>Add new</span>
     </span>
     <span class="flex-grow"></span>
     <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchEvents()">
@@ -23,7 +23,7 @@
         <span class="app-chip-simple mt-1 hidden sm:inline-block">{{ $filters.toMonthName(monthEvent.month) }}</span>
       </div>
 
-      <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 mx-6 py-2 mb-2 border-opacity-25">
+      <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 ml-6 mr-2 py-2 mb-2 border-opacity-25">
         <div class="pb-2">
           <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
         </div>
