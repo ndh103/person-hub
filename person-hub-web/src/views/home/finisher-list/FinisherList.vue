@@ -15,7 +15,7 @@
     <span class="flex-grow"></span>
     <span class="app-action-link mr-2" @click="openForm()">
       <PlusIcon class="app-icon-standard" />
-      <span>Add new item</span>
+      <span>Add new</span>
     </span>
     <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchItems(filteredStatus)">
       <RefreshIcon class="app-icon-standard" />

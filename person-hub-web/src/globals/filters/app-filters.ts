@@ -7,6 +7,11 @@ class VueAppFilters {
     }
     return dayjs(value).format(format)
   }
+
+  toMonthName(monthNumber) {
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    return monthNames[monthNumber]
+  }
 }
 
 const VueAppFilterPlugin = {

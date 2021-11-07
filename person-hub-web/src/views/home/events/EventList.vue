@@ -14,20 +14,31 @@
 
   <EventQuickAddForm ref="addTodoForm" @on-new-event-added="addNewEvent($event)" />
 
-  <div v-for="(event, index) in events" :key="index" class="event-item-row border-b border-gray-400 px-4 py-2 mb-2 border-opacity-25">
-    <div class="pb-2">
-      <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
+  <div v-for="(yearEvent, yearEventIndex) in yearEvents" :key="yearEventIndex">
+    <div>
+      <span class="font-bold"> {{ yearEvent.year }}</span>
     </div>
-
-    <div class="flex justify-between">
-      <span class="text-xs self-end">{{ $filters.formatDate(event.eventDate) }}</span>
-
-      <div>
-        <span v-for="(tag, tagIndex) in event.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
+    <div v-for="(monthEvent, monthEventIndex) in yearEvent.monthEvents" :key="monthEventIndex">
+      <div class="py-4">
+        <span class="app-chip-simple mt-1 hidden sm:inline-block">{{ $filters.toMonthName(monthEvent.month) }}</span>
       </div>
-      <span id="popperMenuButton" class="w-4 h-4">
-        <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu(event.id)" />
-      </span>
+
+      <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 px-6 py-2 mb-2 border-opacity-25">
+        <div class="pb-2">
+          <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
+        </div>
+
+        <div class="flex justify-between">
+          <span class="text-xs self-end">{{ $filters.formatDate(event.eventDate) }}</span>
+
+          <div>
+            <span v-for="(tag, tagIndex) in event.tags" :key="tagIndex" class="app-chip-simple mt-1 hidden sm:inline-block">{{ tag }}</span>
+          </div>
+          <span id="popperMenuButton" class="w-4 h-4">
+            <DotsHorizontalIcon title="open action menu" class="w-4 h-4 cursor-pointer hidden action-menu" @click="openPopperMenu(event.id)" />
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -81,6 +92,8 @@
   import TrashIcon from '@/assets/trash-icon.svg?component'
   import ArrowRightIcon from '@/assets/arrow-right-icon.svg?component'
   import Modal from '@/components/Modal.vue'
+  import YearEventViewModel from './view-models/YearEventViewModel'
+  import MonthEventViewModel from './view-models/MonthEventViewModel'
 
   export default defineComponent({
     components: {
@@ -103,6 +116,58 @@
     computed: {
       events(): Array<EventModel> {
         return eventStoreService.state.events as Array<EventModel>
+      },
+      yearEvents(): Array<YearEventViewModel> {
+        var events = eventStoreService.state.events as Array<EventModel>
+
+        var allYears = events.map((e: EventModel) => {
+          var eventDate = new Date(e.eventDate)
+          var year = eventDate.getFullYear()
+          return year
+        })
+
+        var distinctYearSet = new Set(allYears)
+        // Get the distinct year list
+        var years = [...distinctYearSet]
+
+        var yearEvents = new Array<YearEventViewModel>()
+
+        years.forEach((year: number) => {
+          var yearEvent = new YearEventViewModel()
+          yearEvent.year = year
+
+          var filterByYearEvents = events.filter((e: EventModel) => {
+            var eventDate = new Date(e.eventDate)
+            return eventDate.getFullYear() == year
+          })
+
+          var duplicatedMonths = filterByYearEvents.map((e: EventModel) => {
+            var eventDate = new Date(e.eventDate)
+            return eventDate.getMonth()
+          })
+
+          var distinctMonthSet = new Set(duplicatedMonths)
+          var months = [...distinctMonthSet]
+          var monthEvents = new Array<MonthEventViewModel>()
+
+          months.forEach((month: number) => {
+            var filterByYearAndMonthEvents = filterByYearEvents.filter((e: EventModel) => {
+              var eventDate = new Date(e.eventDate)
+              return eventDate.getMonth() == month
+            })
+
+            var monthEvent = new MonthEventViewModel()
+            monthEvent.month = month
+            monthEvent.events = [...filterByYearAndMonthEvents]
+
+            monthEvents.push(monthEvent)
+          })
+
+          yearEvent.monthEvents = [...monthEvents]
+          yearEvents.push(yearEvent)
+        })
+
+        return yearEvents
       },
       isQuickAddFormOpen() {
         if (this.$refs) {
@@ -173,6 +238,8 @@
           var events = response.data as Array<EventModel>
           eventStoreService.updateEventList(events)
         }
+
+        console.log(this.yearEvents)
       },
       gotoDetails(eventId: number) {
         this.$router.push({
