@@ -238,8 +238,6 @@
           var events = response.data as Array<EventModel>
           eventStoreService.updateEventList(events)
         }
-
-        console.log(this.yearEvents)
       },
       gotoDetails(eventId: number) {
         this.$router.push({
