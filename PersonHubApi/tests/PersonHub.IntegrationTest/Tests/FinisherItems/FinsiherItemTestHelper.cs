@@ -22,7 +22,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
                 UserId = UserId,
                 Description ="Test Description" + randomText,
                 Status = Domain.FinisherModule.FinisherItemStatus.Planning,
-                StartDate = DateTime.Now,
+                StartDate = DateTime.UtcNow,
                 Tags = new string[]{"tag 1", "tag "+ randomText}
             };
         }
@@ -32,7 +32,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             return new FinisherItemLogEntity(){
                 Content = "content" + randomText,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 FinisherItemId = finisherItemId
             };
         }
@@ -45,7 +45,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
                 Title = "Test title" + randomText,
                 Description ="Test Description" + randomText,
                 Status = Domain.FinisherModule.FinisherItemStatus.Planning,
-                StartDate = DateTime.Now,
+                StartDate = DateTime.UtcNow,
                 Tags = new string[]{"tag 1", "tag "+ randomText}
             };
         }
@@ -55,7 +55,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             return new FinisherItemLogDto(){
                 Content = "content" + randomText,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
             };
         }
 

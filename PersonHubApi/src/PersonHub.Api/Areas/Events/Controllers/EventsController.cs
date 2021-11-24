@@ -101,9 +101,11 @@ namespace PersonHub.Api.Areas.LifeEvents.Controllers
             }
 
             var eventEntity = await dbContext.Events.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
+
+            //TODO: move to update function inside model
             eventEntity.Title = dto.Title;
             eventEntity.Description = dto.Description;
-            eventEntity.EventDate = dto.EventDate.Value;
+            eventEntity.EventDate = dto.EventDate.Value.ToUniversalTime();
             eventEntity.Tags = dto.Tags;
 
             eventEntity.EnsureValidState();

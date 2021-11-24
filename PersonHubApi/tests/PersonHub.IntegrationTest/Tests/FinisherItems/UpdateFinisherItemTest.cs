@@ -54,7 +54,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             // Act, update the existing item
             var startActionRequest = new StartItemActionRequestDto(){
-                StartDate = DateTime.Now
+                StartDate = DateTime.UtcNow
             };
             
             var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/start", startActionRequest);
@@ -79,7 +79,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             //Arrange, start the item
             var startActionRequest = new StartItemActionRequestDto(){
-                StartDate = DateTime.Now
+                StartDate = DateTime.UtcNow
             };
             
             var startActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/start", startActionRequest);
@@ -87,7 +87,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
 
             // Act, finish the item
             var finishActionRequest = new FinishItemActionRequestDto(){
-                FinishDate = DateTime.Now
+                FinishDate = DateTime.UtcNow
             };
             var finishActionResponse = await Fixture.Client.PostAsJsonAsync($"/finisher/items/{addedItemId}/finish", finishActionRequest);
             finishActionResponse.EnsureSuccessStatusCode();

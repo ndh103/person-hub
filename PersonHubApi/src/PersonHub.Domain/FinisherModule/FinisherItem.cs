@@ -68,7 +68,8 @@ namespace PersonHub.Domain.FinisherModule
             UserId = userId;
             Title = title;
             Description = description;
-            StartDate = startDate;
+            StartDate = startDate.HasValue ? startDate.Value.ToUniversalTime(): null;
+
             if (tags != null)
             {
                 _tags = (string[])tags.Clone();
@@ -83,7 +84,7 @@ namespace PersonHub.Domain.FinisherModule
         {
             Title = title;
             Description = description;
-            StartDate = startDate;
+            StartDate = startDate.HasValue ? startDate.Value.ToUniversalTime(): null;
             if (tags != null)
             {
                 this._tags = (string[])tags.Clone();
@@ -104,7 +105,7 @@ namespace PersonHub.Domain.FinisherModule
                 this._entityState.AddError("The item is already finished");
             }
 
-            this.StartDate = startDate;
+            this.StartDate = startDate.ToUniversalTime();
             this.Status = FinisherItemStatus.Started;
         }
 
@@ -120,7 +121,7 @@ namespace PersonHub.Domain.FinisherModule
                 _entityState.AddError("Finish Date should be later or equal to Start Date");
             }
 
-            this.FinishDate = finishDate;
+            this.FinishDate = finishDate.ToUniversalTime();
             this.Status = FinisherItemStatus.Finished;
         }
 
