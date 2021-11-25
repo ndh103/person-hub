@@ -34,7 +34,6 @@ builder.Services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
 builder.Services.Configure<DatabaseConnectionConfig>(builder.Configuration.GetSection(nameof(DatabaseConnectionConfig)));
 
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddAppAuthentication(builder.Configuration);
 
 builder.Services.AddApplicationDbContexts(builder.Configuration);
@@ -79,3 +78,7 @@ app.UseEndpoints(endpoints =>
 });
 
 app.Run();
+
+
+// Make the implicit Program class public so test projects can access it
+public partial class Program { }

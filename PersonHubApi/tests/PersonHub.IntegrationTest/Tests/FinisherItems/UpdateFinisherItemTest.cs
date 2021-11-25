@@ -97,7 +97,7 @@ namespace PersonHub.IntegrationTest.Tests.FinisherItems
             Assert.NotNull(dbItem);
 
             Assert.Equal(FinisherItemStatus.Finished, dbItem.Status);
-            Assert.True(TestHelper.EqualsUpToSeconds(finishActionRequest.FinishDate, dbItem.StartDate.Value));
+            Assert.True(TestHelper.EqualsUpToSeconds(finishActionRequest.FinishDate, dbItem.FinishDate.Value));
         }
 
         [Fact]
