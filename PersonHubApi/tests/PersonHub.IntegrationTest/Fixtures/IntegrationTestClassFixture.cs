@@ -26,7 +26,7 @@ namespace PersonHub.IntegrationTest.Fixtures
         {
             // Init config
             this.configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.Test.json")
+                .AddJsonFile("appsettings.IntegrationTest.json")
                 .Build();
 
             var dbConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
