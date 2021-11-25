@@ -18,7 +18,7 @@ namespace PersonHub.IntegrationTest.Tests.TodoItems
 
             return new TodoItemEntity()
             {
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 Description = $"Description {randomString}",
                 ItemOrder = $"ItemOrder {randomString}",
                 Status = TodoItemStatus.Todo,

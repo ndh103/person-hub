@@ -48,7 +48,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.0.x
 
     - name: Restore dependencies
       run: dotnet restore PersonHubApi/PersonHubApi.sln
@@ -63,6 +63,7 @@ jobs:
       run: dotnet test -c Release PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: variable substitution in json, xml, and yml files
+      if: github.ref == 'refs/heads/master'    
       uses: microsoft/variable-substitution@v1
       with:
         files: 'PersonHubApi/src/PersonHub.Api/appsettings.json'
@@ -74,6 +75,7 @@ jobs:
         DatabaseConnectionConfig.PersonHub.Password: ${{ env.POSTGRES_PASSWORD }}
 
     - name: Run Flyway Migration
+      if: github.ref == 'refs/heads/master'
       run: >-
         docker run --rm
         --volume ${{ github.workspace }}/PersonHubApi/sql:/flyway/sql
@@ -84,7 +86,10 @@ jobs:
         -password="${{ env.POSTGRES_PASSWORD }}"
         migrate
 
+
+
     - name: Build, publish docker image, and deploy to heroku
+      if: github.ref == 'refs/heads/master'
       uses: gonuit/heroku-docker-deploy@v1.3.3
       with:
         email: ${{ env.HEROKU_EMAIL }}

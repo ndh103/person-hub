@@ -23,7 +23,8 @@ namespace PersonHub.Domain.EventsModule.Entities
       UserId = userId;
       Title = title;
       Description = description;
-      EventDate = eventDate;
+      EventDate = eventDate.ToUniversalTime();
+
       if (tags != null)
       {
         Tags = (string[])tags.Clone();

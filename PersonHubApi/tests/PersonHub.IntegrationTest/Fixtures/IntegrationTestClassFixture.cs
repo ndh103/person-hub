@@ -1,16 +1,6 @@
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Hosting;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Dapper;
-using Npgsql;
-using System.IO;
-using System.Reflection;
-using System.Linq;
-using PersonHub.Api;
 using PersonHub.IntegrationTest.DataAccess;
 using Microsoft.Extensions.Configuration;
 using PersonHub.Api.Common.Configs;
@@ -22,7 +12,7 @@ namespace PersonHub.IntegrationTest.Fixtures
 {
     public class IntegrationTestClassFixture : IDisposable
     {
-        private WebApplicationFactory<IntegrationTestStartup> factory;
+        private CustomWebAppFactory factory;
 
         public HttpClient Client;
 
@@ -36,20 +26,12 @@ namespace PersonHub.IntegrationTest.Fixtures
         {
             // Init config
             this.configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.Test.json")
+                .AddJsonFile("appsettings.IntegrationTest.json")
                 .Build();
 
             var dbConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
 
-            factory = new CustomWebAppFactory<IntegrationTestStartup>().WithWebHostBuilder(builder =>
-            {
-                builder.UseSolutionRelativeContentRoot("src/PersonHub.Api");
-
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddControllersWithViews().AddApplicationPart(typeof(Startup).Assembly);
-                });
-            });
+            factory = new CustomWebAppFactory();
 
             Client = factory.CreateClient();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", null);

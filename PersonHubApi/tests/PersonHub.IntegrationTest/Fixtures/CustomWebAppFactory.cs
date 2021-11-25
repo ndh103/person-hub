@@ -1,33 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PersonHub.IntegrationTest.Stubs;
 
 namespace PersonHub.IntegrationTest.Fixtures
 {
-    public class CustomWebAppFactory<TTestStartup> : WebApplicationFactory<TTestStartup> where TTestStartup : class
+    public class CustomWebAppFactory : WebApplicationFactory<Program>
     {
-        protected override IHostBuilder CreateHostBuilder()
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            var host = Host.CreateDefaultBuilder()
-                            .ConfigureWebHostDefaults(builder =>
-                            {
-                                builder.UseStartup<TTestStartup>();
-                                builder.UseEnvironment("Test");
+            // this block of code will run first before Program.cs code run
+            builder.UseEnvironment("IntegrationTest");
 
-                                builder.ConfigureAppConfiguration(config =>
-                                {
-                                    var projectDir = Directory.GetCurrentDirectory();
-                                    var configPath = Path.Combine(projectDir, "appsettings.Test.json");
-
-                                    config.AddJsonFile(configPath, false, false);
-                                });
-                            });
-
-            return host;
+            // Codes inside ConfigureServices will run just right before builder.Build() in the Program.cs of the SUT
+            // This is the place to manipulate services registration in IServiceColletion
+            builder.ConfigureServices(services =>
+            {
+                // Fake Authentication
+                services.AddAuthentication("Test").AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
+            });
         }
     }
 }

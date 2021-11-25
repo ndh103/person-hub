@@ -38,7 +38,7 @@ namespace PersonHub.Domain.TodoModule.Entities
             this.Status = status;
             this.ItemOrder = itemOrder;
             this.Type = type;
-            this.CreatedDate = DateTime.Now;
+            this.CreatedDate = DateTime.UtcNow;
 
             CheckEntityState();
         }
@@ -63,7 +63,7 @@ namespace PersonHub.Domain.TodoModule.Entities
         public void AddToYourDay()
         {
             this.Type = TodoItemType.YourDay;
-            this.CreatedDate = DateTime.Now;
+            this.CreatedDate = DateTime.UtcNow;
 
             CheckEntityState();
         }

@@ -22,7 +22,7 @@ namespace PersonHub.Domain.FinisherModule
         {
             this.FinisherItemId = finisherItemId;
             this.Content = content;
-            this.CreatedDate = DateTime.Now;
+            this.CreatedDate = DateTime.UtcNow;
         }
 
         public void Update(string content){
