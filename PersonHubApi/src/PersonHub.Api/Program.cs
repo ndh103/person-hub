@@ -29,8 +29,6 @@ builder.Services.AddCors(config =>
                     .AllowAnyHeader());
             });
 
-builder.Services.AddScoped(typeof(IAsyncRepository<>), typeof(EfRepository<>));
-
 builder.Services.Configure<DatabaseConnectionConfig>(builder.Configuration.GetSection(nameof(DatabaseConnectionConfig)));
 
 builder.Services.AddControllersWithViews();

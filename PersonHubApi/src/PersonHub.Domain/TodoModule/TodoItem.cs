@@ -3,107 +3,106 @@ using System.Text.Json.Serialization;
 using PersonHub.Domain.Entities;
 using PersonHub.Domain.Interfaces;
 
-namespace PersonHub.Domain.TodoModule.Entities
+namespace PersonHub.Domain.TodoModule.Entities;
+
+public class TodoItem : BaseEntity, IAggregateRoot
 {
-    public class TodoItem : BaseEntity, IAggregateRoot
+    [JsonInclude]
+    public string UserId { get; private set; }
+
+    [JsonInclude]
+    public string Title { get; private set; }
+
+    [JsonInclude]
+    public string Description { get; private set; }
+
+    [JsonInclude]
+    public TodoItemStatus Status { get; private set; }
+
+    [JsonInclude]
+    public TodoItemType Type { get; private set; }
+
+    [JsonInclude]
+    public string ItemOrder { get; private set; }
+
+    [JsonInclude]
+    public DateTime CreatedDate { get; private set; }
+
+    public TodoItem() { }
+
+    public TodoItem(string userId, string title, string description, TodoItemStatus status, string itemOrder, TodoItemType type)
     {
-        [JsonInclude]
-        public string UserId { get; private set; }
+        this.UserId = userId;
+        this.Title = title;
+        this.Description = description;
+        this.Status = status;
+        this.ItemOrder = itemOrder;
+        this.Type = type;
+        this.CreatedDate = DateTime.UtcNow;
 
-        [JsonInclude]
-        public string Title { get; private set; }
+        CheckEntityState();
+    }
 
-        [JsonInclude]
-        public string Description { get; private set; }
+    public void Update(string title, string description, string itemOrder)
+    {
+        this.Title = title;
+        this.Description = description;
+        this.ItemOrder = itemOrder;
 
-        [JsonInclude]
-        public TodoItemStatus Status { get; private set; }
+        CheckEntityState();
 
-        [JsonInclude]
-        public TodoItemType Type { get; private set; }
+    }
 
-        [JsonInclude]
-        public string ItemOrder { get; private set; }
+    public void MarkAsDone()
+    {
+        this.Status = TodoItemStatus.Done;
 
-        [JsonInclude]
-        public DateTime CreatedDate { get; private set; }
+        CheckEntityState();
+    }
 
-        public TodoItem() { }
+    public void AddToYourDay()
+    {
+        this.Type = TodoItemType.YourDay;
+        this.CreatedDate = DateTime.UtcNow;
 
-        public TodoItem(string userId, string title, string description, TodoItemStatus status, string itemOrder, TodoItemType type)
+        CheckEntityState();
+    }
+
+    private void CheckEntityState()
+    {
+        if (string.IsNullOrWhiteSpace(UserId))
         {
-            this.UserId = userId;
-            this.Title = title;
-            this.Description = description;
-            this.Status = status;
-            this.ItemOrder = itemOrder;
-            this.Type = type;
-            this.CreatedDate = DateTime.UtcNow;
-
-            CheckEntityState();
+            _entityState.AddError("TodoItem UserId is required");
         }
 
-        public void Update(string title, string description, string itemOrder)
+        if (string.IsNullOrWhiteSpace(Title))
         {
-            this.Title = title;
-            this.Description = description;
-            this.ItemOrder = itemOrder;
-
-            CheckEntityState();
-
+            _entityState.AddError("TodoItem Title is required");
         }
 
-        public void MarkAsDone()
+        if (!string.IsNullOrEmpty(Title) && Title.Length > 250)
         {
-            this.Status = TodoItemStatus.Done;
-
-            CheckEntityState();
+            _entityState.AddError("Title exceeds the maximum characters of 250");
         }
 
-        public void AddToYourDay()
+        if (!string.IsNullOrEmpty(Description) && Description.Length > 1000)
         {
-            this.Type = TodoItemType.YourDay;
-            this.CreatedDate = DateTime.UtcNow;
-
-            CheckEntityState();
+            _entityState.AddError("Description exceeds the maximum characters of 1000");
         }
 
-        private void CheckEntityState()
+        if (!Enum.IsDefined(typeof(TodoItemStatus), Status))
         {
-            if (string.IsNullOrWhiteSpace(UserId))
-            {
-                _entityState.AddError("TodoItem UserId is required");
-            }
+            _entityState.AddError("TodoItem status is invalid");
+        }
 
-            if (string.IsNullOrWhiteSpace(Title))
-            {
-                _entityState.AddError("TodoItem Title is required");
-            }
+        if (!Enum.IsDefined(typeof(TodoItemType), Type))
+        {
+            _entityState.AddError("TodoItem Type is invalid");
+        }
 
-            if (!string.IsNullOrEmpty(Title) && Title.Length > 250)
-            {
-                _entityState.AddError("Title exceeds the maximum characters of 250");
-            }
-
-            if (!string.IsNullOrEmpty(Description) && Description.Length > 1000)
-            {
-                _entityState.AddError("Description exceeds the maximum characters of 1000");
-            }
-
-            if (!Enum.IsDefined(typeof(TodoItemStatus), Status))
-            {
-                _entityState.AddError("TodoItem status is invalid");
-            }
-
-            if (!Enum.IsDefined(typeof(TodoItemType), Type))
-            {
-                _entityState.AddError("TodoItem Type is invalid");
-            }
-
-            if (string.IsNullOrEmpty(ItemOrder))
-            {
-                _entityState.AddError("TodoItem ItemOrder is required");
-            }
+        if (string.IsNullOrEmpty(ItemOrder))
+        {
+            _entityState.AddError("TodoItem ItemOrder is required");
         }
     }
 }

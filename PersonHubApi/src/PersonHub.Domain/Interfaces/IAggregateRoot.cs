@@ -1,7 +1,6 @@
-namespace PersonHub.Domain.Interfaces
+namespace PersonHub.Domain.Interfaces;
+
+public interface IAggregateRoot
 {
-    public interface IAggregateRoot
-    {
-        
-    }
+
 }

@@ -1,42 +1,38 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using PersonHub.Domain.Entities;
-using PersonHub.Domain.Shared;
 
-namespace PersonHub.Domain.FinisherModule
+namespace PersonHub.Domain.FinisherModule;
+
+public class FinisherItemLog : BaseEntity
 {
-    public class FinisherItemLog : BaseEntity
+    [JsonInclude]
+    public long FinisherItemId { get; set; }
+
+    [JsonInclude]
+    public string Content { get; private set; }
+
+    [JsonInclude]
+    public DateTime CreatedDate { get; private set; }
+    public FinisherItemLog(long finisherItemId, string content)
     {
-        [JsonInclude]
-        public long FinisherItemId { get; set; }
+        this.FinisherItemId = finisherItemId;
+        this.Content = content;
+        this.CreatedDate = DateTime.UtcNow;
+    }
 
-        [JsonInclude]
-        public string Content { get; private set; }
+    public void Update(string content)
+    {
+        this.Content = content;
 
-        [JsonInclude]
-        public DateTime CreatedDate { get; private set; }
-        public FinisherItemLog(long finisherItemId, string content)
+        CheckValidState();
+    }
+
+    private void CheckValidState()
+    {
+        if (string.IsNullOrEmpty(this.Content))
         {
-            this.FinisherItemId = finisherItemId;
-            this.Content = content;
-            this.CreatedDate = DateTime.UtcNow;
-        }
-
-        public void Update(string content){
-            this.Content = content;
-
-            CheckValidState();
-        }
-
-        private void CheckValidState()
-        {
-            if (string.IsNullOrEmpty(this.Content))
-            {
-                _entityState.AddError("Content is required");
-            }
+            _entityState.AddError("Content is required");
         }
     }
 }

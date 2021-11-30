@@ -1,9 +1,8 @@
-namespace PersonHub.Domain.FinisherModule
+namespace PersonHub.Domain.FinisherModule;
+
+public enum FinisherItemStatus
 {
-    public enum FinisherItemStatus
-    {
-        Planning = 0,
-        Started = 1,
-        Finished = 2
-    }
+    Planning = 0,
+    Started = 1,
+    Finished = 2
 }
