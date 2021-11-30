@@ -1,8 +1,6 @@
-namespace PersonHub.Api.Common.Configs
+namespace PersonHub.Api.Common.Configs;
+public class DatabaseConnectionConfig
 {
-    public class DatabaseConnectionConfig
-    {
-        public DatabaseConnectionInfo PersonHub { get; set; }
-        
-    }
+    public DatabaseConnectionInfo PersonHub { get; set; } = new DatabaseConnectionInfo();
+
 }

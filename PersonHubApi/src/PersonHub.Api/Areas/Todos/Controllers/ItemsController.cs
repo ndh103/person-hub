@@ -1,136 +1,130 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
-using PersonHub.Domain.Interfaces;
 using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
 
-namespace PersonHub.Api.Areas.Todos.Controllers
+namespace PersonHub.Api.Areas.Todos.Controllers;
+
+[ApiController]
+[Route("todos/[controller]")]
+[Authorize]
+public class ItemsController : ApiControllerBase
 {
-    [ApiController]
-    [Route("todos/[controller]")]
-    [Authorize]
-    public class ItemsController : ApiControllerBase
+    private readonly PersonHubDbContext dbContext;
+
+    public ItemsController(PersonHubDbContext dbContext)
     {
-        private readonly PersonHubDbContext dbContext;
+        this.dbContext = dbContext;
+    }
 
-        public ItemsController(PersonHubDbContext dbContext)
+    [HttpPost("")]
+    public async Task<ActionResult<TodoItem>> AddTodoItem(TodoItemDto todoItemDto)
+    {
+        if (!ModelState.IsValid)
         {
-            this.dbContext = dbContext;
+            return BadRequest(ModelState);
         }
 
-        [HttpPost("")]
-        public async Task<ActionResult<TodoItem>> AddTodoItem(TodoItemDto todoItemDto)
+        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.Type);
+        if (todoItemEntity.HasError())
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.Type);
-            if (todoItemEntity.HasError())
-            {
-                return BadRequest(todoItemEntity.Errors().First());
-            }
-
-            await dbContext.AddAsync(todoItemEntity);
-            await dbContext.SaveChangesAsync();
-
-            return todoItemEntity;
+            return BadRequest(todoItemEntity.Errors().First());
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
+        await dbContext.AddAsync(todoItemEntity);
+        await dbContext.SaveChangesAsync();
+
+        return todoItemEntity;
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
+    {
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
-            if (todoItemEntity == null)
-            {
-                return NotFound();
-            }
-
-            todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder);
-            if (todoItemEntity.HasError())
-            {
-                return BadRequest(todoItemEntity.Errors().First());
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok();
+            return BadRequest(ModelState);
         }
 
-        [HttpPost("{id}/done")]
-        public async Task<ActionResult> MarkItemAsDone(int id)
+        var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
+        if (todoItemEntity == null)
         {
-            var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
-            if (todoItemEntity == null)
-            {
-                return NotFound();
-            }
-
-            todoItemEntity.MarkAsDone();
-
-            if (todoItemEntity.HasError())
-            {
-                return BadRequest(todoItemEntity.Errors().First());
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok();
+            return NotFound();
         }
 
-        [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> QueryByStatus(int status)
+        todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder);
+        if (todoItemEntity.HasError())
         {
-            var isValidStatus = Enum.IsDefined(typeof(TodoItemStatus), status);
-            if (!isValidStatus)
-            {
-                return BadRequest();
-            }
-            var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
-
-            return todoItems;
+            return BadRequest(todoItemEntity.Errors().First());
         }
 
+        await dbContext.SaveChangesAsync();
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> Get(int id)
+        return Ok();
+    }
+
+    [HttpPost("{id}/done")]
+    public async Task<ActionResult> MarkItemAsDone(int id)
+    {
+        var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
+        if (todoItemEntity == null)
         {
-            var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
-
-            if (todoItem is null)
-            {
-                return NotFound();
-            }
-
-            return todoItem;
+            return NotFound();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        todoItemEntity.MarkAsDone();
+
+        if (todoItemEntity.HasError())
         {
-            var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
-
-            if (todoItem is null)
-            {
-                return NotFound();
-            }
-
-            dbContext.TodoItems.Remove(todoItem);
-            await dbContext.SaveChangesAsync();
-            return Ok();
+            return BadRequest(todoItemEntity.Errors().First());
         }
+
+        await dbContext.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpGet("status/{status}")]
+    public async Task<ActionResult<IEnumerable<TodoItem>>> QueryByStatus(int status)
+    {
+        var isValidStatus = Enum.IsDefined(typeof(TodoItemStatus), status);
+        if (!isValidStatus)
+        {
+            return BadRequest();
+        }
+        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
+
+        return todoItems;
+    }
+
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TodoItem>> Get(int id)
+    {
+        var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
+
+        if (todoItem is null)
+        {
+            return NotFound();
+        }
+
+        return todoItem;
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var todoItem = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
+
+        if (todoItem is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.TodoItems.Remove(todoItem);
+        await dbContext.SaveChangesAsync();
+        return Ok();
     }
 }

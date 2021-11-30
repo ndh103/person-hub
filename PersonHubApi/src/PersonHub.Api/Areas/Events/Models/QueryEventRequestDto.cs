@@ -1,11 +1,9 @@
-﻿namespace PersonHub.Api.Areas.Events.Models
+﻿namespace PersonHub.Api.Areas.Events.Models;
+
+public class QueryEventRequestDto
 {
-    public class QueryEventRequestDto
-    {
-        public int Limit { get; set; }
+    public int Limit { get; set; }
 
-        public int Offset { get; set; }
+    public int Offset { get; set; }
 
-    }
 }
-

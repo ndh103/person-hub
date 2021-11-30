@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace PersonHub.Api.Areas.FinisherItems.Models;
 
-namespace PersonHub.Api.Areas.FinisherItems.Models
+public class FinishItemActionRequestDto
 {
-    public class FinishItemActionRequestDto
-    {
-        public DateTime FinishDate { get; set;  }
-
-    }
+    public DateTime FinishDate { get; set; }
 }
