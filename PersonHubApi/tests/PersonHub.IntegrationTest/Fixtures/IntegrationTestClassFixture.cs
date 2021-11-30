@@ -8,45 +8,44 @@ using Microsoft.Extensions.Options;
 using PersonHub.IntegrationTest.DataAccess.FinisherItems;
 using PersonHub.IntegrationTest.DataAccess.TodoItems;
 
-namespace PersonHub.IntegrationTest.Fixtures
+namespace PersonHub.IntegrationTest.Fixtures;
+
+public class IntegrationTestClassFixture : IDisposable
 {
-    public class IntegrationTestClassFixture : IDisposable
+    private CustomWebAppFactory factory;
+
+    public HttpClient Client;
+
+    public FinisherItemDataAccess FinisherItemDataAccess;
+
+    public TodoItemDataAccess TodoItemDataAccess;
+
+    private IConfigurationRoot configuration;
+
+    public IntegrationTestClassFixture()
     {
-        private CustomWebAppFactory factory;
+        // Init config
+        this.configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.IntegrationTest.json")
+            .Build();
 
-        public HttpClient Client;
+        var dbConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
 
-        public FinisherItemDataAccess FinisherItemDataAccess;
+        factory = new CustomWebAppFactory();
 
-        public TodoItemDataAccess TodoItemDataAccess;
+        Client = factory.CreateClient();
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", null);
 
-        private IConfigurationRoot configuration;
+        IOptions<DatabaseConnectionConfig> dbConfigOptions = Options.Create(dbConfig);
+        var connectionPool = new DbConnectionPool(dbConfigOptions);
 
-        public IntegrationTestClassFixture()
-        {
-            // Init config
-            this.configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.IntegrationTest.json")
-                .Build();
+        FinisherItemDataAccess = new FinisherItemDataAccess(connectionPool);
+        TodoItemDataAccess = new TodoItemDataAccess(connectionPool);
+    }
 
-            var dbConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
-
-            factory = new CustomWebAppFactory();
-
-            Client = factory.CreateClient();
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test", null);
-
-            IOptions<DatabaseConnectionConfig> dbConfigOptions = Options.Create(dbConfig);
-            var connectionPool = new DbConnectionPool(dbConfigOptions);
-
-            FinisherItemDataAccess = new FinisherItemDataAccess(connectionPool);
-            TodoItemDataAccess = new TodoItemDataAccess(connectionPool);
-        }
-
-        public void Dispose()
-        {
-            factory.Dispose();
-            Client.Dispose();
-        }
+    public void Dispose()
+    {
+        factory.Dispose();
+        Client.Dispose();
     }
 }

@@ -1,102 +1,98 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using PersonHub.Domain.FinisherModule;
 using Dapper;
 using System.Data;
 
-namespace PersonHub.IntegrationTest.DataAccess.FinisherItems
+namespace PersonHub.IntegrationTest.DataAccess.FinisherItems;
+
+public class FinisherItemDataAccess
 {
-    public class FinisherItemDataAccess
+    private readonly IDbConnectionPool connectionPool;
+
+    private IDbConnection connection => connectionPool.GetOpenDbConnection();
+
+    public FinisherItemDataAccess(IDbConnectionPool connectionPool)
     {
-        private readonly IDbConnectionPool connectionPool;
+        this.connectionPool = connectionPool;
+    }
 
-        private IDbConnection connection => connectionPool.GetOpenDbConnection();
-
-        public FinisherItemDataAccess(IDbConnectionPool connectionPool)
+    public async Task<int> InsertAsync(FinisherItemEntity itemEntity)
+    {
+        if (itemEntity.StartDate.HasValue)
         {
-            this.connectionPool = connectionPool;
+            itemEntity.StartDate = itemEntity.StartDate.Value.ToUniversalTime();
         }
 
-        public async Task<int> InsertAsync(FinisherItemEntity itemEntity)
+        if (itemEntity.FinishDate.HasValue)
         {
-            if (itemEntity.StartDate.HasValue)
-            {
-                itemEntity.StartDate = itemEntity.StartDate.Value.ToUniversalTime();
-            }
+            itemEntity.FinishDate = itemEntity.FinishDate.Value.ToUniversalTime();
+        }
 
-            if (itemEntity.FinishDate.HasValue)
-            {
-                itemEntity.FinishDate = itemEntity.FinishDate.Value.ToUniversalTime();
-            }
-
-            var recordId = await connection.ExecuteScalarAsync<int>(@"
+        var recordId = await connection.ExecuteScalarAsync<int>(@"
                                             INSERT INTO ""FinisherItems""(""UserId"", ""Title"", ""Description"", ""StartDate"", ""FinishDate"", ""Status"", ""Tags"" ) 
                                             VALUES(@UserId, @Title, @Description, @StartDate, @FinishDate, @Status, @Tags)
                                             RETURNING ""Id""
                                             ",
-                                            new
-                                            {
-                                                UserId = itemEntity.UserId,
-                                                Title = itemEntity.Title,
-                                                Description = itemEntity.Description,
-                                                StartDate = itemEntity.StartDate,
-                                                FinishDate = itemEntity.FinishDate,
-                                                Status = itemEntity.Status,
-                                                Tags = itemEntity.Tags
-                                            });
+                                        new
+                                        {
+                                            UserId = itemEntity.UserId,
+                                            Title = itemEntity.Title,
+                                            Description = itemEntity.Description,
+                                            StartDate = itemEntity.StartDate,
+                                            FinishDate = itemEntity.FinishDate,
+                                            Status = itemEntity.Status,
+                                            Tags = itemEntity.Tags
+                                        });
 
-            return recordId;
-        }
+        return recordId;
+    }
 
-        public async Task<int> InsertLogAsync(FinisherItemLogEntity logEntity)
-        {
-            var recordId = await connection.ExecuteScalarAsync<int>(@"
+    public async Task<int> InsertLogAsync(FinisherItemLogEntity logEntity)
+    {
+        var recordId = await connection.ExecuteScalarAsync<int>(@"
                                             INSERT INTO ""FinisherItemLog""(""FinisherItemId"", ""Content"", ""CreatedDate"") 
                                             VALUES(@FinisherItemId, @Content, @CreatedDate)
                                             RETURNING ""Id""
                                             ",
-                                            new
-                                            {
-                                                FinisherItemId = logEntity.FinisherItemId,
-                                                Content = logEntity.Content,
-                                                CreatedDate = logEntity.CreatedDate.ToUniversalTime()
-                                            });
+                                        new
+                                        {
+                                            FinisherItemId = logEntity.FinisherItemId,
+                                            Content = logEntity.Content,
+                                            CreatedDate = logEntity.CreatedDate.ToUniversalTime()
+                                        });
 
-            return recordId;
-        }
+        return recordId;
+    }
 
-        public async Task<FinisherItemEntity> GetFinisherItemAsync(long itemId)
-        {
-            var result = await connection.QuerySingleOrDefaultAsync<FinisherItemEntity>(@"
+    public async Task<FinisherItemEntity> GetFinisherItemAsync(long itemId)
+    {
+        var result = await connection.QuerySingleOrDefaultAsync<FinisherItemEntity>(@"
                 SELECT * from ""FinisherItems""
                 WHERE ""Id"" = @ItemId
             ", new
-            {
-                ItemId = itemId
-            });
-
-            return result;
-        }
-
-        public async Task<IEnumerable<FinisherItemLogEntity>> GetFinisherItemLogsAsync(long itemId)
         {
-            var result = await connection.QueryAsync<FinisherItemLogEntity>(@"
+            ItemId = itemId
+        });
+
+        return result;
+    }
+
+    public async Task<IEnumerable<FinisherItemLogEntity>> GetFinisherItemLogsAsync(long itemId)
+    {
+        var result = await connection.QueryAsync<FinisherItemLogEntity>(@"
                 SELECT * from ""FinisherItemLog""
                 WHERE ""FinisherItemId"" = @ItemId
             ", new
-            {
-                ItemId = itemId
-            });
-
-            return result;
-        }
-
-        public async Task CleanUpAsync()
         {
-            await connection.ExecuteAsync("delete from FinisherItemLog");
-            await connection.ExecuteAsync("delete from FinisherItems");
-        }
+            ItemId = itemId
+        });
+
+        return result;
+    }
+
+    public async Task CleanUpAsync()
+    {
+        await connection.ExecuteAsync("delete from FinisherItemLog");
+        await connection.ExecuteAsync("delete from FinisherItems");
     }
 }
