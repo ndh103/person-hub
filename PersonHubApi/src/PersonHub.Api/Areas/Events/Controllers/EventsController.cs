@@ -1,15 +1,9 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using PersonHub.Api.Areas.Events.Models;
 using PersonHub.Api.Common;
 using PersonHub.Domain.EventsModule.Entities;
-using PersonHub.Domain.Interfaces;
 using PersonHub.Infrastructure.DataAccess;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace PersonHub.Api.Areas.LifeEvents.Controllers

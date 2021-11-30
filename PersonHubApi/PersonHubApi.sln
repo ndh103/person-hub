@@ -17,8 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Domain", "src\Per
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Infrastructure", "src\PersonHub.Infrastructure\PersonHub.Infrastructure.csproj", "{67509122-D042-4F9C-8838-493129CEEC81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersonHub.Web", "src\PersonHub.Web\PersonHub.Web.csproj", "{4533B17F-EC25-4887-967D-DBBDC8FC3E44}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
