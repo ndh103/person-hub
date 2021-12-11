@@ -62,6 +62,11 @@ jobs:
     - name: Run Integration Test
       run: dotnet test -c Release PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
+    - run: echo "Git Hub ref" + github.ref
+    - run: echo "Git Hub Event Name" + github.event_name
+    - run: echo "Git Hub Event Action" + github.event.action
+    - run: echo "Git Hub Event pull_request merged" + github.event.pull_request.merged
+
     - name: variable substitution in json, xml, and yml files
       if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
       uses: microsoft/variable-substitution@v1
