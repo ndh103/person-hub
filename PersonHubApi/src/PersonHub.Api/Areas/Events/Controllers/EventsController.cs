@@ -5,6 +5,7 @@ using PersonHub.Api.Common;
 using PersonHub.Domain.EventsModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using PersonHub.Domain.EventsModule.Queries;
 
 namespace PersonHub.Api.Areas.LifeEvents.Controllers;
 
@@ -16,10 +17,12 @@ public class EventsController : ApiControllerBase
     private const int PaginationMaxItem = 100;
 
     private readonly PersonHubDbContext dbContext;
+    private readonly IGetTopTagsQuery getTopTagsQuery;
 
-    public EventsController(PersonHubDbContext dbContext)
+    public EventsController(PersonHubDbContext dbContext, IGetTopTagsQuery getTopTagsQuery)
     {
         this.dbContext = dbContext;
+        this.getTopTagsQuery = getTopTagsQuery;
     }
 
     [HttpGet("{id}")]
@@ -33,6 +36,13 @@ public class EventsController : ApiControllerBase
         }
 
         return eventEntity;
+    }
+
+    [HttpGet("tags/tops/{limit}")]
+    public async Task<ActionResult<IEnumerable<string>>> QueryEventTopTags(int limit)
+    {
+        var tags = await getTopTagsQuery.QueryAsync(AuthenticatedUserEmail, limit);
+        return tags.ToList();
     }
 
 
@@ -54,8 +64,15 @@ public class EventsController : ApiControllerBase
             return BadRequest("Offsets must be greater than or equal to zero");
         }
 
-        //TODO: refactor using Dapper for query instead of using ef core
-        var result = await dbContext.Events.Where(r => r.UserId == AuthenticatedUserEmail).OrderByDescending(r => r.EventDate).Skip(dto.Offset).Take(dto.Limit).ToListAsync();
+        var query = dbContext.Events.Where(r => r.UserId == AuthenticatedUserEmail);
+
+        if(dto.Tags != null && dto.Tags.Length > 0){
+            query = query.Where(r=>r.Tags != null && r.Tags.Any(tag => dto.Tags.Contains(tag)));
+        }
+
+        // Order and pagination
+        var result = await query.OrderByDescending(r => r.EventDate).Skip(dto.Offset).Take(dto.Limit).ToListAsync();
+
         return result;
     }
 

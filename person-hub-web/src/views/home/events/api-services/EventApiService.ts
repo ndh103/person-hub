@@ -34,6 +34,12 @@ class EventApiService {
       return http.delete(`life-events/events/${id}`)
     }, shouldShowLoading)
   }
+
+  queryTopTags(shouldShowLoading = false): Promise<AxiosResponse<Array<string>>> {
+    return ApiServiceBase.makeApiCall(async () => {
+      return http.get(`life-events/events/tags/tops/10`)
+    }, shouldShowLoading)
+  }
 }
 
 export default new EventApiService()

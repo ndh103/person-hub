@@ -14,7 +14,7 @@ public class TodoItem : BaseEntity, IAggregateRoot
     public string Title { get; private set; }
 
     [JsonInclude]
-    public string Description { get; private set; }
+    public string? Description { get; private set; }
 
     [JsonInclude]
     public TodoItemStatus Status { get; private set; }

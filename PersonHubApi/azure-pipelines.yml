@@ -120,8 +120,8 @@ stages:
           -DOCKER_REGISTRY_SERVER_USERNAME personhub
           -DOCKER_REGISTRY_SERVER_URL personhub.azurecr.io
           -DOCKER_REGISTRY_SERVER_PASSWORD $(dockerRegistryPassword)
-          -DatabaseConnectionConfig__PersonHub__Host $(POSTGRES_HOST)
-          -DatabaseConnectionConfig__PersonHub__Database $(POSTGRES_DB)
-          -DatabaseConnectionConfig__PersonHub__UserName $(POSTGRES_USER)
-          -DatabaseConnectionConfig__PersonHub__Password $(POSTGRES_PASSWORD)
+          -DatabaseConnectionConfig__Host $(POSTGRES_HOST)
+          -DatabaseConnectionConfig__Database $(POSTGRES_DB)
+          -DatabaseConnectionConfig__UserName $(POSTGRES_USER)
+          -DatabaseConnectionConfig__Password $(POSTGRES_PASSWORD)
           -Authentication__ActiveImplementation $(authentication-type)

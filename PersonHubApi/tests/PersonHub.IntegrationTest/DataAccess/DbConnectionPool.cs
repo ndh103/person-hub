@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using PersonHub.Api.Common.Configs;
+using PersonHub.Domain.Shared;
 
 namespace PersonHub.IntegrationTest.DataAccess;
 
@@ -14,7 +14,7 @@ public class DbConnectionPool : IDbConnectionPool, IDisposable
 
     public DbConnectionPool(IOptions<DatabaseConnectionConfig> dbConnectionOptions)
     {
-        var personHubDbConfig = dbConnectionOptions.Value.PersonHub;
+        var personHubDbConfig = dbConnectionOptions.Value;
 
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
         {

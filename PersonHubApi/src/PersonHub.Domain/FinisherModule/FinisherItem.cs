@@ -17,7 +17,7 @@ public class FinisherItem : BaseEntity, IAggregateRoot
     public string Title { get; private set; }
 
     [JsonInclude]
-    public string Description { get; private set; }
+    public string? Description { get; private set; }
 
     [JsonInclude]
     public DateTime? StartDate { get; private set; }

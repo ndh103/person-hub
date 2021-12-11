@@ -1,6 +1,5 @@
-namespace PersonHub.Api.Common.Configs;
-
-public class DatabaseConnectionInfo
+namespace PersonHub.Domain.Shared;
+public class DatabaseConnectionConfig
 {
     public string Host { get; set; } = string.Empty;
     public int Port { get; set; }

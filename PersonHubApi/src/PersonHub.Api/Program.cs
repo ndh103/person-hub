@@ -1,9 +1,10 @@
 using Microsoft.OpenApi.Models;
-using PersonHub.Api.Common.Configs;
 using PersonHub.Api.Common.DependencyInjections;
 using PersonHub.Api.Common.Middlewares;
-using PersonHub.Domain.Interfaces;
-using PersonHub.Infrastructure.DataAccess;
+using PersonHub.Domain.EventsModule.Queries;
+using PersonHub.Domain.Shared;
+using PersonHub.Infrastructure.Queries;
+using PersonHub.Infrastructure.Queries.Events;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -29,9 +30,12 @@ builder.Services.AddCors(config =>
                     .AllowAnyHeader());
             });
 
-builder.Services.Configure<DatabaseConnectionConfig>(builder.Configuration.GetSection(nameof(DatabaseConnectionConfig)));
+AddAppOptions(builder.Services, builder.Configuration);
+
+AddAppDependencyInjections(builder.Services);
 
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddAppAuthentication(builder.Configuration);
 
 builder.Services.AddApplicationDbContexts(builder.Configuration);
@@ -41,7 +45,6 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "PersonHub.Api", Version = "v1" });
     //TODO: add authentication for swagger
 });
-
 
 var app = builder.Build();
 
@@ -79,4 +82,14 @@ app.Run();
 
 
 // Make the implicit Program class public so test projects can access it
-public partial class Program { }
+public partial class Program { 
+    private static void AddAppOptions(IServiceCollection services, ConfigurationManager configuration){
+        services.Configure<DatabaseConnectionConfig>(configuration.GetSection(nameof(DatabaseConnectionConfig)));
+    }
+
+    private static void AddAppDependencyInjections(IServiceCollection services){
+        services.AddScoped<IDbConnectionProvider, DbConnectionProvider>();
+
+        services.AddScoped<IGetTopTagsQuery, GetTopTagsQuery>();
+    }
+}

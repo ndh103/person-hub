@@ -13,16 +13,19 @@ public static class AddAppAuthenticationExtension
 
         if (activeAuthentication == "Auth0")
         {
+            var authority = configuration["Authentication:Auth0:Authority"];
+            var audience = configuration["Authentication:Auth0:ApiIdentifier"];
+
             services.AddAuthentication(options =>
                         {
                             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                         }).AddJwtBearer(options =>
                         {
-                            options.Authority = configuration["Authentication:Auth0:Authority"];
-                            options.Audience = configuration["Authentication:Auth0:ApiIdentifier"];
+                            options.Authority = authority;
+                            options.Audience = audience;
                                 // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-                                options.TokenValidationParameters = new TokenValidationParameters
+                            options.TokenValidationParameters = new TokenValidationParameters
                             {
                                 NameClaimType = ClaimTypes.NameIdentifier
                             };
