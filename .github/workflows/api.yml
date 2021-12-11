@@ -63,7 +63,7 @@ jobs:
       run: dotnet test -c Release PersonHubApi/tests/PersonHub.IntegrationTest/PersonHub.IntegrationTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
 
     - name: variable substitution in json, xml, and yml files
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
       uses: microsoft/variable-substitution@v1
       with:
         files: 'PersonHubApi/src/PersonHub.Api/appsettings.json'
@@ -75,7 +75,7 @@ jobs:
         DatabaseConnectionConfig.Password: ${{ env.POSTGRES_PASSWORD }}
 
     - name: Run Flyway Migration
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
       run: >-
         docker run --rm
         --volume ${{ github.workspace }}/PersonHubApi/sql:/flyway/sql
@@ -89,7 +89,7 @@ jobs:
 
 
     - name: Build, publish docker image, and deploy to heroku
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
       uses: gonuit/heroku-docker-deploy@v1.3.3
       with:
         email: ${{ env.HEROKU_EMAIL }}
