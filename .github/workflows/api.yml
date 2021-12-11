@@ -68,7 +68,7 @@ jobs:
     - run: echo "Git Hub Event pull_request merged  ${{ github.event.pull_request.merged }}"
 
     - name: variable substitution in json, xml, and yml files
-      if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: microsoft/variable-substitution@v1
       with:
         files: 'PersonHubApi/src/PersonHub.Api/appsettings.json'
@@ -80,7 +80,7 @@ jobs:
         DatabaseConnectionConfig.Password: ${{ env.POSTGRES_PASSWORD }}
 
     - name: Run Flyway Migration
-      if: github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+      if: ${{ github.ref == 'refs/heads/main' }}
       run: >-
         docker run --rm
         --volume ${{ github.workspace }}/PersonHubApi/sql:/flyway/sql
