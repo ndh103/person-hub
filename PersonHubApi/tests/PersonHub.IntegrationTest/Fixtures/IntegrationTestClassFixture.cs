@@ -3,10 +3,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using PersonHub.IntegrationTest.DataAccess;
 using Microsoft.Extensions.Configuration;
-using PersonHub.Api.Common.Configs;
 using Microsoft.Extensions.Options;
 using PersonHub.IntegrationTest.DataAccess.FinisherItems;
 using PersonHub.IntegrationTest.DataAccess.TodoItems;
+using PersonHub.Domain.Shared;
 
 namespace PersonHub.IntegrationTest.Fixtures;
 
