@@ -1,6 +1,6 @@
-using PersonHub.Api.Common.Configs;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using PersonHub.Domain.Shared;
 using PersonHub.Infrastructure.DataAccess;
 
 namespace PersonHub.Api.Common.DependencyInjections;
@@ -11,12 +11,12 @@ public static class AddDatabaseContextsExtension
     {
         var databaseConnectionConfig = configuration.GetSection(nameof(DatabaseConnectionConfig)).Get<DatabaseConnectionConfig>();
 
-        services.AddApplicationDbContext<PersonHubDbContext>(databaseConnectionConfig.PersonHub);
+        services.AddApplicationDbContext<PersonHubDbContext>(databaseConnectionConfig);
 
         return services;
     }
 
-    private static IServiceCollection AddApplicationDbContext<TDbContext>(this IServiceCollection services, DatabaseConnectionInfo databaseConnection, string migrationAssemblyName = "") where TDbContext : DbContext
+    private static IServiceCollection AddApplicationDbContext<TDbContext>(this IServiceCollection services, DatabaseConnectionConfig databaseConnection, string migrationAssemblyName = "") where TDbContext : DbContext
     {
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
         {

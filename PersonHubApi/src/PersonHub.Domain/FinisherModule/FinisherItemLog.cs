@@ -14,6 +14,7 @@ public class FinisherItemLog : BaseEntity
 
     [JsonInclude]
     public DateTime CreatedDate { get; private set; }
+    
     public FinisherItemLog(long finisherItemId, string content)
     {
         this.FinisherItemId = finisherItemId;

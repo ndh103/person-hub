@@ -8,9 +8,10 @@ namespace PersonHub.Domain.EventsModule.Entities;
 public class Event : BaseEntity, IAggregateRoot
 {
     public string UserId { get; set; }
+    
     public string Title { get; set; }
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     public DateTime EventDate { get; set; }
 

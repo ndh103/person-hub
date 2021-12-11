@@ -6,13 +6,15 @@
       <span>Add new</span>
     </span>
     <span class="flex-grow"></span>
-    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="fetchEvents()">
+    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="refresh()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
   </div>
 
   <EventQuickAddForm ref="addTodoForm" @on-new-event-added="addNewEvent($event)" />
+
+  <TopTags ref="topTagsComp" @on-filter-by-tag="fetchEvents($event)"></TopTags>
 
   <div v-for="(yearEvent, yearEventIndex) in yearEvents" :key="yearEventIndex">
     <div>
@@ -94,6 +96,7 @@
   import Modal from '@/components/Modal.vue'
   import YearEventViewModel from './view-models/YearEventViewModel'
   import MonthEventViewModel from './view-models/MonthEventViewModel'
+  import TopTags from './TopTags.vue'
 
   export default defineComponent({
     components: {
@@ -105,6 +108,7 @@
       TrashIcon,
       ArrowRightIcon,
       Modal,
+      TopTags,
     },
     props: {},
     data() {
@@ -223,10 +227,14 @@
           eventStoreService.updateEventList(updatedEvents)
         }
       },
-      async fetchEvents() {
+      async fetchEvents(tag = '') {
         var queryModel = new EventQueryModel()
         queryModel.limit = 100
         queryModel.offset = 0
+
+        if (tag) {
+          queryModel.tags = [tag]
+        }
 
         appStoreService.toggleLoading(true)
 
@@ -278,6 +286,12 @@
 
         // Reset tobe deleted Id
         this.tobeDeletedEventId = 0
+      },
+      async refresh() {
+        await this.fetchEvents()
+
+        var topTagsComponent = this.$refs.topTagsComp as any
+        await topTagsComponent.refresh()
       },
     },
   })

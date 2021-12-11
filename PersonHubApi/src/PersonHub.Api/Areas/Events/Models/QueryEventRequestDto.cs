@@ -6,4 +6,6 @@ public class QueryEventRequestDto
 
     public int Offset { get; set; }
 
+    public string[]? Tags { get; set; }
+
 }
