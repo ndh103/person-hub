@@ -19,8 +19,13 @@ export default class Auth0AuthService implements AuthServiceInterface {
   }
 
   /** Logs the user out and removes their session on the authorization server */
-  logout(o) {
-    return this.auth0Client.logout(o)
+  logout(options) {
+    if (!options) {
+      options = {
+        returnTo: window.location.origin,
+      }
+    }
+    return this.auth0Client.logout(options)
   }
 
   /** Returns the access token. If the token is invalid or missing, a new one is retrieved */
