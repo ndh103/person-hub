@@ -33,20 +33,5 @@ public static class AddAppAuthenticationExtension
 
             return;
         }
-
-        if (activeAuthentication == "AzureAdB2C")
-        {
-            // Adds Microsoft Identity platform (Azure AD B2C) support to protect this Api
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(
-                        options =>
-                        {
-                            configuration.Bind("Authentication:AzureAdB2C", options);
-
-                            options.TokenValidationParameters.NameClaimType = "name";
-                        },
-                        options => { configuration.Bind("Authentication:AzureAdB2C", options); });
-            return;
-        }
     }
 }

@@ -35,12 +35,12 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Create env file
-      run: |
-          cd person-hub-web
-          touch .env.production
-          echo VITE_AUTH_TYPE=Auth0 >> .env.production
-          cat .env.production
+    # - name: Create env file
+    #   run: |
+    #       cd person-hub-web
+    #       touch .env.production
+    #       echo VITE_AUTH_TYPE=Auth0 >> .env.production
+    #       cat .env.production
 
     - name: Check whether there are any valid cached dependencies (to reduce execution time)
       uses: actions/cache@v2

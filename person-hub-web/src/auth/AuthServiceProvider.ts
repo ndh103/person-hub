@@ -1,6 +1,5 @@
 import Auth0AuthService from './Auth0AuthService'
 import AuthServiceInterface from './AuthServiceInterface'
-import MsalAuthService from './MsalAuthService'
 
 let instance: AuthServiceInterface = null
 
@@ -13,22 +12,17 @@ const ensureLoaded = async () => {
   })
 }
 
-export const getAuthServiceInstance =
-  async (): Promise<AuthServiceInterface> => {
-    if (instance && !instance.loading) return instance
-    await ensureLoaded()
-    return instance
-  }
+export const getAuthServiceInstance = async (): Promise<AuthServiceInterface> => {
+  if (instance && !instance.loading) return instance
+  await ensureLoaded()
+  return instance
+}
 
 /** Creates an instance of the Auth0 SDK. If one has already been created, it returns that instance */
 const useAuth = async (authOptions) => {
   if (instance) return instance
 
-  if (import.meta.env.VITE_AUTH_TYPE == 'Auth0') {
-    instance = new Auth0AuthService()
-  } else {
-    instance = new MsalAuthService()
-  }
+  instance = new Auth0AuthService()
 
   await instance.init(authOptions)
 
