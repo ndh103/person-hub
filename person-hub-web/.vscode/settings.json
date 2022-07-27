@@ -1,24 +1,20 @@
 {
   "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#e4e7b6",
-    "activityBar.activeBorder": "#37a1a8",
-    "activityBar.background": "#e4e7b6",
+    "activityBar.activeBackground": "#f1a68e",
+    "activityBar.activeBorder": "#128e30",
+    "activityBar.background": "#f1a68e",
     "activityBar.foreground": "#15202b",
     "activityBar.inactiveForeground": "#15202b99",
-    "activityBarBadge.background": "#37a1a8",
-    "activityBarBadge.foreground": "#15202b",
-    "titleBar.activeBackground": "#d6db90",
+    "activityBarBadge.background": "#128e30",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "titleBar.activeBackground": "#ec8260",
     "titleBar.activeForeground": "#15202b",
-    "titleBar.inactiveBackground": "#d6db9099",
+    "titleBar.inactiveBackground": "#ec826099",
     "titleBar.inactiveForeground": "#15202b99",
-    "sash.hoverBorder": "#e4e7b6",
-    "statusBar.background": "#d6db90",
-    "statusBar.foreground": "#15202b",
-    "statusBarItem.hoverBackground": "#c8cf69",
-    "statusBarItem.remoteBackground": "#d6db90",
-    "statusBarItem.remoteForeground": "#15202b"
+    "sash.hoverBorder": "#f1a68e"
   },
-  "peacock.color": "#d6db90",
+  "peacock.color": "#ec8260",
+  "peacock.affectStatusBar": false,
   "editor.codeActionsOnSave": {
     "source.fixAll": true
   },
