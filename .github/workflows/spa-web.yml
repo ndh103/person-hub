@@ -13,15 +13,14 @@ on:
     paths:
     - person-hub-web/**
     - .github/workflows/spa-web.yml
-    - '!person-hub-web/azure-pipelines.yml'
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
       APP_NAME: person-hub
-      HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
     strategy:
       matrix:
@@ -49,30 +48,21 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: ${{ runner.os }}-node-
 
+    # - name: Build
+    #   run: |
+    #     cd person-hub-web
+    #     npm ci
+    #     npm run build
+
     - name: Build
       run: |
         cd person-hub-web
-        npm ci
-        npm run build
 
     - name: Build, publish docker image, and deploy to heroku
       if: ${{ github.ref == 'refs/heads/main' }}
-      uses: gonuit/heroku-docker-deploy@v1.3.3
+      uses: jsmrcaga/action-netlify-deploy@master
       with:
-        email: ${{ env.HEROKU_EMAIL }}
-
-        heroku_api_key: ${{ env.HEROKU_API_KEY }}
-
-        heroku_app_name: ${{ env.APP_NAME }}
-
-        dockerfile_directory: ./person-hub-web
-
-        dockerfile_name: Dockerfile.heroku
-
-        docker_options: "--no-cache"
-
-        # (Optional, default: "web")
-        # Select the process type for which you want the docker container to be uploaded.
-        # By default, this argument is set to "web".
-        # For more information look at https://devcenter.heroku.com/articles/process-model
-        process_type: web
+        NETLIFY_AUTH_TOKEN: ${{ env.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+        NETLIFY_DEPLOY_MESSAGE: "Prod deploy v${{ github.ref }}"
+        NETLIFY_DEPLOY_TO_PROD: true
