@@ -60,17 +60,8 @@ jobs:
         publish-dir: './person-hub-web/dist'
         production-branch: main
         production-deploy: true
-        deploy-message: "Deploy from GitHub Actions"
+        deploy-message: "Prod deploy v${{ github.ref }}"
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      timeout-minutes: 1
-
-    - name: Build and deploy to netlify
-      if: ${{ github.ref == 'refs/heads/main' }}
-      uses: jsmrcaga/action-netlify-deploy@master
-      with:
-        NETLIFY_AUTH_TOKEN: ${{ env.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
-        NETLIFY_DEPLOY_MESSAGE: "Prod deploy v${{ github.ref }}"
-        NETLIFY_DEPLOY_TO_PROD: true
+      timeout-minutes: 5
