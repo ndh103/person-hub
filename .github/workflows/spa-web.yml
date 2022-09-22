@@ -48,17 +48,25 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: ${{ runner.os }}-node-
 
-    # - name: Build
-    #   run: |
-    #     cd person-hub-web
-    #     npm ci
-    #     npm run build
-
     - name: Build
       run: |
         cd person-hub-web
+        npm ci
+        npm run build
+    
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@v1.2
+      with:
+        publish-dir: './person-hub-web/dist'
+        production-branch: main
+        production-deploy: true
+        deploy-message: "Deploy from GitHub Actions"
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      timeout-minutes: 1
 
-    - name: Build, publish docker image, and deploy to heroku
+    - name: Build and deploy to netlify
       if: ${{ github.ref == 'refs/heads/main' }}
       uses: jsmrcaga/action-netlify-deploy@master
       with:
