@@ -56,7 +56,7 @@ jobs:
       run: |
         cd PersonHubApi
         dotnet build -c Release PersonHubApi.sln --no-restore
-        dotnet publish -c Release PersonHubApi.sln -o 'publish' 
+        dotnet publish -c Release src/PersonHub.Api -o 'publish' 
 
     - name: Run Unit Test
       run: dotnet test -c Release PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
