@@ -26,8 +26,7 @@ jobs:
       POSTGRES_SCHEMA: person-hub
       POSTGRES_USER: ${{ secrets.PERSON_HUB_DB_USER }}
       POSTGRES_PASSWORD: ${{ secrets.PERSON_HUB_DB_PASSWORD }}
-      HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
       AUTHENTICATION_TYPE: Auth0
 
     steps:
@@ -54,7 +53,10 @@ jobs:
       run: dotnet restore PersonHubApi/PersonHubApi.sln
 
     - name: Build
-      run: dotnet build -c Release PersonHubApi/PersonHubApi.sln --no-restore
+      run: |
+        cd PersonHubApi
+        dotnet build -c Release PersonHubApi.sln --no-restore
+        dotnet publish -c Release PersonHubApi.sln -o 'publish' 
 
     - name: Run Unit Test
       run: dotnet test -c Release PersonHubApi/tests/PersonHub.UnitTest/PersonHub.UnitTest.csproj --no-build --verbosity normal --logger:"console;verbosity=detailed"
@@ -86,26 +88,10 @@ jobs:
         -password="${{ env.POSTGRES_PASSWORD }}"
         migrate
 
-
-
-    - name: Build, publish docker image, and deploy to heroku
-      if: ${{ github.ref == 'refs/heads/main' }}
-      uses: gonuit/heroku-docker-deploy@v1.3.3
-      with:
-        email: ${{ env.HEROKU_EMAIL }}
-
-        heroku_api_key: ${{ env.HEROKU_API_KEY }}
-
-        heroku_app_name: ${{ env.APP_NAME }}
-
-        dockerfile_directory: ./PersonHubApi
-
-        dockerfile_name: Dockerfile.heroku
-
-        docker_options: "--no-cache"
-
-        # (Optional, default: "web")
-        # Select the process type for which you want the docker container to be uploaded.
-        # By default, this argument is set to "web".
-        # For more information look at https://devcenter.heroku.com/articles/process-model
-        process_type: web
+    # Deploy to Azure Web apps
+    - name: 'Run Azure webapp deploy action using publish profile credentials'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.APP_NAME }} # Replace with your app name
+        publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE  }} # Define secret variable in repository settings as per action documentation
+        package: 'PersonHubApi/publish'
