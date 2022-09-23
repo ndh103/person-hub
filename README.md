@@ -3,4 +3,10 @@
 ![example workflow](https://github.com/ndh103/person-hub/actions/workflows/spa-web.yml/badge.svg)
 
 ## Demo
-https://person-hub.herokuapp.com/
+https://person-hub.netlify.com/
+
+## Deployment view
+![Deployment view](docs/images/deployment-view.drawio.png)
+
+
+
