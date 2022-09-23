@@ -6,7 +6,6 @@ on:
     paths:
     - person-hub-web/**
     - .github/workflows/spa-web.yml
-    - '!person-hub-web/azure-pipelines.yml'
 
   pull_request:
     branches: [ main ]

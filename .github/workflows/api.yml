@@ -6,14 +6,12 @@ on:
     paths:
     - '.github/workflows/api.yml'
     - 'PersonHubApi/**'
-    - '!PersonHubApi/azure-pipelines.yml'
 
   pull_request:
     branches: [ main ]
     paths:
     - '.github/workflows/api.yml'
     - 'PersonHubApi/**'
-    - '!PersonHubApi/azure-pipelines.yml'
 
 jobs:
   build:
