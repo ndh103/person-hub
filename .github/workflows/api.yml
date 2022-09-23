@@ -6,6 +6,7 @@ on:
     paths:
     - '.github/workflows/api.yml'
     - 'PersonHubApi/**'
+    - '!PersonHubApi/README.md'
 
   pull_request:
     branches: [ main ]
