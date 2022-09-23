@@ -1,3 +1,15 @@
+<script setup lang="ts">
+  import SiteHeader from './SiteHeader.vue'
+  import AsideMenu from './AsideMenu.vue'
+  import Loading from '@/components/Loading.vue'
+  import applicationStoreService from '@/store/application/applicationStoreService'
+
+  function toogleSideBar() {
+    applicationStoreService.toggleSideBar()
+  }
+
+</script>
+
 <template>
   <div class="text-sm">
     <site-header></site-header>
@@ -20,32 +32,6 @@
   </div>
 </template>
 
-<script lang="ts">
-  import { defineComponent } from 'vue'
-  import SiteHeader from './SiteHeader.vue'
-  import AsideMenu from './AsideMenu.vue'
-  import Loading from '@/components/Loading.vue'
-  import applicationStoreService from '@/store/application/applicationStoreService'
-
-  export default defineComponent({
-    components: {
-      SiteHeader,
-      AsideMenu,
-      Loading,
-    },
-    props: {},
-    computed: {
-      applicationStoreService() {
-        return applicationStoreService
-      },
-    },
-    methods: {
-      toogleSideBar() {
-        this.applicationStoreService.toggleSideBar()
-      },
-    },
-  })
-</script>
 <style lang="postcss" scoped>
   .open-sidebar {
     @apply block z-20;
