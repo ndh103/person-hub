@@ -135,6 +135,6 @@
   }
 
   .sortable-ghost {
-    @apply opacity-50 bg-green-400;
+    @apply opacity-50 bg-emerald-400;
   }
 </style>

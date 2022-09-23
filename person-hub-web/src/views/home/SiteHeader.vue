@@ -17,7 +17,7 @@
 </script>
 
 <template>
-  <header class="bg-green-500 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
+  <header class="bg-emerald-500 text-white h-10 flex justify-between fixed w-full p-1 antialiased font-light text-xl">
     <div class="pl-4 flex items-center">
       <span @click="toggleSideBar()">
         <MenuIcon class="inline-block h-6 w-6 lg:hidden"></MenuIcon>

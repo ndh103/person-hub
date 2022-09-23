@@ -6,7 +6,7 @@
       <span>Add new</span>
     </span>
     <span class="flex-grow"></span>
-    <span class="hover:cursor-pointer hover:text-green-700 text-green-500 mb-4" @click="refresh()">
+    <span class="hover:cursor-pointer hover:text-emerald-700 text-emerald-500 mb-4" @click="refresh()">
       <RefreshIcon class="h-4 w-4 inline-block" />
       Refresh
     </span>
@@ -27,7 +27,7 @@
 
       <div v-for="(event, index) in monthEvent.events" :key="index" class="event-item-row border-b border-gray-400 ml-6 mr-2 py-2 mb-2 border-opacity-25">
         <div class="pb-2">
-          <span class="cursor-pointer hover:text-green-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
+          <span class="cursor-pointer hover:text-emerald-700" @click="gotoDetails(event.id)">{{ event.title }}</span>
         </div>
 
         <div class="flex justify-between">

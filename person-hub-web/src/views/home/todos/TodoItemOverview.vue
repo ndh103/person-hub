@@ -5,7 +5,7 @@
     </div>
 
     <div>
-      <input v-if="!isEditMode" v-model="isChecked" type="checkbox" class="rounded text-green-500 mr-3 mt-1" @click="markAsDone()" />
+      <input v-if="!isEditMode" v-model="isChecked" type="checkbox" class="rounded text-emerald-500 mr-3 mt-1" @click="markAsDone()" />
     </div>
 
     <div v-if="!isEditMode">

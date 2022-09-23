@@ -42,12 +42,9 @@
 
 <style scoped lang="postcss">
   .toggle-checkbox:checked {
-    @apply: right-0 border-green-400;
-    right: 0;
-    border-color: #68d391;
+    @apply right-0 border-emerald-400;
   }
   .toggle-checkbox:checked + .toggle-label {
-    @apply: bg-green-400;
-    background-color: #68d391;
+    @apply bg-emerald-400;
   }
 </style>
