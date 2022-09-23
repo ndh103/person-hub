@@ -6,6 +6,7 @@ on:
     paths:
     - person-hub-web/**
     - .github/workflows/spa-web.yml
+    - '!person-hub-web/README.md'
 
   pull_request:
     branches: [ main ]
