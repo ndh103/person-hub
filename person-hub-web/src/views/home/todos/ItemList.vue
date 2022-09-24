@@ -8,10 +8,10 @@
   import todoStoreService from './store/todoStoreService'
   import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
   import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
-  import { computed, ref } from '@vue/reactivity'
+  import { computed, ref, toRefs } from '@vue/reactivity'
   import { onMounted, PropType, watch } from 'vue'
 
-  const { items, itemType } = defineProps({
+  const props = defineProps({
     items: {
       type: Array as PropType<Array<TodoItemModel>>,
       default: new Array<TodoItemModel>(),
@@ -34,12 +34,14 @@
     }
   })
 
-  watch(items, async (newItems, oldItems) => {
+  // watch for items by first using toRefs
+  var itemsRef = toRefs(props).items
+  watch(itemsRef, async (newItems, oldItems) => {
     state.value.todoItems = [...newItems]
   })
 
   onMounted(() => {
-    state.value.todoItems = [...items]
+    state.value.todoItems = [...props.items]
   })
 
   async function addNewTodoItem(todoItem: TodoItemModel) {
@@ -117,8 +119,8 @@
   .slide-fade-leave-active {
     transition: all 0.5s cubic-bezier(1, 0.5, 0.8, 1);
   }
-  .slide-fade-enter, .slide-fade-leave-to
-  {
+  .slide-fade-enter,
+  .slide-fade-leave-to {
     transform: translateX(10px);
     opacity: 0;
   }

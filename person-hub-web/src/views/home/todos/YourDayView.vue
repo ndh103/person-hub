@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineComponent, onMounted } from 'vue'
+  import { onMounted } from 'vue'
   import SunIcon from '@/assets/sun-icon.svg?component'
   import CalendarWeekIcon from '@/assets/calendar-week-icon.svg?component'
   import TodoListIcon from '@/assets/todo-list-icon.svg?component'
@@ -34,19 +34,19 @@
 
     const response = await todoItemApiService.query(TodoItemStatusEnum.Initial).finally(() => {
       appStoreService.toggleLoading(false)
-      return null
     })
 
     if (response) {
-      var todoItems = response.data as Array<TodoItemModel>
-      todoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
-      todoStoreService.updateTodoItems(todoItems)
+      var responseTodoItems = response.data as Array<TodoItemModel>
+      responseTodoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+      todoStoreService.updateTodoItems(responseTodoItems)
     }
   }
 
   onMounted(async () => {
     if (!todoStoreService.state.todoItemsUpdatedTime) {
       await fetchTodoItems()
+      return
     }
 
     // Fetch new data if outdated for 5mins

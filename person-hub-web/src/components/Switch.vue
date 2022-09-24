@@ -1,3 +1,36 @@
+<script setup lang="ts">
+  import { computed } from '@vue/reactivity'
+  import { defineProps, defineEmits } from 'vue'
+
+  const { modelValue, onTitle, offTitle } = defineProps({
+    modelValue: {
+      type: Boolean,
+      default: false,
+    },
+    onTitle: {
+      type: String,
+      default: '',
+    },
+    offTitle: {
+      type: String,
+      default: '',
+    },
+  })
+
+  const emit = defineEmits<{
+    (event: 'update:modelValue', data: any)
+  }>()
+
+  var inputChecked = computed({
+    get() {
+      return modelValue
+    },
+    set(val) {
+      emit('update:modelValue', val)
+    },
+  })
+</script>
+
 <template>
   <div>
     <div class="content-center relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -7,38 +40,6 @@
     <label for="toggle" class="text-sm text-gray-700">{{ modelValue ? onTitle : offTitle }}</label>
   </div>
 </template>
-
-<script lang="ts">
-  import { defineComponent } from 'vue'
-
-  export default defineComponent({
-    props: {
-      modelValue: {
-        type: Boolean,
-        default: false,
-      },
-      onTitle: {
-        type: String,
-        default: '',
-      },
-      offTitle: {
-        type: String,
-        default: '',
-      },
-    },
-    emits: ['update:modelValue'],
-    computed: {
-      inputChecked: {
-        get() {
-          return this.modelValue
-        },
-        set(val) {
-          this.$emit('update:modelValue', val)
-        },
-      },
-    },
-  })
-</script>
 
 <style scoped lang="postcss">
   .toggle-checkbox:checked {
