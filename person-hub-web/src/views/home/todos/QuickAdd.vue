@@ -1,41 +1,40 @@
-<template>
-  <div class="mb-4 flex flex-row items-center">
-    <input v-model="newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Input and press enter to add new ..." @keyup.enter="submitForm()" />
-  </div>
-</template>
-
-<script lang="ts">
+<script setup lang="ts">
   import TodoItemModel from './api-services/models/TodoItemModel'
   import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
-  import { defineComponent, PropType } from 'vue'
+  import { defineComponent, PropType, ref } from 'vue'
   import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
 
-  export default defineComponent({
-    props: {
-      itemType: {
-        type: Number as PropType<TodoItemTypeEnum>,
-        default: TodoItemTypeEnum.Todo,
-      },
-    },
-    emits: ['onAddNewItem'],
-    data: function () {
-      return {
-        newTodoItem: new TodoItemModel(),
-      }
-    },
-    methods: {
-      submitForm: async function () {
-        if (!this.newTodoItem.title) {
-          return
-        }
+  const emit = defineEmits<{
+    (event: 'onAddNewItem', data: TodoItemModel)
+  }>()
 
-        this.newTodoItem.type = this.itemType
-        this.newTodoItem.status = TodoItemStatusEnum.Initial
-        this.$emit('onAddNewItem', { ...this.newTodoItem })
-
-        // Reset
-        this.newTodoItem.title = ''
-      },
+  const { itemType } = defineProps({
+    itemType: {
+      type: Number as PropType<TodoItemTypeEnum>,
+      default: TodoItemTypeEnum.Todo,
     },
   })
+
+  const state = ref({
+    newTodoItem: new TodoItemModel(),
+  })
+
+  async function submitForm() {
+    if (!state.value.newTodoItem.title) {
+      return
+    }
+
+    state.value.newTodoItem.type = itemType
+    state.value.newTodoItem.status = TodoItemStatusEnum.Initial
+    emit('onAddNewItem', { ...state.value.newTodoItem })
+
+    // Reset
+    state.value.newTodoItem.title = ''
+  }
 </script>
+
+<template>
+  <div class="mb-4 flex flex-row items-center">
+    <input v-model="state.newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Input and press enter to add new ..." @keyup.enter="submitForm()" />
+  </div>
+</template>

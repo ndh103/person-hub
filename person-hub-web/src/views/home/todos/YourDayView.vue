@@ -1,5 +1,5 @@
-<script lang="ts">
-  import { defineComponent } from 'vue'
+<script setup lang="ts">
+  import { defineComponent, onMounted } from 'vue'
   import SunIcon from '@/assets/sun-icon.svg?component'
   import CalendarWeekIcon from '@/assets/calendar-week-icon.svg?component'
   import TodoListIcon from '@/assets/todo-list-icon.svg?component'
@@ -15,62 +15,51 @@
 
   import ItemList from './ItemList.vue'
   import TodoItemModel from './api-services/models/TodoItemModel'
+  import { computed } from '@vue/reactivity'
 
-  export default defineComponent({
-    components: {
-      ItemList,
-      RefreshIcon,
-      SunIcon,
-      CalendarWeekIcon,
-      TodoListIcon,
-    },
-    computed: {
-      todoItems() {
-        return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.Todo)
-      },
-      yourDayItems() {
-        return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourDay)
-      },
-      yourWeekItems() {
-        return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourWeek)
-      },
-      TodoItemTypeEnum() {
-        return TodoItemTypeEnum
-      },
-    },
-    created: async function () {
-      if (!todoStoreService.state.todoItemsUpdatedTime) {
-        await this.fetchTodoItems()
+  const todoItems = computed(() => {
+    return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.Todo)
+  })
+
+  const yourDayItems = computed(() => {
+    return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourDay)
+  })
+
+  const yourWeekItems = computed(() => {
+    return todoStoreService.state.todoItems.filter((r) => r.type == TodoItemTypeEnum.YourWeek)
+  })
+
+  async function fetchTodoItems() {
+    appStoreService.toggleLoading(true)
+
+    const response = await todoItemApiService.query(TodoItemStatusEnum.Initial).finally(() => {
+      appStoreService.toggleLoading(false)
+      return null
+    })
+
+    if (response) {
+      var todoItems = response.data as Array<TodoItemModel>
+      todoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+      todoStoreService.updateTodoItems(todoItems)
+    }
+  }
+
+  onMounted(async () => {
+    if (!todoStoreService.state.todoItemsUpdatedTime) {
+      await fetchTodoItems()
+    }
+
+    // Fetch new data if outdated for 5mins
+    if (todoStoreService.state.todoItemsUpdatedTime) {
+      var MILISECONDS_IN_MINUTE = 1000 * 60
+      var now = dayjs()
+      var updatedTime = dayjs(todoStoreService.state.todoItemsUpdatedTime)
+      const diffMinutes = now.diff(updatedTime) / MILISECONDS_IN_MINUTE
+
+      if (diffMinutes > 5) {
+        await fetchTodoItems()
       }
-
-      // Fetch new data if outdated for 5mins
-      if (todoStoreService.state.todoItemsUpdatedTime) {
-        var MILISECONDS_IN_MINUTE = 1000 * 60
-        var now = dayjs()
-        var updatedTime = dayjs(todoStoreService.state.todoItemsUpdatedTime)
-        const diffMinutes = now.diff(updatedTime) / MILISECONDS_IN_MINUTE
-
-        if (diffMinutes > 5) {
-          await this.fetchTodoItems()
-        }
-      }
-    },
-    methods: {
-      fetchTodoItems: async function () {
-        appStoreService.toggleLoading(true)
-
-        const response = await todoItemApiService.query(TodoItemStatusEnum.Initial).finally(() => {
-          appStoreService.toggleLoading(false)
-          return null
-        })
-
-        if (response) {
-          var todoItems = response.data as Array<TodoItemModel>
-          todoItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
-          todoStoreService.updateTodoItems(todoItems)
-        }
-      },
-    },
+    }
   })
 </script>
 
