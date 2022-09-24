@@ -55,6 +55,7 @@ jobs:
         npm run build
     
     - name: Deploy to Netlify
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: nwtgck/actions-netlify@v1.2
       with:
         publish-dir: './person-hub-web/dist'

@@ -1,3 +1,92 @@
+<script setup lang="ts">
+  import { onMounted } from 'vue'
+  import EventModel from './api-services/models/EventModel'
+  import VueTagsInput from '@sipec/vue3-tags-input'
+  import EventApiService from './api-services/EventApiService'
+  import eventStoreService from './store/eventStoreService'
+  import ArrowLeftIcon from '@/assets/arrow-left-icon.svg?component'
+  import Modal from '@/components/Modal.vue'
+  import { ref } from '@vue/reactivity'
+  import { useRouter } from 'vue-router'
+
+  const { eventId } = defineProps({
+    eventId: {
+      type: Number,
+      default: 0,
+    },
+  })
+
+  const state = ref({
+    event: new EventModel(),
+    tag: '',
+    tags: [],
+  })
+
+  const router = useRouter()
+
+  const deleteModal = ref(null)
+
+  onMounted(async () => {
+    var response = await EventApiService.get(eventId, false)
+
+    if (response) {
+      state.value.event = response.data as EventModel
+
+      state.value.event.eventDate = new Date(state.value.event.eventDate)
+
+      state.value.tags = state.value.event.tags.map((tag) => {
+        return {
+          text: tag,
+        }
+      })
+    }
+  })
+
+  async function save() {
+    state.value.event.tags = state.value.tags.map((r) => r.text)
+
+    var response = await EventApiService.update(eventId, state.value.event, true)
+
+    // Update the event in the store
+    if (response) {
+      var updatedEvents = [...eventStoreService.state.events]
+      updatedEvents[updatedEvents.findIndex((r) => r.id == state.value.event.id)] = { ...state.value.event }
+
+      eventStoreService.updateEventList(updatedEvents)
+    }
+  }
+
+  function cancel() {
+    goBack()
+  }
+  function goBack() {
+    router.push({
+      name: 'events-view',
+    })
+  }
+
+  function dateSelected(e, toogleFunc) {
+    toogleFunc({ ref: e.target })
+  }
+
+  function onDeleteAction() {
+    deleteModal.value.toggleModal(true)
+  }
+
+  async function deleteEvent() {
+    deleteModal.value.toggleModal(false)
+    var response = await EventApiService.delete(eventId, true)
+
+    if (response) {
+      var updatedEvents = [...eventStoreService.state.events]
+      updatedEvents = updatedEvents.filter((r) => r.id != eventId)
+
+      eventStoreService.updateEventList(updatedEvents)
+      goBack()
+    }
+  }
+</script>
+
 <template>
   <div class="flex">
     <div class="app-action-link" @click="goBack()"><ArrowLeftIcon class="h-4 w-4 inline-block" /> back</div>
@@ -7,29 +96,29 @@
     <button class="app-btn-secondary" @click="cancel()">Cancel</button>
   </div>
 
-  <div v-if="!event.id">Loading...</div>
+  <div v-if="!state.event.id">Loading...</div>
 
-  <div v-if="event.id" class="p-2">
+  <div v-if="state.event.id" class="p-2">
     <div class="pb-2 flex flex-row w-full">
-      <input v-model="event.title" type="text" placeholder="Title" class="app-input w-full text-xl" />
+      <input v-model="state.event.title" type="text" placeholder="Title" class="app-input w-full text-xl" />
     </div>
 
     <div class="pb-2 flex flex-row w-full">
-      <textarea v-model="event.description" rows="5" type="text" placeholder="Description" class="app-input w-full no-border-bottom h-auto" />
+      <textarea v-model="state.event.description" rows="5" type="text" placeholder="Description" class="app-input w-full no-border-bottom h-auto" />
     </div>
 
     <div class="pb-2 flex flex-row w-full">
-      <v-date-picker v-model="event.eventDate">
+      <v-date-picker v-model="state.event.eventDate">
         <template #default="{ togglePopover }">
           <div class="flex flex-wrap">
             <button class="app-btn-datepicker" @click.stop="dateSelected($event, togglePopover)">
-              {{ event.eventDate.toLocaleDateString() }}
+              {{ state.event.eventDate.toLocaleDateString() }}
             </button>
           </div>
         </template>
       </v-date-picker>
 
-      <vue-tags-input v-model="tag" placeholder="add tags..." :tags="tags" @tags-changed="(newTags) => (tags = newTags)" />
+      <vue-tags-input v-model="state.tag" placeholder="add tags..." :tags="state.tags" @tags-changed="(newTags) => (state.tags = newTags)" />
     </div>
 
     <div class="flex flex-row-reverse">
@@ -49,97 +138,6 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-  import { defineComponent } from 'vue'
-  import EventModel from './api-services/models/EventModel'
-  import VueTagsInput from '@sipec/vue3-tags-input'
-  import EventApiService from './api-services/EventApiService'
-  import eventStoreService from './store/eventStoreService'
-  import ArrowLeftIcon from '@/assets/arrow-left-icon.svg?component'
-  import Modal from '@/components/Modal.vue'
-
-  export default defineComponent({
-    components: {
-      VueTagsInput,
-      ArrowLeftIcon,
-      Modal,
-    },
-    props: {
-      eventId: {
-        type: Number,
-        default: 0,
-      },
-    },
-    data() {
-      return {
-        event: new EventModel(),
-        tag: '',
-        tags: [],
-      }
-    },
-    computed: {
-      deleteModal() {
-        return this.$refs.deleteModal as any
-      },
-    },
-    async created() {
-      var response = await EventApiService.get(this.eventId, false)
-
-      if (response) {
-        this.event = response.data as EventModel
-
-        this.event.eventDate = new Date(this.event.eventDate)
-
-        this.tags = this.event.tags.map((tag) => {
-          return {
-            text: tag,
-          }
-        })
-      }
-    },
-    methods: {
-      async save() {
-        this.event.tags = this.tags.map((r) => r.text)
-
-        var response = await EventApiService.update(this.eventId, this.event, true)
-
-        // Update the event in the store
-        if (response) {
-          var updatedEvents = [...eventStoreService.state.events]
-          updatedEvents[updatedEvents.findIndex((r) => r.id == this.event.id)] = { ...this.event }
-
-          eventStoreService.updateEventList(updatedEvents)
-        }
-      },
-      cancel() {
-        this.goBack()
-      },
-      goBack() {
-        this.$router.push({
-          name: 'events-view',
-        })
-      },
-      dateSelected(e, toogleFunc) {
-        toogleFunc({ ref: e.target })
-      },
-      onDeleteAction() {
-        this.deleteModal.toggleModal(true)
-      },
-      async deleteEvent() {
-        this.deleteModal.toggleModal(false)
-        var response = await EventApiService.delete(this.eventId, true)
-
-        if (response) {
-          var updatedEvents = [...eventStoreService.state.events]
-          updatedEvents = updatedEvents.filter((r) => r.id != this.eventId)
-
-          eventStoreService.updateEventList(updatedEvents)
-          this.goBack()
-        }
-      },
-    },
-  })
-</script>
 
 <style scoped lang="postcss">
   .no-border-bottom {
