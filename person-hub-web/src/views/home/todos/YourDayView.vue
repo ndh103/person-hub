@@ -1,35 +1,3 @@
-<template>
-  <div class="flex flex-row-reverse">
-    <span class="hover:cursor-pointer hover:text-emerald-700 text-emerald-500" @click="fetchTodoItems()">
-      <RefreshIcon class="h-4 w-4 inline-block" />
-      Refresh
-    </span>
-  </div>
-  <div class="py-4">
-    <div class="flex items-center">
-      <SunIcon class="inline-block h-4 w-4 mr-2" />
-      <span class="text-lg"> Your Day</span>
-    </div>
-    <ItemList :items="yourDayItems" :item-type="TodoItemTypeEnum.YourDay"></ItemList>
-  </div>
-
-  <div class="py-4">
-    <div class="flex items-center">
-      <CalendarWeekIcon class="inline-block h-3 w-3 mr-2" />
-      <span class="text-lg"> Your Week</span>
-    </div>
-    <ItemList :items="yourWeekItems" :item-type="TodoItemTypeEnum.YourWeek"></ItemList>
-  </div>
-
-  <div class="py-4">
-    <div class="flex items-center">
-      <TodoListIcon class="inline-block h-4 w-4 mr-2" />
-      <span class="text-lg"> Todos</span>
-    </div>
-    <ItemList :items="todoItems" :item-type="TodoItemTypeEnum.Todo"></ItemList>
-  </div>
-</template>
-
 <script lang="ts">
   import { defineComponent } from 'vue'
   import SunIcon from '@/assets/sun-icon.svg?component'
@@ -105,3 +73,35 @@
     },
   })
 </script>
+
+<template>
+  <div class="flex flex-row-reverse">
+    <span class="hover:cursor-pointer hover:text-emerald-700 text-emerald-500" @click="fetchTodoItems()">
+      <RefreshIcon class="h-4 w-4 inline-block" />
+      Refresh
+    </span>
+  </div>
+  <div class="py-4">
+    <div class="flex items-center">
+      <SunIcon class="inline-block h-4 w-4 mr-2" />
+      <span class="text-lg"> Your Day</span>
+    </div>
+    <ItemList :items="yourDayItems" :item-type="TodoItemTypeEnum.YourDay"></ItemList>
+  </div>
+
+  <div class="py-4">
+    <div class="flex items-center">
+      <CalendarWeekIcon class="inline-block h-3 w-3 mr-2" />
+      <span class="text-lg"> Your Week</span>
+    </div>
+    <ItemList :items="yourWeekItems" :item-type="TodoItemTypeEnum.YourWeek"></ItemList>
+  </div>
+
+  <div class="py-4">
+    <div class="flex items-center">
+      <TodoListIcon class="inline-block h-4 w-4 mr-2" />
+      <span class="text-lg"> Todos</span>
+    </div>
+    <ItemList :items="todoItems" :item-type="TodoItemTypeEnum.Todo"></ItemList>
+  </div>
+</template>
