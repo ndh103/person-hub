@@ -18,14 +18,14 @@
   })
 
   const emit = defineEmits<{
-    (event: 'update:modelValue', data: any)
+    (event: 'update:modelValue', data: boolean)
   }>()
 
-  var inputChecked = computed({
+  const inputChecked = computed({
     get() {
       return modelValue
     },
-    set(val) {
+    set(val: boolean) {
       emit('update:modelValue', val)
     },
   })
