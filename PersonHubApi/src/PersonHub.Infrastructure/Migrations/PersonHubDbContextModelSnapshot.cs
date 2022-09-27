@@ -149,8 +149,8 @@ namespace PersonHub.Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
-                    b.Property<long?>("TodoTopicId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -159,33 +159,7 @@ namespace PersonHub.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TodoTopicId");
-
                     b.ToTable("TodoItems");
-                });
-
-            modelBuilder.Entity("PersonHub.Domain.TodoModule.Entities.TodoTopic", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamptz");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("TodoTopics");
                 });
 
             modelBuilder.Entity("PersonHub.Domain.FinisherModule.FinisherItemLog", b =>
@@ -197,21 +171,9 @@ namespace PersonHub.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PersonHub.Domain.TodoModule.Entities.TodoItem", b =>
-                {
-                    b.HasOne("PersonHub.Domain.TodoModule.Entities.TodoTopic", null)
-                        .WithMany("TodoItems")
-                        .HasForeignKey("TodoTopicId");
-                });
-
             modelBuilder.Entity("PersonHub.Domain.FinisherModule.FinisherItem", b =>
                 {
                     b.Navigation("Logs");
-                });
-
-            modelBuilder.Entity("PersonHub.Domain.TodoModule.Entities.TodoTopic", b =>
-                {
-                    b.Navigation("TodoItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -85,21 +85,7 @@ public class ItemsController : ApiControllerBase
 
         return Ok();
     }
-
-    [HttpGet("status/{status}")]
-    public async Task<ActionResult<IEnumerable<TodoItem>>> QueryByStatus(int status)
-    {
-        var isValidStatus = Enum.IsDefined(typeof(TodoItemStatus), status);
-        if (!isValidStatus)
-        {
-            return BadRequest();
-        }
-        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
-
-        return todoItems;
-    }
-
-
+    
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItem>> Get(int id)
     {
