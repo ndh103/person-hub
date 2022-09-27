@@ -20,7 +20,7 @@ public class TodoItem : BaseEntity, IAggregateRoot
     public TodoItemStatus Status { get; private set; }
 
     [JsonInclude]
-    public TodoItemType Type { get; private set; }
+    public long? TodoTopicId { get; private set; }
 
     [JsonInclude]
     public string ItemOrder { get; private set; }
@@ -30,40 +30,31 @@ public class TodoItem : BaseEntity, IAggregateRoot
 
     public TodoItem() { }
 
-    public TodoItem(string userId, string title, string description, TodoItemStatus status, string itemOrder, TodoItemType type)
+    public TodoItem(string userId, string title, string? description, TodoItemStatus status, string itemOrder, long? todoTopicId)
     {
         this.UserId = userId;
         this.Title = title;
         this.Description = description;
         this.Status = status;
         this.ItemOrder = itemOrder;
-        this.Type = type;
+        this.TodoTopicId = todoTopicId;
         this.CreatedDate = DateTime.UtcNow;
 
         CheckEntityState();
     }
 
-    public void Update(string title, string description, string itemOrder)
+    public void Update(string title, string? description, string itemOrder)
     {
         this.Title = title;
         this.Description = description;
         this.ItemOrder = itemOrder;
 
         CheckEntityState();
-
     }
 
     public void MarkAsDone()
     {
         this.Status = TodoItemStatus.Done;
-
-        CheckEntityState();
-    }
-
-    public void AddToYourDay()
-    {
-        this.Type = TodoItemType.YourDay;
-        this.CreatedDate = DateTime.UtcNow;
 
         CheckEntityState();
     }
@@ -93,11 +84,6 @@ public class TodoItem : BaseEntity, IAggregateRoot
         if (!Enum.IsDefined(typeof(TodoItemStatus), Status))
         {
             _entityState.AddError("TodoItem status is invalid");
-        }
-
-        if (!Enum.IsDefined(typeof(TodoItemType), Type))
-        {
-            _entityState.AddError("TodoItem Type is invalid");
         }
 
         if (string.IsNullOrEmpty(ItemOrder))

@@ -28,7 +28,7 @@ public class ItemsController : ApiControllerBase
             return BadRequest(ModelState);
         }
 
-        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.Type);
+        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.TopicId);
         if (todoItemEntity.HasError())
         {
             return BadRequest(todoItemEntity.Errors().First());

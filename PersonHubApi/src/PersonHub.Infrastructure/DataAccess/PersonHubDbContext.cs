@@ -11,6 +11,8 @@ public class PersonHubDbContext : DbContext
 {
     public DbSet<TodoItem> TodoItems { get; set; }
 
+    public DbSet<TodoTopic> TodoTopics { get; set; }
+
     public DbSet<Event> Events { get; set; }
 
     public DbSet<FinisherItem> FinisherItems { get; set; }
@@ -23,6 +25,8 @@ public class PersonHubDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         new TodoItemEntityTypeConfiguration().Configure(modelBuilder.Entity<TodoItem>());
+
+        new TodoTopicEntityConfiguration().Configure(modelBuilder.Entity<TodoTopic>());
 
         new EventEntityTypeConfiguration().Configure(modelBuilder.Entity<Event>());
 

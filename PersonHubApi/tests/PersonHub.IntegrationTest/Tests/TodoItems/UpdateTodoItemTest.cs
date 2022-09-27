@@ -26,7 +26,6 @@ public class UpdateTodoItemTest : TestBaseClass
             Description = "new description",
             ItemOrder = "new item order",
             Status = item.Status,
-            Type = item.Type
         };
 
         var updateResponse = await Fixture.Client.PutAsJsonAsync($"/todos/items/{addedItemId}", todoItemRequestDto);

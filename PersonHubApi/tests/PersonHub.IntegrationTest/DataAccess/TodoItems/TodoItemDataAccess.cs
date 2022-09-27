@@ -18,8 +18,8 @@ public class TodoItemDataAccess
     public async Task<long> Insert(TodoItemEntity todoItemEntity)
     {
         var recordId = await this.connection.ExecuteScalarAsync<long>(@"
-                INSERT INTO ""TodoItems""(""UserId"", ""Title"", ""Description"", ""Status"", ""ItemOrder"", ""CreatedDate"", ""Type"")
-                VALUES (@UserId, @Title, @Description, @Status, @ItemOrder, @CreatedDate, @Type)
+                INSERT INTO ""TodoItems""(""UserId"", ""Title"", ""Description"", ""Status"", ""ItemOrder"", ""CreatedDate"", ""TopicId"")
+                VALUES (@UserId, @Title, @Description, @Status, @ItemOrder, @CreatedDate, @TopicId)
                 RETURNING ""Id""
             ", new
         {
@@ -28,7 +28,7 @@ public class TodoItemDataAccess
             Description = todoItemEntity.Description,
             Status = todoItemEntity.Status,
             ItemOrder = todoItemEntity.ItemOrder,
-            Type = todoItemEntity.Type,
+            TopicId = todoItemEntity.TopicId,
             // Use UTC before saving so that Dapper know to map to timestamptz type
             CreatedDate = todoItemEntity.CreatedDate.ToUniversalTime()
         });
