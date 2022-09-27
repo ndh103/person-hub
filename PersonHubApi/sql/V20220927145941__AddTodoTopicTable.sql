@@ -16,4 +16,3 @@ CREATE INDEX "IX_TodoItems_TodoTopicId" ON "TodoItems" ("TodoTopicId");
 CREATE UNIQUE INDEX "IX_TodoTopics_Name" ON "TodoTopics" ("Name");
 
 ALTER TABLE "TodoItems" ADD CONSTRAINT "FK_TodoItems_TodoTopics_TodoTopicId" FOREIGN KEY ("TodoTopicId") REFERENCES "TodoTopics" ("Id");
-
