@@ -22,7 +22,7 @@ public class AddTodoItemTest : TestBaseClass
 
         // Create todoItem
         var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
-        todoItemDto.TopicId = addedTopic.Id;
+        todoItemDto.TodoTopicId = addedTopic.Id;
 
         var response = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
         response.EnsureSuccessStatusCode();

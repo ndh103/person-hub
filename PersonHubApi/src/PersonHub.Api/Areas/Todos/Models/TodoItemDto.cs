@@ -10,7 +10,7 @@ public class TodoItemDto
 
     public TodoItemStatus Status { get; set; }
 
-    public long? TopicId { get; set; }
+    public long? TodoTopicId { get; set; }
 
     public string ItemOrder { get; set; } = string.Empty;
 }

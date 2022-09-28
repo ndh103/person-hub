@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineProps, ref, defineExpose } from 'vue'
+  import { defineProps, ref } from 'vue'
   import { createPopper, Placement, Instance } from '@popperjs/core'
 
   const { title, triggerElementSelector, popperElementSelector, placement } = defineProps({

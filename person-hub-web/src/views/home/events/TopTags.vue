@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref, defineExpose } from 'vue'
+  import { onMounted, ref } from 'vue'
   import EventApiService from './api-services/EventApiService'
 
   const emit = defineEmits<{

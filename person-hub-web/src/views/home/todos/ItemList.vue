@@ -6,19 +6,18 @@
   import draggable from 'vuedraggable'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
   import todoStoreService from './store/todoStoreService'
-  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
   import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
   import { computed, ref, toRefs } from '@vue/reactivity'
   import { onMounted, PropType, watch } from 'vue'
 
   const props = defineProps({
+    topicId: {
+      type: Number,
+      default: null,
+    },
     items: {
       type: Array as PropType<Array<TodoItemModel>>,
       default: new Array<TodoItemModel>(),
-    },
-    itemType: {
-      type: Number as PropType<TodoItemTypeEnum>,
-      default: TodoItemTypeEnum.Todo,
     },
   })
 
@@ -92,7 +91,7 @@
 
 <template>
   <div>
-    <quick-add :item-type="itemType" @onAddNewItem="addNewTodoItem($event)"></quick-add>
+    <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)"></quick-add>
 
     <draggable
       v-model="state.todoItems"

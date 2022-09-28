@@ -28,7 +28,7 @@ public class ItemsController : ApiControllerBase
             return BadRequest(ModelState);
         }
 
-        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.TopicId);
+        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.TodoTopicId);
         if (todoItemEntity.HasError())
         {
             return BadRequest(todoItemEntity.Errors().First());
@@ -85,7 +85,7 @@ public class ItemsController : ApiControllerBase
 
         return Ok();
     }
-    
+
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItem>> Get(int id)
     {
@@ -97,6 +97,19 @@ public class ItemsController : ApiControllerBase
         }
 
         return todoItem;
+    }
+
+    [HttpGet()]
+    public async Task<ActionResult<List<TodoItem>>> GetAll()
+    {
+        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail).ToListAsync();
+
+        if (todoItems is null)
+        {
+            return NotFound();
+        }
+
+        return todoItems;
     }
 
     [HttpDelete("{id}")]

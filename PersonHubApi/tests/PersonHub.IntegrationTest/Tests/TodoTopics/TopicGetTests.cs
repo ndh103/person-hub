@@ -53,7 +53,7 @@ public class TopicGetTests : TestBaseClass
         for (int i = 0; i < 5; i++)
         {
             var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
-            todoItemDto.TopicId = addedTopic.Id;
+            todoItemDto.TodoTopicId = addedTopic.Id;
 
             var addedTodoItem = await RestHelper.PostNewTodoItem(Fixture.Client, todoItemDto);
 

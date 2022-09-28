@@ -1,15 +1,24 @@
 import TodoItemModel from '@/views/home/todos/api-services/models/TodoItemModel'
 import store from '@/store/index'
 import { TodoModuleStoreState, todoStore } from './todo-store'
+import TodoTopicModel from '../api-services/models/TodoTopicModel'
 
 class TodoStoreService {
+  updateTopics(topics: Array<TodoTopicModel>) {
+    store.commit(`todos/${todoStore.mutations.updateTopics.name}`, topics)
+  }
+  addTopic(topic: TodoTopicModel) {
+    store.commit(`todos/${todoStore.mutations.addTopic.name}`, topic)
+  }
+  removeTopic(topicId: number) {
+    store.commit(`todos/${todoStore.mutations.removeTopic.name}`, topicId)
+  }
   updateTodoItems(todoItems: Array<TodoItemModel>) {
     store.commit(`todos/${todoStore.mutations.updateTodoItems.name}`, todoItems)
   }
   addTodoItem(todoItem: TodoItemModel) {
     store.commit(`todos/${todoStore.mutations.addTodoItem.name}`, todoItem)
   }
-
   removeTodoItem(todoItemId: number) {
     store.commit(`todos/${todoStore.mutations.removeTodoItem.name}`, todoItemId)
   }

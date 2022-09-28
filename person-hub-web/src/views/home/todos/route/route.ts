@@ -1,11 +1,11 @@
-import YourDayView from '../YourDayView.vue'
+import TodoListView from '../TodoListView.vue'
 import TodoItemDetail from '../TodoItemDetail.vue'
 
 const todoRoutes = [
   {
-    path: '/yourday',
-    name: 'yourday-view',
-    component: YourDayView,
+    path: '/todos',
+    name: 'todo-list-view',
+    component: TodoListView,
     props: true,
   },
   {

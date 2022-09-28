@@ -10,6 +10,7 @@ class TodoItemModel {
   type!: TodoItemTypeEnum
   createdDate: Date
   itemOrder!: string
+  todoTopicId: number
 }
 
 export default TodoItemModel

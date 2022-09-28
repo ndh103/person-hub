@@ -85,10 +85,5 @@ public class TodoItem : BaseEntity, IAggregateRoot
         {
             _entityState.AddError("TodoItem status is invalid");
         }
-
-        if (string.IsNullOrEmpty(ItemOrder))
-        {
-            _entityState.AddError("TodoItem ItemOrder is required");
-        }
     }
 }

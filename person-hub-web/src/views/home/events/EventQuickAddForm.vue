@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineExpose, defineEmits, onMounted, ref } from 'vue'
+  import {  defineEmits, onMounted, ref } from 'vue'
   import EventModel from './api-services/models/EventModel'
   import VueTagsInput from '@sipec/vue3-tags-input'
 
