@@ -65,7 +65,7 @@ public class TopicsController : ApiControllerBase
         return Ok();
     }
 
-    [HttpGet("list")]
+    [HttpGet("")]
     public async Task<ActionResult<List<TodoTopic>>> GetAll()
     {
         var topics = await dbContext.TodoTopics.Where(r => r.UserId == AuthenticatedUserEmail).ToListAsync();

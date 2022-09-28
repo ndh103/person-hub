@@ -32,7 +32,7 @@ public class UpdateTodoItemTest : TestBaseClass
         updateResponse.EnsureSuccessStatusCode();
 
         // Assert
-        var dbItem = await this.Fixture.TodoItemDataAccess.Get(addedItemId);
+        var dbItem = await this.Fixture.TodoItemDataAccess.GetTodoItem(addedItemId);
 
         TodoItemTestHelper.AssertEqual(todoItemRequestDto, dbItem);
     }

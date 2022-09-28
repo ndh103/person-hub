@@ -14,18 +14,41 @@ public class AddTodoItemTest : TestBaseClass
     }
 
     [Fact]
-    public async Task AddTodoItem_ValidItem_ShouldSuccess()
+    public async Task AddTodoItem_ValidItemHasTopic_ShouldSuccess()
     {
-        //Act
+        // First create toipic
+        var topic = TodoItemTestHelper.GenerateRandomTopicDto();
+        var addedTopic = await RestHelper.PostNewTopic(Fixture.Client, topic);
+
+        // Create todoItem
         var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
+        todoItemDto.TopicId = addedTopic.Id;
+
         var response = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
         response.EnsureSuccessStatusCode();
         var addedItem = await response.Content.ReadFromJsonAsync<TodoItem>();
 
-        var dbItem = await this.Fixture.TodoItemDataAccess.Get(addedItem.Id);
+        var dbItem = await this.Fixture.TodoItemDataAccess.GetTodoItem(addedItem.Id);
 
         Assert.True(dbItem.Id > 0);
         TodoItemTestHelper.AssertEqual(todoItemDto, dbItem);
         Assert.True(dbItem.CreatedDate != null, "CreatedDate is not set");
     }
+
+    [Fact]
+    public async Task AddTodoItem_ValidItemNoTopic_ShouldSuccess()
+    {
+        // Create todoItem
+        var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
+
+        var response = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
+        response.EnsureSuccessStatusCode();
+        var addedItem = await response.Content.ReadFromJsonAsync<TodoItem>();
+
+        var dbItem = await this.Fixture.TodoItemDataAccess.GetTodoItem(addedItem.Id);
+
+        Assert.True(dbItem.Id > 0);
+        TodoItemTestHelper.AssertEqual(todoItemDto, dbItem);
+        Assert.True(dbItem.CreatedDate != null, "CreatedDate is not set");
+    }   
 }
