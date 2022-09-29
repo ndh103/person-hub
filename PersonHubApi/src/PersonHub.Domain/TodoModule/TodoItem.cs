@@ -43,11 +43,12 @@ public class TodoItem : BaseEntity, IAggregateRoot
         CheckEntityState();
     }
 
-    public void Update(string title, string? description, string itemOrder)
+    public void Update(string title, string? description, string itemOrder, long? todoTopicId)
     {
         this.Title = title;
         this.Description = description;
         this.ItemOrder = itemOrder;
+        this.TodoTopicId = todoTopicId;
 
         CheckEntityState();
     }

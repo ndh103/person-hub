@@ -54,7 +54,7 @@ public class ItemsController : ApiControllerBase
             return NotFound();
         }
 
-        todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder);
+        todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder, todoItemDto.TodoTopicId);
         if (todoItemEntity.HasError())
         {
             return BadRequest(todoItemEntity.Errors().First());
@@ -102,7 +102,7 @@ public class ItemsController : ApiControllerBase
     [HttpGet()]
     public async Task<ActionResult<List<TodoItem>>> GetAll()
     {
-        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail).ToListAsync();
+        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status != TodoItemStatus.Done).ToListAsync();
 
         if (todoItems is null)
         {

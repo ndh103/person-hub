@@ -36,12 +36,18 @@
   // watch for items by first using toRefs
   var itemsRef = toRefs(props).items
   watch(itemsRef, async (newItems, oldItems) => {
-    state.value.todoItems = [...newItems]
+    state.value.todoItems = cloneAndSort(newItems)
   })
 
   onMounted(() => {
-    state.value.todoItems = [...props.items]
+    state.value.todoItems = cloneAndSort(props.items)
   })
+
+  function cloneAndSort(items: Array<TodoItemModel>) {
+    var cloneItems = [...items]
+    cloneItems.sort((a, b) => (a.itemOrder > b.itemOrder ? 1 : -1))
+    return cloneItems
+  }
 
   async function addNewTodoItem(todoItem: TodoItemModel) {
     // get the current order of the last item
@@ -75,15 +81,30 @@
   }
 
   async function onDragEnd(evt) {
-    const newIndex = evt.newIndex
-    const prevItem = newIndex == 0 ? null : state.value.todoItems[newIndex - 1]
-    const nextItem = newIndex == state.value.todoItems.length - 1 ? null : state.value.todoItems[newIndex + 1]
+    // Get the topicId from the attribute of the parent of the "to" node
+    let parentNode = evt.to.parentNode as any
+    let topicId = parentNode.getAttributeNode('topic-id')?.value
 
+    const newIndex = evt.newIndex
+    // Target Item List have the updated list after the item is dropped
+    var targetItemList = evt.to.__draggable_component__.componentStructure.realList
+    var dropItem = evt.from.__draggable_component__.context.element as TodoItemModel
+
+    // Find the dropped item in the target list, clone the item to not directly make changes to the item
+    var item = { ...targetItemList.find((r) => r.id == dropItem.id) }
+
+    const prevItem = newIndex == 0 ? null : targetItemList[newIndex - 1]
+    const nextItem = newIndex == targetItemList.length - 1 ? null : targetItemList[newIndex + 1]
     const newOrder = LexicoGraphicalUtility.generateMidString(prevItem ? prevItem.itemOrder : '', nextItem ? nextItem.itemOrder : '')
-    const item = state.value.todoItems[newIndex]
+
+    item.todoTopicId = topicId
     item.itemOrder = newOrder
 
+    // Call api to update
     await todoItemApiService.update(item)
+
+    // Call store to reorder the item, the list will be sorted correctly because now the dropped item has been updated with new Order
+    todoStoreService.reorderTodoItem(item)
 
     state.value.drag = false
   }
@@ -93,21 +114,24 @@
   <div>
     <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)"></quick-add>
 
-    <draggable
-      v-model="state.todoItems"
-      item-key="id"
-      v-bind="dragOptions"
-      handle=".handle-icon"
-      :class="{ dragging: state.drag, 'no-drag': !state.drag }"
-      @start="state.drag = true"
-      @end="onDragEnd($event)"
-    >
-      <template #item="{ element }">
-        <transition name="slide-fade">
-          <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
-        </transition>
-      </template>
-    </draggable>
+    <div :topic-id="topicId?.toString()">
+      <draggable
+        v-model="state.todoItems"
+        item-key="id"
+        v-bind="dragOptions"
+        handle=".handle-icon"
+        :class="{ dragging: state.drag, 'no-drag': !state.drag }"
+        @start="state.drag = true"
+        @end="onDragEnd($event)"
+        group="todoItems"
+      >
+        <template #item="{ element }">
+          <transition name="slide-fade">
+            <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
+          </transition>
+        </template>
+      </draggable>
+    </div>
   </div>
 </template>
 

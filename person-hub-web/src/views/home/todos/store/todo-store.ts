@@ -30,6 +30,12 @@ export const todoStore = {
       state.todoItems = [...todoItems]
       state.todoItemsUpdatedTime = new Date()
     },
+    reorderTodoItem(state: TodoModuleStoreState, todoItem: TodoItemModel): void {
+      // remove old item
+      // add new items, --> that will trigger the list changes
+      state.todoItems = state.todoItems.filter((r) => r.id != todoItem.id)
+      state.todoItems.push({ ...todoItem })
+    },
     addTodoItem(state: TodoModuleStoreState, todoItem: TodoItemModel): void {
       state.todoItems.push({ ...todoItem })
     },

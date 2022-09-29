@@ -16,6 +16,9 @@ class TodoStoreService {
   updateTodoItems(todoItems: Array<TodoItemModel>) {
     store.commit(`todos/${todoStore.mutations.updateTodoItems.name}`, todoItems)
   }
+  reorderTodoItem(todoItem: TodoItemModel) {
+    store.commit(`todos/${todoStore.mutations.reorderTodoItem.name}`, todoItem)
+  }
   addTodoItem(todoItem: TodoItemModel) {
     store.commit(`todos/${todoStore.mutations.addTodoItem.name}`, todoItem)
   }

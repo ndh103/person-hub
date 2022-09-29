@@ -28,7 +28,8 @@ public class TopicsController : ApiControllerBase
             return BadRequest(ModelState);
         }
 
-        var todoTopic = new TodoTopic(){
+        var todoTopic = new TodoTopic()
+        {
             UserId = AuthenticatedUserEmail,
             Name = requestTodoTopic.Name,
             Order = requestTodoTopic.Order,
@@ -91,12 +92,5 @@ public class TopicsController : ApiControllerBase
         dbContext.TodoTopics.Remove(topic);
         await dbContext.SaveChangesAsync();
         return Ok();
-    }
-
-    [HttpGet("{id}/items")]
-    public async Task<ActionResult<IEnumerable<TodoItem>>> GetAllTodoItems(long id)
-    {
-        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.TodoTopicId == id).ToListAsync();
-        return todoItems;
     }
 }
