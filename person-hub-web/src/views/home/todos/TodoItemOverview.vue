@@ -86,7 +86,6 @@
     </div>
 
     <div v-if="!state.isEditMode">
-      <span>{{todoItemOverview.itemOrder}} - </span>
       <a v-if="isValidHttpUrl(todoItemOverview.title)" class="cursor-pointer italic" :class="{ 'line-through': state.isChecked }" :href="todoItemOverview.title" target="_blank">{{
         todoItemOverview.title
       }}</a>

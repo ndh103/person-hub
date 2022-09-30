@@ -13,6 +13,9 @@ class TodoStoreService {
   removeTopic(topicId: number) {
     store.commit(`todos/${todoStore.mutations.removeTopic.name}`, topicId)
   }
+  reorderTopic(topic: TodoTopicModel) {
+    store.commit(`todos/${todoStore.mutations.reorderTopic.name}`, topic)
+  }
   updateTodoItems(todoItems: Array<TodoItemModel>) {
     store.commit(`todos/${todoStore.mutations.updateTodoItems.name}`, todoItems)
   }

@@ -26,6 +26,12 @@ export const todoStore = {
     removeTopic(state: TodoModuleStoreState, topicId: number): void {
       state.topics = state.topics.filter((r) => r.id != topicId)
     },
+    reorderTopic(state: TodoModuleStoreState, topic: TodoTopicModel): void {
+      // remove old item
+      // add new items, --> that will trigger the list changes
+      state.topics = state.topics.filter((r) => r.id != topic.id)
+      state.topics.push({ ...topic })
+    },
     updateTodoItems(state: TodoModuleStoreState, todoItems: Array<TodoItemModel>): void {
       state.todoItems = [...todoItems]
       state.todoItemsUpdatedTime = new Date()

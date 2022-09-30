@@ -1,20 +1,18 @@
 <script setup lang="ts">
-  import { onMounted } from 'vue'
-  import SunIcon from '@/assets/sun-icon.svg?component'
-  import CalendarWeekIcon from '@/assets/calendar-week-icon.svg?component'
-  import TodoListIcon from '@/assets/todo-list-icon.svg?component'
+  import { onMounted, watch } from 'vue'
+  import draggable from 'vuedraggable'
 
   import todoItemApiService from './api-services/todo-item-api-service'
   import todoTopicApiService from './api-services/todo-topic-api-service'
-  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import todoStoreService from './store/todoStoreService'
+  import HandleIcon from '@/assets/handle-icon.svg?component'
 
   import dayjs from 'dayjs'
 
   import ItemList from './ItemList.vue'
   import TodoItemModel from './api-services/models/TodoItemModel'
-  import { computed } from '@vue/reactivity'
+  import { computed, ref } from '@vue/reactivity'
   import TodoTopicModel from './api-services/models/TodoTopicModel'
   import QuickAddTopic from './QuickAddTopic.vue'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
@@ -23,7 +21,7 @@
     return todoStoreService.state.todoItems.filter((r) => !r.todoTopicId)
   })
 
-  const topicItems = computed(() => {
+  const computedTopicItems = computed(() => {
     var topics: Array<TodoTopicModel> = todoStoreService.state.topics.map((topic) => {
       var returnTopic = { ...topic } as TodoTopicModel
       var topicItems = todoStoreService.state.todoItems.filter((r) => r.todoTopicId == topic.id)
@@ -31,8 +29,32 @@
 
       return returnTopic
     })
-    
+
     return topics
+  })
+
+  const state = ref({
+    drag: false,
+    // Since we have drag/and drop, cannot directly use computed property, use state instead
+    topicItems: new Array<TodoTopicModel>
+  })
+
+  // Update the state.topicItems when the computed value changed
+  watch(computedTopicItems, async (newItems, oldItems) => {
+    state.value.topicItems = cloneAndSort(newItems)
+  })
+
+  function cloneAndSort(items: Array<TodoTopicModel>) {
+    var cloneItems = [...items]
+    cloneItems.sort((a, b) => (a.order > b.order ? 1 : -1))
+    return cloneItems
+  }
+
+  const dragOptions = computed(() => {
+    return {
+      animation: 200,
+      disabled: false,
+    }
   })
 
   async function addNewTopic(topic: TodoTopicModel) {
@@ -77,6 +99,30 @@
     }
   }
 
+  async function onDragEnd(evt) {
+    const newIndex = evt.newIndex
+    // Target Item List have the updated list after the item is dropped
+    var targetItemList = evt.to.__draggable_component__.componentStructure.realList
+    var dropItem = evt.from.__draggable_component__.context.element as TodoTopicModel
+
+    // Find the dropped item in the target list, clone the item to not directly make changes to the item
+    var topicItem = { ...targetItemList.find((r) => r.id == dropItem.id) } as TodoTopicModel
+
+    const prevItem = newIndex == 0 ? null : targetItemList[newIndex - 1]
+    const nextItem = newIndex == targetItemList.length - 1 ? null : targetItemList[newIndex + 1]
+    const newOrder = LexicoGraphicalUtility.generateMidString(prevItem ? prevItem.order : '', nextItem ? nextItem.order : '')
+
+    topicItem.order = newOrder
+
+    // // Call api to update
+    await todoTopicApiService.update(topicItem)
+
+    // Call store to reorder the item, the list will be sorted correctly because now the dropped item has been updated with new Order
+    todoStoreService.reorderTopic(topicItem)
+
+    state.value.drag = false
+  }
+
   onMounted(async () => {
     if (!todoStoreService.state.todoItemsUpdatedTime) {
       await fetchData()
@@ -116,10 +162,37 @@
     <QuickAddTopic @on-add-new-item="addNewTopic($event)" />
   </div>
 
-  <div class="py-4" v-for="topic in topicItems">
-    <div class="flex items-center">
-      <span class="text-lg">{{ topic.name }}</span>
-    </div>
-    <ItemList :topic-id="topic.id" :items="topic.todoItems"></ItemList>
-  </div>
+  <draggable
+    v-model="state.topicItems"
+    item-key="id"
+    v-bind="dragOptions"
+    handle=".handle-icon"
+    :class="{ dragging: state.drag, 'no-drag': !state.drag }"
+    @start="state.drag = true"
+    @end="onDragEnd($event)"
+    group="todoTopics"
+  >
+    <template #item="{ element }">
+      <transition name="slide-fade">
+        <div class="py-4">
+          <div class="flex items-center todo-topic">
+            <HandleIcon class="inline-block invisible pr-1 h-5 w-5 handle-icon"></HandleIcon> <span class="text-lg">{{ element.name }}</span>
+          </div>
+          <ItemList :topic-id="element.id" :items="element.todoItems"></ItemList>
+        </div>
+      </transition>
+    </template>
+  </draggable>
 </template>
+
+<style lang="postcss" scoped>
+  .todo-topic:hover .handle-icon,
+  .todo-topic:hover .action-icon {
+    @apply visible;
+  }
+
+  /* Not show the handle icon when dragging */
+  .dragging .handle-icon {
+    @apply invisible !important;
+  }
+</style>
