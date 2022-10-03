@@ -19,6 +19,10 @@
       type: Array as PropType<Array<TodoItemModel>>,
       default: new Array<TodoItemModel>(),
     },
+    isExpand: {
+      type: Boolean,
+      default: true
+    }
   })
 
   const state = ref({
@@ -112,9 +116,9 @@
 
 <template>
   <div>
-    <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)"></quick-add>
+    <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)" :class="{'hidden': !props.isExpand }"></quick-add>
 
-    <div :topic-id="topicId?.toString()">
+    <div :topic-id="topicId?.toString()" :class="{'hidden': !props.isExpand }">
       <draggable
         v-model="state.todoItems"
         item-key="id"

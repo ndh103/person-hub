@@ -16,7 +16,7 @@
   import TodoTopicModel from './api-services/models/TodoTopicModel'
   import QuickAddTopic from './QuickAddTopic.vue'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
-  import TopicOverview from './TopicOverview.vue'
+  import TodoTopicSection from './TodoTopicSection.vue'
 
   const inboxItems = computed(() => {
     return todoStoreService.state.todoItems.filter((r) => !r.todoTopicId)
@@ -170,17 +170,14 @@
     item-key="id"
     v-bind="dragOptions"
     handle=".handle-icon"
-    :class="{ dragging: state.drag, 'no-drag': !state.drag }"
+    :class="{ 'topic-dragging': state.drag, 'topic-no-drag': !state.drag }"
     @start="state.drag = true"
     @end="onDragEnd($event)"
     group="todoTopics"
   >
     <template #item="{ element }">
       <transition name="slide-fade">
-        <div class="py-4">
-          <TopicOverview :topic="element" />
-          <ItemList class="pl-8" :topic-id="element.id" :items="element.todoItems" />
-        </div>
+        <TodoTopicSection :topic="element"></TodoTopicSection>
       </transition>
     </template>
   </draggable>
@@ -193,7 +190,7 @@
   }
 
   /* Not show the handle icon when dragging */
-  .dragging .handle-icon {
+  .topic-dragging .handle-icon {
     @apply invisible !important;
   }
 </style>

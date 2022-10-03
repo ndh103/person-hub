@@ -2,6 +2,8 @@
   import { PropType, ref, nextTick } from 'vue'
   import todoTopicApiService from './api-services/todo-topic-api-service'
   import HandleIcon from '@/assets/handle-icon.svg?component'
+  import ChervronRightIcon from '@/assets/chervron-right-icon.svg?component'
+  import ChervronDownIcon from '@/assets/chervron-down-icon.svg?component'
   import PencilIcon from '@/assets/pencil-icon.svg?component'
   import CloseIcon from '@/assets/close-icon.svg?component'
   import CheckIcon from '@/assets/check-icon.svg?component'
@@ -14,10 +16,15 @@
     },
   })
 
+  const emit = defineEmits<{
+    (event: 'onToogleExpand', data: boolean)
+  }>()
+
   const topicNameInput = ref(null)
 
   const state = ref({
     isEditMode: false,
+    isExpand: true,
     newTopic: '',
   })
 
@@ -31,6 +38,11 @@
   function cancelUpdateTitle() {
     state.value.isEditMode = false
     state.value.newTopic = ''
+  }
+
+  function toogleExpand() {
+    state.value.isExpand = !state.value.isExpand
+    emit('onToogleExpand', state.value.isExpand)
   }
 
   async function updateTopic() {
@@ -50,7 +62,10 @@
   <div class="todo-topic-overview flex">
     <HandleIcon class="block invisible pr-1 h-5 w-5 mt-[5px]" :class="[state.isEditMode ? 'edit-handle-icon' : 'handle-icon']"></HandleIcon>
 
-    <div v-if="!state.isEditMode">
+    <ChervronDownIcon class="block pr-1 h-5 w-5 mt-[5px] cursor-pointer" :class="[state.isExpand ? 'block' : 'hidden']" @click="toogleExpand()" />
+    <ChervronRightIcon class="block pr-1 h-5 w-5 mt-[5px] cursor-pointer" :class="[state.isExpand ? 'hidden' : 'block']" @click="toogleExpand()" />
+
+    <div v-if="!state.isEditMode" class="w-full" :class="{ 'border-b pb-2': !state.isExpand }">
       <span class="text-lg">{{ topic.name }}</span>
     </div>
 
