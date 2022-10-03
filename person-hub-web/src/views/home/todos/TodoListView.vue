@@ -67,7 +67,7 @@
     const topicOrder = LexicoGraphicalUtility.generateMidString('', nextOrder)
     topic.order = topicOrder
 
-    const response = await todoTopicApiService.add(topic)
+    const response = await todoTopicApiService.add(topic, true)
 
     if (response) {
       var responseTopic = response.data as TodoTopicModel

@@ -63,7 +63,7 @@
     //temporary added to the list (before calling api)
     state.value.todoItems.push(todoItem)
 
-    const response = await todoItemApiService.add(todoItem)
+    const response = await todoItemApiService.add(todoItem, true)
 
     if (response) {
       // Update the todoItem from response
