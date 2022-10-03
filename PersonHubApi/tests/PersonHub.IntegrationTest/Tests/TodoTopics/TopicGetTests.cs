@@ -40,41 +40,4 @@ public class TopicGetTests : TestBaseClass
 
         Assert.True(resultTopics.All(r => r.CreatedDate != null), "CreatedDate is not set");
     }
-
-    [Fact]
-    public async Task GetAllTodoItems_HasData_ShouldSuccess()
-    {
-        var topicDto = TodoItemTestHelper.GenerateRandomTopicDto();
-        var addedTopic = await RestHelper.PostNewTopic(Fixture.Client, topicDto);
-
-        var preparedTodoItems = new List<TodoItem>();
-
-        // Add 5 items link with the Topic
-        for (int i = 0; i < 5; i++)
-        {
-            var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
-            todoItemDto.TodoTopicId = addedTopic.Id;
-
-            var addedTodoItem = await RestHelper.PostNewTodoItem(Fixture.Client, todoItemDto);
-
-            preparedTodoItems.Add(addedTodoItem);
-        }
-
-        // Add one more that does not link with the topic
-        var noTopicTodoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
-        var noTopicTodoItem = await RestHelper.PostNewTodoItem(Fixture.Client, noTopicTodoItemDto);
-
-        // Act
-        var resultTodoItems = await Fixture.Client.GetFromJsonAsync<List<TodoItem>>($"/todos/topics/{addedTopic.Id}/items");
-
-        Assert.Equal(preparedTodoItems.Count, resultTodoItems.Count);
-
-        var isExistNoTopicTodoItem = resultTodoItems.Count(r => r.Id == noTopicTodoItem.Id) == 1;
-        Assert.False(isExistNoTopicTodoItem);
-
-        foreach(var preparedTodoItem in preparedTodoItems){
-            Assert.True(resultTodoItems.Any(r=>r.Id == preparedTodoItem.Id));
-        }
-    }
-
 }
