@@ -37,7 +37,7 @@
   const state = ref({
     drag: false,
     // Since we have drag/and drop, cannot directly use computed property, use state instead
-    topicItems: new Array<TodoTopicModel>
+    topicItems: new Array<TodoTopicModel>()
   })
 
   // Update the state.topicItems when the computed value changed
