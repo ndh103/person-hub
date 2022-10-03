@@ -11,7 +11,7 @@
     (e: 'onItemMarkedAsDone'): void
   }>()
 
-  const { todoItemOverview } = defineProps({
+  const props = defineProps({
     todoItemOverview: {
       type: Object as PropType<TodoItemModel>,
       default: null,
@@ -27,14 +27,14 @@
   })
 
   function toggleEditMode() {
-    state.value.newTitle = todoItemOverview.title
+    state.value.newTitle = props.todoItemOverview.title
     state.value.isEditMode = true
 
     nextTick(() => titleInput.value.focus())
   }
 
   async function markAsDone() {
-    var response = await todoItemApiService.markAsDone(todoItemOverview.id)
+    var response = await todoItemApiService.markAsDone(props.todoItemOverview.id)
 
     if (response) {
       emit('onItemMarkedAsDone')
@@ -50,13 +50,13 @@
   }
 
   async function updateTitle() {
-    var updatedItem = { ...todoItemOverview }
+    var updatedItem = { ...props.todoItemOverview }
     updatedItem.title = state.value.newTitle
 
     var response = await todoItemApiService.update(updatedItem, true)
     if (response) {
       // eslint-disable-next-line vue/no-mutating-props
-      todoItemOverview.title = state.value.newTitle
+      props.todoItemOverview.title = state.value.newTitle
     }
     state.value.isEditMode = false
     state.value.newTitle = ''

@@ -16,6 +16,7 @@
   import TodoTopicModel from './api-services/models/TodoTopicModel'
   import QuickAddTopic from './QuickAddTopic.vue'
   import LexicoGraphicalUtility from '@/common/lexico-string-generator'
+  import TopicOverview from './TopicOverview.vue'
 
   const inboxItems = computed(() => {
     return todoStoreService.state.todoItems.filter((r) => !r.todoTopicId)
@@ -153,13 +154,15 @@
 
   <div class="py-4">
     <div class="flex items-center">
+      <!-- Keep the handle icon invisible here is a trick to make the Inbox align well with other topics -->
+      <HandleIcon class="inline-block invisible pr-1 h-5 w-5" />
       <span class="text-lg">Inbox</span>
     </div>
-    <ItemList :topic-id="null" :items="inboxItems"></ItemList>
+    <ItemList class="pl-8" :topic-id="null" :items="inboxItems"></ItemList>
   </div>
 
   <div class="py-4">
-    <QuickAddTopic @on-add-new-item="addNewTopic($event)" />
+    <QuickAddTopic class="pl-4" @on-add-new-item="addNewTopic($event)" />
   </div>
 
   <draggable
@@ -175,10 +178,8 @@
     <template #item="{ element }">
       <transition name="slide-fade">
         <div class="py-4">
-          <div class="flex items-center todo-topic">
-            <HandleIcon class="inline-block invisible pr-1 h-5 w-5 handle-icon"></HandleIcon> <span class="text-lg">{{ element.name }}</span>
-          </div>
-          <ItemList :topic-id="element.id" :items="element.todoItems"></ItemList>
+          <TopicOverview :topic="element" />
+          <ItemList class="pl-8" :topic-id="element.id" :items="element.todoItems" />
         </div>
       </transition>
     </template>
