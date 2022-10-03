@@ -14,7 +14,7 @@ const homeRoutes = [
     children: [
       {
         path: '',
-        redirect: '/yourday',
+        redirect: '/todos',
       },
       ...todoRoutes,
       ...eventRoutes,

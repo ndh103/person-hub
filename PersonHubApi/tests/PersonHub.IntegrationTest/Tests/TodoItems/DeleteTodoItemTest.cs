@@ -23,7 +23,7 @@ public class DeleteTodoItemTest : TestBaseClass
         response.EnsureSuccessStatusCode();
 
         // Assert
-        var dbItem = await this.Fixture.TodoItemDataAccess.Get(addedItemId);
+        var dbItem = await this.Fixture.TodoItemDataAccess.GetTodoItem(addedItemId);
         Assert.Null(dbItem);
     }
 }

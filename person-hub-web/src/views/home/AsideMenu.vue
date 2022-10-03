@@ -36,7 +36,7 @@
       </div>
 
       <p class="pt-10"></p>
-      <p :class="['sidebar-menu-item', isRouteActive('yourday-view') ? 'active' : '']" @click="navigateToRoute('yourday-view')">
+      <p :class="['sidebar-menu-item', isRouteActive('todo-list-view') ? 'active' : '']" @click="navigateToRoute('todo-list-view')">
         <SunIcon class="w-4 h-4 mr-2 inline-block" />Your Day
       </p>
       <p :class="['sidebar-menu-item', isRouteActive('events-view') ? 'active' : '']" @click="navigateToRoute('events-view')">

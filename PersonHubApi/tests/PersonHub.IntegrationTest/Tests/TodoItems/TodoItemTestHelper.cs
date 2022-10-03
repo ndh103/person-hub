@@ -20,7 +20,6 @@ public static class TodoItemTestHelper
             ItemOrder = $"ItemOrder {randomString}",
             Status = TodoItemStatus.Todo,
             Title = $"Title {randomString}",
-            Type = TodoItemType.Todo,
             UserId = TestAuthHandler.TestUserEmail
         };
     }
@@ -35,7 +34,17 @@ public static class TodoItemTestHelper
             ItemOrder = $"ItemOrder {randomString}",
             Status = TodoItemStatus.Todo,
             Title = $"Title {randomString}",
-            Type = TodoItemType.Todo,
+        };
+    }
+
+    public static TodoTopicDto GenerateRandomTopicDto()
+    {
+        var randomString = Guid.NewGuid().ToString();
+
+        return new TodoTopicDto()
+        {
+            Name = $"Name {randomString}",
+            Order = $"Order {randomString}",
         };
     }
 
@@ -45,7 +54,6 @@ public static class TodoItemTestHelper
         Assert.True(dto.ItemOrder == item.ItemOrder, "ItemOrder is not equal");
         Assert.True(dto.Status == item.Status, "Status is not equal");
         Assert.True(dto.Title == item.Title, "Title is not equal");
-        Assert.True(dto.Type == item.Type, "Type is not equal");
     }
 
     public static void AssertEqual(TodoItemEntity todoItemEntity, TodoItem item)
@@ -54,7 +62,12 @@ public static class TodoItemTestHelper
         Assert.True(todoItemEntity.ItemOrder == item.ItemOrder, "ItemOrder is not equal");
         Assert.True(todoItemEntity.Status == item.Status, "Status is not equal");
         Assert.True(todoItemEntity.Title == item.Title, "Title is not equal");
-        Assert.True(todoItemEntity.Type == item.Type, "Type is not equal");
         Assert.True(TestHelper.EqualsUpToSeconds(todoItemEntity.CreatedDate, item.CreatedDate), "CreatedDate is not equal");
+    }
+
+    public static void AssertEqual(TodoTopicDto dto, TodoTopicEntity item)
+    {
+        Assert.True(dto.Name == item.Name, "Description is not equal");
+        Assert.True(dto.Order == item.Order, "ItemOrder is not equal");
     }
 }

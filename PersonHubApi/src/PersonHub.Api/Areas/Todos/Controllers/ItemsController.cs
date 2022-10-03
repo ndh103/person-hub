@@ -28,7 +28,7 @@ public class ItemsController : ApiControllerBase
             return BadRequest(ModelState);
         }
 
-        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.Type);
+        var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.TodoTopicId);
         if (todoItemEntity.HasError())
         {
             return BadRequest(todoItemEntity.Errors().First());
@@ -54,7 +54,7 @@ public class ItemsController : ApiControllerBase
             return NotFound();
         }
 
-        todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder);
+        todoItemEntity.Update(todoItemDto.Title, todoItemDto.Description, todoItemDto.ItemOrder, todoItemDto.TodoTopicId);
         if (todoItemEntity.HasError())
         {
             return BadRequest(todoItemEntity.Errors().First());
@@ -86,20 +86,6 @@ public class ItemsController : ApiControllerBase
         return Ok();
     }
 
-    [HttpGet("status/{status}")]
-    public async Task<ActionResult<IEnumerable<TodoItem>>> QueryByStatus(int status)
-    {
-        var isValidStatus = Enum.IsDefined(typeof(TodoItemStatus), status);
-        if (!isValidStatus)
-        {
-            return BadRequest();
-        }
-        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status == (TodoItemStatus)status).ToListAsync();
-
-        return todoItems;
-    }
-
-
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItem>> Get(int id)
     {
@@ -111,6 +97,19 @@ public class ItemsController : ApiControllerBase
         }
 
         return todoItem;
+    }
+
+    [HttpGet()]
+    public async Task<ActionResult<List<TodoItem>>> GetAll()
+    {
+        var todoItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.Status != TodoItemStatus.Done).ToListAsync();
+
+        if (todoItems is null)
+        {
+            return NotFound();
+        }
+
+        return todoItems;
     }
 
     [HttpDelete("{id}")]

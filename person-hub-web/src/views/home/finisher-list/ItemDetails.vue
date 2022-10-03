@@ -19,7 +19,7 @@
 
   const router = useRouter()
 
-  const { itemId } = defineProps({
+  const props = defineProps({
     itemId: {
       type: Number,
       default: 0,
@@ -56,7 +56,7 @@
   })
 
   onMounted(async () => {
-    var response = await finisherItemApiService.get(itemId, false)
+    var response = await finisherItemApiService.get(props.itemId, false)
 
     if (response) {
       state.value.item = response.data as FinisherItem
@@ -79,7 +79,7 @@
   async function save() {
     state.value.item.tags = state.value.tags.map((r) => r.text)
 
-    var response = await finisherItemApiService.update(itemId, state.value.item, true)
+    var response = await finisherItemApiService.update(props.itemId, state.value.item, true)
 
     // Update the event in the store
     if (response) {
@@ -118,10 +118,10 @@
 
   async function deleteItem() {
     modalDeleteRef.value.toggleModal(false)
-    var response = await finisherItemApiService.delete(itemId, true)
+    var response = await finisherItemApiService.delete(props.itemId, true)
 
     if (response) {
-      finisherListStoreService.removeFinisherItem(itemId)
+      finisherListStoreService.removeFinisherItem(props.itemId)
       goBack()
     }
   }
@@ -132,14 +132,14 @@
     var response
 
     if (state.value.item.status == FinisherItemStatus.Planning) {
-      response = await finisherItemApiService.start(itemId, { startDate: state.value.itemStatusDate }, true)
+      response = await finisherItemApiService.start(props.itemId, { startDate: state.value.itemStatusDate }, true)
 
       if (response) {
         state.value.item.status = FinisherItemStatus.Started
         state.value.item.startDate = state.value.itemStatusDate
       }
     } else if (state.value.item.status == FinisherItemStatus.Started) {
-      response = await finisherItemApiService.finish(itemId, { finishDate: state.value.itemStatusDate }, true)
+      response = await finisherItemApiService.finish(props.itemId, { finishDate: state.value.itemStatusDate }, true)
 
       if (response) {
         state.value.item.status = FinisherItemStatus.Finished

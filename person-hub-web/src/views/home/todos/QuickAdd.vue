@@ -1,17 +1,16 @@
 <script setup lang="ts">
   import TodoItemModel from './api-services/models/TodoItemModel'
   import TodoItemStatusEnum from './api-services/models/TodoItemStatusEnum'
-  import { defineComponent, PropType, ref } from 'vue'
-  import TodoItemTypeEnum from './api-services/models/TodoItemTypeEnum'
+  import { ref } from 'vue'
 
   const emit = defineEmits<{
     (event: 'onAddNewItem', data: TodoItemModel)
   }>()
 
-  const { itemType } = defineProps({
-    itemType: {
-      type: Number as PropType<TodoItemTypeEnum>,
-      default: TodoItemTypeEnum.Todo,
+  const props = defineProps({
+    topicId: {
+      type: Number,
+      default: null,
     },
   })
 
@@ -24,7 +23,7 @@
       return
     }
 
-    state.value.newTodoItem.type = itemType
+    state.value.newTodoItem.todoTopicId = props.topicId
     state.value.newTodoItem.status = TodoItemStatusEnum.Initial
     emit('onAddNewItem', { ...state.value.newTodoItem })
 
@@ -35,6 +34,6 @@
 
 <template>
   <div class="mb-4 flex flex-row items-center">
-    <input v-model="state.newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Input and press enter to add new ..." @keyup.enter="submitForm()" />
+    <input v-model="state.newTodoItem.title" type="text" class="app-input flex-grow" placeholder="Add new todo ..." @keyup.enter="submitForm()" />
   </div>
 </template>

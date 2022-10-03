@@ -2,7 +2,7 @@
   import { computed } from '@vue/reactivity'
   import { defineProps, defineEmits } from 'vue'
 
-  const { modelValue, onTitle, offTitle } = defineProps({
+  const props = defineProps({
     modelValue: {
       type: Boolean,
       default: false,
@@ -23,7 +23,7 @@
 
   const inputChecked = computed({
     get() {
-      return modelValue
+      return props.modelValue
     },
     set(val: boolean) {
       emit('update:modelValue', val)

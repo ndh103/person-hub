@@ -15,7 +15,7 @@ public class TodoItemEntity
 
     public TodoItemStatus Status { get; set; }
 
-    public TodoItemType Type { get; set; }
+    public long? TopicId { get; set; }
 
     public string ItemOrder { get; set; }
 

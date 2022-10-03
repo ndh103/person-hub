@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref, defineExpose } from 'vue'
+  import { onMounted, ref } from 'vue'
   import FinisherItem from './api-services/models/FinisherItem'
   import VueTagsInput from '@sipec/vue3-tags-input'
   import Switch from '@/components/Switch.vue'

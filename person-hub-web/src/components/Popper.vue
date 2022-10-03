@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { defineProps, ref, defineExpose } from 'vue'
+  import { defineProps, ref } from 'vue'
   import { createPopper, Placement, Instance } from '@popperjs/core'
 
-  const { title, triggerElementSelector, popperElementSelector, placement } = defineProps({
+  const props = defineProps({
     title: {
       type: String,
       default: '',
@@ -30,11 +30,11 @@
     state.value.isShow = isShow
 
     if (isShow) {
-      const reference = document.querySelector(triggerElementSelector)
-      const popper = document.querySelector(popperElementSelector) as HTMLElement
+      const reference = document.querySelector(props.triggerElementSelector)
+      const popper = document.querySelector(props.popperElementSelector) as HTMLElement
 
       state.value.popperInstance = createPopper(reference, popper, {
-        placement: placement as Placement,
+        placement: props.placement as Placement,
       })
 
       // Wait until the original click event has already going though the document
