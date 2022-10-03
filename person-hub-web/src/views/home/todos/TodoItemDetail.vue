@@ -3,7 +3,7 @@
   import todoItemApiService from './api-services/todo-item-api-service'
   import TodoItemModel from './api-services/models/TodoItemModel'
 
-  const { todoItemId } = defineProps({
+  const props = defineProps({
     todoItemId: {
       type: String,
       default: '',
@@ -19,7 +19,7 @@
   })
 
   async function fetchTodoItemDetail() {
-    const response = await todoItemApiService.get(todoItemId)
+    const response = await todoItemApiService.get(props.todoItemId)
     state.value.todoItem = response.data as TodoItemModel
   }
 </script>

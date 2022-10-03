@@ -2,7 +2,7 @@
   import { ref } from 'vue'
   import CloseIcon from '@/assets/close-icon.svg?component'
 
-  const { title } = defineProps({
+  const props = defineProps({
     title: {
       type: String,
       default: '',

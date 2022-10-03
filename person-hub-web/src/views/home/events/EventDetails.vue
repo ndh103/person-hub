@@ -9,7 +9,7 @@
   import { ref } from '@vue/reactivity'
   import { useRouter } from 'vue-router'
 
-  const { eventId } = defineProps({
+  const props = defineProps({
     eventId: {
       type: Number,
       default: 0,
@@ -27,7 +27,7 @@
   const deleteModal = ref(null)
 
   onMounted(async () => {
-    var response = await EventApiService.get(eventId, false)
+    var response = await EventApiService.get(props.eventId, false)
 
     if (response) {
       state.value.event = response.data as EventModel
@@ -45,7 +45,7 @@
   async function save() {
     state.value.event.tags = state.value.tags.map((r) => r.text)
 
-    var response = await EventApiService.update(eventId, state.value.event, true)
+    var response = await EventApiService.update(props.eventId, state.value.event, true)
 
     // Update the event in the store
     if (response) {
@@ -75,11 +75,11 @@
 
   async function deleteEvent() {
     deleteModal.value.toggleModal(false)
-    var response = await EventApiService.delete(eventId, true)
+    var response = await EventApiService.delete(props.eventId, true)
 
     if (response) {
       var updatedEvents = [...eventStoreService.state.events]
-      updatedEvents = updatedEvents.filter((r) => r.id != eventId)
+      updatedEvents = updatedEvents.filter((r) => r.id != props.eventId)
 
       eventStoreService.updateEventList(updatedEvents)
       goBack()

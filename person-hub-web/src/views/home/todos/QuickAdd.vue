@@ -7,7 +7,7 @@
     (event: 'onAddNewItem', data: TodoItemModel)
   }>()
 
-  const { topicId } = defineProps({
+  const props = defineProps({
     topicId: {
       type: Number,
       default: null,
@@ -23,7 +23,7 @@
       return
     }
 
-    state.value.newTodoItem.todoTopicId = topicId
+    state.value.newTodoItem.todoTopicId = props.topicId
     state.value.newTodoItem.status = TodoItemStatusEnum.Initial
     emit('onAddNewItem', { ...state.value.newTodoItem })
 
