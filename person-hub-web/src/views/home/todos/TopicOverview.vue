@@ -87,7 +87,7 @@
     <ChervronDownIcon class="block pr-1 h-5 w-5 mt-[5px] cursor-pointer" :class="[state.isExpand ? 'block' : 'hidden']" @click="toogleExpand()" />
     <ChervronRightIcon class="block pr-1 h-5 w-5 mt-[5px] cursor-pointer" :class="[state.isExpand ? 'hidden' : 'block']" @click="toogleExpand()" />
 
-    <div v-if="!state.isEditMode" class="w-full topic-title-handle cursor-grab" :class="{ 'border-b pb-2': !state.isExpand }">
+    <div v-if="!state.isEditMode" class="w-full topic-title-drag-handle cursor-grab" :class="{ 'border-b pb-2': !state.isExpand }">
       <span class="text-lg">{{ topic.name }}</span>
     </div>
 

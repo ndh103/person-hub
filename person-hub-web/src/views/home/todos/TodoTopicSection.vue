@@ -31,24 +31,26 @@
 <template>
   <div class="py-4">
     <TopicOverview :topic="props.topic" @onToogleExpand="handleToogleExpand($event)" @on-topic-removed="onTopicRemoved()" />
-    <ItemList class="pl-8 topic-item-list" :topic-id="topic.id" :items="topic.todoItems" :isExpand="state.isExpand" />
+    <ItemList class="pl-8" :topic-id="topic.id" :items="topic.todoItems" :isExpand="state.isExpand" />
   </div>
 </template>
 
+<!-- Not used scope since it need to affect child components  -->
+<style lang="postcss">
+  .topic-dragging .topic-item-list-wrapper{
+    @apply h-16 bg-gray-300 !important;
+  }
 
-<style lang="postcss" scoped>
-  /* Not show the handle icon when dragging */
-  .topic-dragging .topic-item-list {
-    @apply hidden !important;
+  .topic-dragging .topic-item-list{
+    @apply invisible !important;
   }
 
   /* Style for the item being drag */
-  .sortable-drag .topic-item-list {
-    @apply hidden !important;
+  .sortable-drag .topic-item-list-wrapper{
+    @apply h-16 bg-gray-300 !important;
   }
 
-  /* Style for ghost, the preview item in the drop position */
-  .sortable-ghost {
-    @apply opacity-50 bg-gray-300;
+  .sortable-drag .topic-item-list {
+    @apply invisible !important;
   }
 </style>

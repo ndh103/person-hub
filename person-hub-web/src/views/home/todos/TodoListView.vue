@@ -170,7 +170,7 @@
     v-model="state.topicItems"
     item-key="id"
     v-bind="dragOptions"
-    handle=".topic-title-handle"
+    handle=".topic-title-drag-handle"
     :class="{ 'topic-dragging': state.drag, 'topic-no-drag': !state.drag }"
     @start="state.drag = true"
     @end="onDragEnd($event)"

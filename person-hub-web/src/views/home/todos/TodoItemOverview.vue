@@ -80,7 +80,7 @@
       <input v-if="!state.isEditMode" v-model="state.isChecked" type="checkbox" class="rounded text-emerald-500 mr-3 mt-1" @click="markAsDone()" />
     </div>
 
-    <div v-if="!state.isEditMode" class="todo-item-handle cursor-grab">
+    <div v-if="!state.isEditMode" class="todo-item-drag-handle cursor-grab">
       <a v-if="isValidHttpUrl(todoItemOverview.title)" class="cursor-pointer italic" :class="{ 'line-through': state.isChecked }" :href="todoItemOverview.title" target="_blank">{{
         todoItemOverview.title
       }}</a>

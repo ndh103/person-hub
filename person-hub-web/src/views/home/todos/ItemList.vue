@@ -21,8 +21,8 @@
     },
     isExpand: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   })
 
   const state = ref({
@@ -115,26 +115,28 @@
 </script>
 
 <template>
-  <div>
-    <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)" :class="{'hidden': !props.isExpand }"></quick-add>
+  <div class="topic-item-list-wrapper">
+    <div class="topic-item-list">
+      <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)" :class="{ hidden: !props.isExpand }"></quick-add>
 
-    <div :topic-id="topicId?.toString()" :class="{'hidden': !props.isExpand }">
-      <draggable
-        v-model="state.todoItems"
-        item-key="id"
-        v-bind="dragOptions"
-        handle=".todo-item-handle"
-        :class="{ dragging: state.drag, 'no-drag': !state.drag }"
-        @start="state.drag = true"
-        @end="onDragEnd($event)"
-        group="todoItems"
-      >
-        <template #item="{ element }">
-          <transition name="slide-fade">
-            <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
-          </transition>
-        </template>
-      </draggable>
+      <div :topic-id="topicId?.toString()" :class="{ hidden: !props.isExpand }">
+        <draggable
+          v-model="state.todoItems"
+          item-key="id"
+          v-bind="dragOptions"
+          handle=".todo-item-drag-handle"
+          :class="{ dragging: state.drag, 'no-drag': !state.drag }"
+          @start="state.drag = true"
+          @end="onDragEnd($event)"
+          group="todoItems"
+        >
+          <template #item="{ element }">
+            <transition name="slide-fade">
+              <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
+            </transition>
+          </template>
+        </draggable>
+      </div>
     </div>
   </div>
 </template>
