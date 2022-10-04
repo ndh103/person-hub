@@ -35,9 +35,9 @@ class TodoTopicApiService {
     }, shouldShowLoading)
   }
 
-  delete(todoItem: TodoItemModel, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
+  delete(topicId: number, shouldShowLoading = false): Promise<AxiosResponse<unknown>> {
     return ApiServiceBase.makeApiCall(async () => {
-      return http.delete(`challenges/${todoItem.id}`)
+      return http.delete(`todos/topics/${topicId}`)
     }, shouldShowLoading)
   }
 }

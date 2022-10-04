@@ -53,6 +53,11 @@ public class TodoItem : BaseEntity, IAggregateRoot
         CheckEntityState();
     }
 
+    public void UnlinkWithTopic()
+    {
+        this.TodoTopicId = null;
+    }
+
     public void MarkAsDone()
     {
         this.Status = TodoItemStatus.Done;

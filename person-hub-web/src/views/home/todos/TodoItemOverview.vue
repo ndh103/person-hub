@@ -2,7 +2,6 @@
   import { PropType, ref, nextTick } from 'vue'
   import TodoItemModel from './api-services/models/TodoItemModel'
   import todoItemApiService from './api-services/todo-item-api-service'
-  import HandleIcon from '@/assets/handle-icon.svg?component'
   import PencilIcon from '@/assets/pencil-icon.svg?component'
   import CloseIcon from '@/assets/close-icon.svg?component'
   import CheckIcon from '@/assets/check-icon.svg?component'
@@ -78,14 +77,10 @@
 <template>
   <div class="border-b border-gray-400 border-opacity-25 py-2 todo-item-overview flex">
     <div>
-      <HandleIcon class="inline-block invisible pr-1 h-5 w-5" :class="[state.isEditMode ? 'edit-handle-icon' : 'handle-icon']"></HandleIcon>
-    </div>
-
-    <div>
       <input v-if="!state.isEditMode" v-model="state.isChecked" type="checkbox" class="rounded text-emerald-500 mr-3 mt-1" @click="markAsDone()" />
     </div>
 
-    <div v-if="!state.isEditMode">
+    <div v-if="!state.isEditMode" class="todo-item-handle cursor-grab">
       <a v-if="isValidHttpUrl(todoItemOverview.title)" class="cursor-pointer italic" :class="{ 'line-through': state.isChecked }" :href="todoItemOverview.title" target="_blank">{{
         todoItemOverview.title
       }}</a>
@@ -113,13 +108,8 @@
 </template>
 
 <style lang="postcss" scoped>
-  .todo-item-overview:hover .handle-icon,
   .todo-item-overview:hover .action-icon {
     @apply visible;
   }
 
-  /* Not show the handle icon when dragging */
-  .dragging .handle-icon {
-    @apply invisible !important;
-  }
 </style>

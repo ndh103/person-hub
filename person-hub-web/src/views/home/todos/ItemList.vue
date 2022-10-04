@@ -123,7 +123,7 @@
         v-model="state.todoItems"
         item-key="id"
         v-bind="dragOptions"
-        handle=".handle-icon"
+        handle=".todo-item-handle"
         :class="{ dragging: state.drag, 'no-drag': !state.drag }"
         @start="state.drag = true"
         @end="onDragEnd($event)"

@@ -6,7 +6,6 @@
   import todoTopicApiService from './api-services/todo-topic-api-service'
   import RefreshIcon from '@/assets/refresh-icon.svg?component'
   import todoStoreService from './store/todoStoreService'
-  import HandleIcon from '@/assets/handle-icon.svg?component'
 
   import dayjs from 'dayjs'
 
@@ -57,6 +56,10 @@
       disabled: false,
     }
   })
+
+  async function onTopicRemoved(){
+    await fetchData();
+  }
 
   async function addNewTopic(topic: TodoTopicModel) {
     var firstItem = todoStoreService.state.topics[0]
@@ -154,8 +157,6 @@
 
   <div class="py-4">
     <div class="flex items-center">
-      <!-- Keep the handle icon invisible here is a trick to make the Inbox align well with other topics -->
-      <HandleIcon class="inline-block invisible pr-1 h-5 w-5" />
       <span class="text-lg">Inbox</span>
     </div>
     <ItemList class="pl-8" :topic-id="null" :items="inboxItems"></ItemList>
@@ -169,7 +170,7 @@
     v-model="state.topicItems"
     item-key="id"
     v-bind="dragOptions"
-    handle=".handle-icon"
+    handle=".topic-title-handle"
     :class="{ 'topic-dragging': state.drag, 'topic-no-drag': !state.drag }"
     @start="state.drag = true"
     @end="onDragEnd($event)"
@@ -177,20 +178,8 @@
   >
     <template #item="{ element }">
       <transition name="slide-fade">
-        <TodoTopicSection :topic="element"></TodoTopicSection>
+        <TodoTopicSection :topic="element" @on-topic-removed="onTopicRemoved()"></TodoTopicSection>
       </transition>
     </template>
   </draggable>
 </template>
-
-<style lang="postcss" scoped>
-  .todo-topic:hover .handle-icon,
-  .todo-topic:hover .action-icon {
-    @apply visible;
-  }
-
-  /* Not show the handle icon when dragging */
-  .topic-dragging .handle-icon {
-    @apply invisible !important;
-  }
-</style>

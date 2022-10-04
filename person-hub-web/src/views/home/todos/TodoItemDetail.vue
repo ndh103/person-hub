@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineComponent, onMounted, ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import todoItemApiService from './api-services/todo-item-api-service'
   import TodoItemModel from './api-services/models/TodoItemModel'
 

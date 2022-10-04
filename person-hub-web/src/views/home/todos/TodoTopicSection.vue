@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { PropType, ref } from 'vue'
+  import { PropType, ref, defineEmits } from 'vue'
   import TodoTopicModel from './api-services/models/TodoTopicModel'
   import TopicOverview from './TopicOverview.vue'
   import ItemList from './ItemList.vue'
@@ -10,10 +10,18 @@
       default: null,
     },
   })
+  const emit = defineEmits<{
+    (event: 'onTopicRemoved')
+  }>()
+
 
   const state = ref({
     isExpand: true,
   })
+
+  function onTopicRemoved(){
+    emit('onTopicRemoved')
+  }
 
   function handleToogleExpand(isExpand: boolean) {
     state.value.isExpand = isExpand
@@ -22,7 +30,7 @@
 
 <template>
   <div class="py-4">
-    <TopicOverview :topic="props.topic" @onToogleExpand="handleToogleExpand($event)" />
+    <TopicOverview :topic="props.topic" @onToogleExpand="handleToogleExpand($event)" @on-topic-removed="onTopicRemoved()" />
     <ItemList class="pl-8 topic-item-list" :topic-id="topic.id" :items="topic.todoItems" :isExpand="state.isExpand" />
   </div>
 </template>

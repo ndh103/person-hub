@@ -82,6 +82,7 @@ public class TopicsController : ApiControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        // Get and remove the topic
         var topic = await dbContext.TodoTopics.FirstOrDefaultAsync(r => r.UserId == AuthenticatedUserEmail && r.Id == id);
 
         if (topic is null)
@@ -89,8 +90,25 @@ public class TopicsController : ApiControllerBase
             return NotFound();
         }
 
+        using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        // First unlink all the child items of the topic
+        var topicItems = await dbContext.TodoItems.Where(r => r.UserId == AuthenticatedUserEmail && r.TodoTopicId == id).ToListAsync();
+        foreach (var item in topicItems)
+        {
+            item.UnlinkWithTopic();
+        }
+
+        dbContext.TodoItems.UpdateRange(topicItems);
+        await dbContext.SaveChangesAsync();
+
+        // Remove topic
         dbContext.TodoTopics.Remove(topic);
         await dbContext.SaveChangesAsync();
+
+
+        await transaction.CommitAsync();
+
         return Ok();
     }
 }
