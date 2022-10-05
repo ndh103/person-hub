@@ -120,7 +120,9 @@
       <quick-add :topic-id="topicId" @onAddNewItem="addNewTodoItem($event)" :class="{ hidden: !props.isExpand }"></quick-add>
 
       <div :topic-id="topicId?.toString()" :class="{ hidden: !props.isExpand }">
+        <!-- From md screen, support drag and drop -->
         <draggable
+          class="hidden md:block"
           v-model="state.todoItems"
           item-key="id"
           v-bind="dragOptions"
@@ -136,6 +138,11 @@
             </transition>
           </template>
         </draggable>
+
+        <!-- Not support drag and drop in sm screen -->
+        <div v-for="element in state.todoItems" class="sm:block md:hidden">
+          <todo-item-overview v-show="element.status != 1" :todo-item-overview="element" @onItemMarkedAsDone="onItemMarkedAsDone(element)"></todo-item-overview>
+        </div>
       </div>
     </div>
   </div>
