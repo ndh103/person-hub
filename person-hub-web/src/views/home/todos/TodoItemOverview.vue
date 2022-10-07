@@ -5,6 +5,7 @@
   import PencilIcon from '@/assets/pencil-icon.svg?component'
   import CloseIcon from '@/assets/close-icon.svg?component'
   import CheckIcon from '@/assets/check-icon.svg?component'
+  import { computed } from '@vue/reactivity'
 
   const emit = defineEmits<{
     (e: 'onItemMarkedAsDone'): void
@@ -23,6 +24,21 @@
     isChecked: false,
     isEditMode: false,
     newTitle: '',
+  })
+
+  const markdownLinkTitle = computed(() => {
+    if (!props.todoItemOverview?.title) {
+      return ''
+    }
+
+    //https://morioh.com/p/2f455138edf8
+    var myMatch = /\[(.+)\]\((https?:\/\/[^\s]+)(?: "(.+)")?\)|(https?:\/\/[^\s]+)/ig.exec(props.todoItemOverview.title);
+
+    if(!myMatch || !myMatch[0] || !myMatch[1]){
+      return null
+    }
+
+    return myMatch
   })
 
   function toggleEditMode() {
@@ -81,9 +97,18 @@
     </div>
 
     <div v-if="!state.isEditMode" class="todo-item-drag-handle cursor-grab">
-      <a v-if="isValidHttpUrl(todoItemOverview.title)" class="cursor-pointer italic" :class="{ 'line-through': state.isChecked }" :href="todoItemOverview.title" target="_blank">{{
-        todoItemOverview.title
+      <a v-if="!!markdownLinkTitle" class="cursor-pointer italic underline" :class="{ 'line-through': state.isChecked }" :href="markdownLinkTitle[2]" target="_blank">{{
+        markdownLinkTitle[1]
       }}</a>
+
+      <a
+        v-else-if="isValidHttpUrl(todoItemOverview.title)"
+        class="cursor-pointer italic underline"
+        :class="{ 'line-through': state.isChecked }"
+        :href="todoItemOverview.title"
+        target="_blank"
+        >{{ todoItemOverview.title }}</a
+      >
       <span v-else :class="{ 'line-through': state.isChecked }">{{ todoItemOverview.title }}</span>
     </div>
 

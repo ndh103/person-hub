@@ -67,7 +67,11 @@
 
     if (response) {
       // Update the todoItem from response
-      todoItem.id = (response.data as TodoItemModel).id
+      var responseTodoItem = (response.data as TodoItemModel)
+
+      todoItem.id = responseTodoItem.id
+      todoItem.title = responseTodoItem.title
+      
       todoStoreService.addTodoItem(todoItem)
     } else {
       // in case of error, remove the item out of the list

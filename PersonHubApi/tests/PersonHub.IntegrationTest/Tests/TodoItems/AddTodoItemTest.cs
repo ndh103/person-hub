@@ -50,5 +50,22 @@ public class AddTodoItemTest : TestBaseClass
         Assert.True(dbItem.Id > 0);
         TodoItemTestHelper.AssertEqual(todoItemDto, dbItem);
         Assert.True(dbItem.CreatedDate != null, "CreatedDate is not set");
-    }   
+    }
+
+    [Fact]
+    public async Task AddTodoItem_ValidUrl_ShouldSuccess()
+    {
+        // Create todoItem
+        var todoItemDto = TodoItemTestHelper.GenerateRandomTodoItemDto();
+        todoItemDto.Title = "https://tailwindcss.com";
+
+        var response = await Fixture.Client.PostAsJsonAsync("/todos/items", todoItemDto);
+        response.EnsureSuccessStatusCode();
+        var addedItem = await response.Content.ReadFromJsonAsync<TodoItem>();
+
+        var dbItem = await this.Fixture.TodoItemDataAccess.GetTodoItem(addedItem.Id);
+
+        Assert.True(dbItem.Id > 0);
+        Assert.Equal("[Tailwind CSS - Rapidly build modern websites without ever leaving your HTML.](https://tailwindcss.com)", dbItem.Title);
+    }
 }

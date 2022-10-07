@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonHub.Api.Areas.Todos.Models;
 using PersonHub.Api.Common;
+using PersonHub.Api.Common.Utilities;
 using PersonHub.Domain.TodoModule.Entities;
 using PersonHub.Infrastructure.DataAccess;
 
@@ -28,6 +29,14 @@ public class ItemsController : ApiControllerBase
             return BadRequest(ModelState);
         }
 
+        // Convert to markdown link if the todo is a valid https link
+        if(UrlUtilities.IsValidUrl(todoItemDto?.Title)){
+            var websiteTitle =  await UrlUtilities.GetWebsiteTileAsync(todoItemDto.Title!);
+            if(!string.IsNullOrWhiteSpace(websiteTitle)){
+                todoItemDto.Title = $"[{websiteTitle}]({todoItemDto.Title})";
+            }
+        }
+
         var todoItemEntity = new TodoItem(AuthenticatedUserEmail, todoItemDto.Title, todoItemDto.Description, todoItemDto.Status, todoItemDto.ItemOrder, todoItemDto.TodoTopicId);
         if (todoItemEntity.HasError())
         {
@@ -41,11 +50,19 @@ public class ItemsController : ApiControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateTodoItem(int id, TodoItemDto todoItemDto)
+    public async Task<ActionResult<TodoItem>> UpdateTodoItem(int id, TodoItemDto todoItemDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        // Convert to markdown link if the todo is a valid https link
+        if(UrlUtilities.IsValidUrl(todoItemDto?.Title)){
+            var websiteTitle =  await UrlUtilities.GetWebsiteTileAsync(todoItemDto.Title!);
+            if(!string.IsNullOrWhiteSpace(websiteTitle)){
+                todoItemDto.Title = $"[{websiteTitle}]({todoItemDto.Title})";
+            }
         }
 
         var todoItemEntity = await dbContext.TodoItems.FirstOrDefaultAsync(r => r.Id == id && r.UserId == AuthenticatedUserEmail);
@@ -62,7 +79,7 @@ public class ItemsController : ApiControllerBase
 
         await dbContext.SaveChangesAsync();
 
-        return Ok();
+        return todoItemEntity;
     }
 
     [HttpPost("{id}/done")]
