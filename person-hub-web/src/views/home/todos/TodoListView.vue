@@ -169,11 +169,13 @@
     <QuickAddTopic class="pl-4" @on-add-new-item="addNewTopic($event)" />
   </div>
 
+  <!-- From md screen, support drag and drop -->
   <draggable
     v-model="state.topicItems"
     item-key="id"
     v-bind="dragOptions"
     handle=".topic-title-drag-handle"
+    class="hidden md:block"
     :class="{ 'topic-dragging': state.drag, 'topic-no-drag': !state.drag }"
     @start="state.drag = true"
     @end="onDragEnd($event)"
@@ -185,4 +187,9 @@
       </transition>
     </template>
   </draggable>
+
+  <!-- Not support drag and drop in sm screen -->
+  <div v-for="element in state.topicItems" class="sm:block md:hidden">
+    <TodoTopicSection :topic="element" @on-topic-removed="onTopicRemoved()"></TodoTopicSection>
+  </div>
 </template>
