@@ -1,0 +1,20 @@
+# Dependencies and Next.js build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Local secrets; commit placeholder examples only
+.env*
+!.env.example
+.vercel/
+
+# Test output and authenticated browser state
+coverage/
+playwright-report/
+test-results/
+playwright/.auth/
+
+# Local Supabase state
+supabase/.temp/
+supabase/.branches/
