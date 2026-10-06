@@ -21,15 +21,15 @@ Keep Events and Habit Tracker as separate feature modules. Share the shell, navi
 
 ## Agent roles and skill routing
 
-These are reusable role instructions, not running processes or installed agent services. Skills live in `skills/` to keep them versioned with the project. Read the relevant `SKILL.md` before doing that role's work; this table supplies repository-local routing without depending on global skill installation. A single agent can apply multiple roles sequentially. When the user requests a team run and parallel agents are available, delegate bounded tasks with explicit inputs, owned output paths, and dependencies; avoid concurrent edits to the same file. Do not claim delegation occurred when it did not.
+These are reusable role instructions, not running processes or installed agent services. Skills live in `.agents/skills/` to keep them versioned with the project. Read the relevant `SKILL.md` before doing that role's work; Codex discovers repository skills from this location, and this table maps tasks to their role instructions. A single agent can apply multiple roles sequentially. When the user requests a team run and parallel agents are available, delegate bounded tasks with explicit inputs, owned output paths, and dependencies; avoid concurrent edits to the same file. Do not claim delegation occurred when it did not.
 
 | Role | Skill | Main outputs |
 | --- | --- | --- |
-| Business Analyst (BA) | [person-hub-ba](skills/person-hub-ba/SKILL.md) | `requirements/<feature>.md` |
-| Designer | [person-hub-designer](skills/person-hub-designer/SKILL.md) | `output/designs/<feature>/index.html`, `styles.css`, `design-notes.md` |
-| Technical Architect (TA) | [person-hub-architect](skills/person-hub-architect/SKILL.md) | `docs/architecture/<feature>.md`, `docs/architecture/decisions/`, debt register |
-| Developer | [person-hub-developer](skills/person-hub-developer/SKILL.md) | Application code, migrations, focused tests, implementation notes |
-| Tester | [person-hub-tester](skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/<feature>.md` |
+| Business Analyst (BA) | [person-hub-ba](.agents/skills/person-hub-ba/SKILL.md) | `requirements/<feature>.md` |
+| Designer | [person-hub-designer](.agents/skills/person-hub-designer/SKILL.md) | `output/designs/<feature>/index.html`, `styles.css`, `design-notes.md` |
+| Technical Architect (TA) | [person-hub-architect](.agents/skills/person-hub-architect/SKILL.md) | `docs/architecture/<feature>.md`, `docs/architecture/decisions/`, debt register |
+| Developer | [person-hub-developer](.agents/skills/person-hub-developer/SKILL.md) | Application code, migrations, focused tests, implementation notes |
+| Tester | [person-hub-tester](.agents/skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/<feature>.md` |
 
 ## Collaboration and handoffs
 
@@ -67,7 +67,7 @@ Existing preparation artifacts:
 
 ```text
 AGENTS.md
-skills/person-hub-*/SKILL.md
+.agents/skills/person-hub-*/SKILL.md
 docs/project-brief.md
 requirements/                 # BA artifacts
 output/designs/               # HTML and Tailwind design references

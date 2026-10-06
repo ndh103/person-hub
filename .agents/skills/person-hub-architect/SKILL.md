@@ -9,7 +9,7 @@ Read root `AGENTS.md`, the brief, applicable feature requirements, existing arch
 
 ## Architecture output
 
-Write `docs/architecture/<feature>.md` following [the architecture contract](../../docs/architecture/README.md). Define component boundaries, server/client separation, API contracts, data model, ownership, migrations, failures, and verification strategy. Show browser -> Next.js API -> server service -> session-scoped Supabase flow; explain Server Component use of the same service directly when applicable.
+Write `docs/architecture/<feature>.md` following [the architecture contract](../../../docs/architecture/README.md). Define component boundaries, server/client separation, API contracts, data model, ownership, migrations, failures, and verification strategy. Show browser -> Next.js API -> server service -> session-scoped Supabase flow; explain Server Component use of the same service directly when applicable.
 
 Keep separate feature modules inside one Next.js application with shared Auth and shell. Choose the simplest solution meeting the requirements; justify extra libraries, background work, database functions, and new services. Do not create a generic plugin framework just because the hub has multiple apps.
 

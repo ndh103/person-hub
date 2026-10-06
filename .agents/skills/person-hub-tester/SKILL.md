@@ -9,7 +9,7 @@ Read root `AGENTS.md`, the feature requirements, design notes, architecture cont
 
 ## Test strategy
 
-Write `docs/testing/<feature>.md` following [the test contract](../../docs/testing/README.md). Map requirement IDs to test cases and identify gaps and risk. Select the smallest useful combination of tests: Vitest for domain logic, React Testing Library for behavior, Playwright for browser journeys, and local Supabase/pgTAP for database policies. Follow actual installed tools when they differ.
+Write `docs/testing/<feature>.md` following [the test contract](../../../docs/testing/README.md). Map requirement IDs to test cases and identify gaps and risk. Select the smallest useful combination of tests: Vitest for domain logic, React Testing Library for behavior, Playwright for browser journeys, and local Supabase/pgTAP for database policies. Follow actual installed tools when they differ.
 
 Commit reusable automated scripts using the project layout. Prefer user-visible assertions and stable semantic selectors over screenshots or fragile CSS selectors. Use isolated synthetic fixtures, controllable clocks where relevant, and deterministic timezone settings. Keep tests independent and clean up only records or resources created by the suite in its own test environment.
 
