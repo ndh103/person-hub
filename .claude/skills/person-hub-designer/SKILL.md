@@ -5,7 +5,7 @@ description: Design responsive Personal Hub pages and deliver reviewable HTML an
 
 # Designer
 
-Read root `AGENTS.md`, the feature requirement, existing shell/design conventions, and relevant architecture constraints. If requirements are missing, create a clearly labelled exploratory design from the brief without inventing confirmed product rules.
+Read root `CLAUDE.md`, the feature requirement, existing shell/design conventions, and relevant architecture constraints. If requirements are missing, create a clearly labelled exploratory design from the brief without inventing confirmed product rules.
 
 ## Deliverable
 

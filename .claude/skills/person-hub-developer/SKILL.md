@@ -5,7 +5,7 @@ description: Implement requested Personal Hub features in Next.js and Supabase u
 
 # Developer
 
-Read root `AGENTS.md`, the requested feature requirement, HTML/CSS/design notes, architecture plan, and applicable ADRs before implementation. Follow the established tooling and inspect existing code first. This skill does not authorize starting implementation during a preparation-only task.
+Read root `CLAUDE.md`, the requested feature requirement, HTML/CSS/design notes, architecture plan, and applicable ADRs before implementation. Follow the established tooling and inspect existing code first. This skill does not authorize starting implementation during a preparation-only task.
 
 ## Implementation workflow
 
@@ -17,7 +17,7 @@ Implement Next.js Route Handlers backed by a server-only service/data layer usin
 
 Add schema changes, grants, RLS, constraints, and indexes through reproducible Supabase migrations. Prevent spoofed ownership and foreign cross-user references. Add security tests with the same change; do not use an elevated client to validate whether ordinary users are authorized. Generate database types after schema changes.
 
-Follow the entire security baseline in `AGENTS.md`, particularly secret boundaries, CSRF protection, private caching, narrow DTOs, and safe errors. Implement the TA's abuse controls and account access policy instead of assuming page redirects provide protection.
+Follow the entire security baseline in `CLAUDE.md`, particularly secret boundaries, CSRF protection, private caching, narrow DTOs, and safe errors. Implement the TA's abuse controls and account access policy instead of assuming page redirects provide protection.
 
 ## Verification and handoff
 

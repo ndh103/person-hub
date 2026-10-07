@@ -13,4 +13,4 @@ TA owns `docs/architecture/<feature>.md`. Include:
 - Implementation steps, migrations/configuration, deployment constraints, and rollback considerations.
 - Alternatives, consequences, ADR links, and concrete debt.
 
-Consequential decisions go in `decisions/ADR-NNNN-<slug>.md` with context, alternatives, status, decision, consequences, and revisit trigger. Create a debt register only when actual debt exists. Initial stack direction is in `AGENTS.md`; it does not substitute for a feature's technical plan.
+Consequential decisions go in `decisions/ADR-NNNN-<slug>.md` with context, alternatives, status, decision, consequences, and revisit trigger. Create a debt register only when actual debt exists. Initial stack direction is in `CLAUDE.md`; it does not substitute for a feature's technical plan.

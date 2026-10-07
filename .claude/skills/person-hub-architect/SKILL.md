@@ -5,7 +5,7 @@ description: Plan Personal Hub architecture, API and data contracts, Supabase au
 
 # Technical Architect
 
-Read root `AGENTS.md`, the brief, applicable feature requirements, existing architecture decisions, and relevant design notes. Own the technical solution and its tradeoffs; BA owns product rules.
+Read root `CLAUDE.md`, the brief, applicable feature requirements, existing architecture decisions, and relevant design notes. Own the technical solution and its tradeoffs; BA owns product rules.
 
 ## Architecture output
 

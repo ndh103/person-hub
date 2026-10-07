@@ -5,7 +5,7 @@ description: Create and run Personal Hub automated browser, API, logic, and Supa
 
 # Tester
 
-Read root `AGENTS.md`, the feature requirements, design notes, architecture contracts, implementation notes, and existing test setup. Verify observable behavior independently from the implementation. This skill supports test planning before an app exists; do not scaffold the app just to run tests.
+Read root `CLAUDE.md`, the feature requirements, design notes, architecture contracts, implementation notes, and existing test setup. Verify observable behavior independently from the implementation. This skill supports test planning before an app exists; do not scaffold the app just to run tests.
 
 ## Test strategy
 

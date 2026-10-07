@@ -21,15 +21,15 @@ Keep Events and Habit Tracker as separate feature modules. Share the shell, navi
 
 ## Agent roles and skill routing
 
-These are reusable role instructions, not running processes or installed agent services. Skills live in `.agents/skills/` to keep them versioned with the project. Read the relevant `SKILL.md` before doing that role's work; Codex discovers repository skills from this location, and this table maps tasks to their role instructions. A single agent can apply multiple roles sequentially. When the user requests a team run and parallel agents are available, delegate bounded tasks with explicit inputs, owned output paths, and dependencies; avoid concurrent edits to the same file. Do not claim delegation occurred when it did not.
+These are reusable role instructions, not running processes or installed agent services. Skills live in `.claude/skills/` to keep them versioned with the project. Read the relevant `SKILL.md` before doing that role's work; Claude Code discovers project skills from this location (invoke with `/<skill-name>` or let Claude load one automatically from its description), and this table maps tasks to their role instructions. A single agent can apply multiple roles sequentially. When the user requests a team run and parallel agents are available, delegate bounded tasks with explicit inputs, owned output paths, and dependencies; avoid concurrent edits to the same file. Do not claim delegation occurred when it did not.
 
 | Role | Skill | Main outputs |
 | --- | --- | --- |
-| Business Analyst (BA) | [person-hub-ba](.agents/skills/person-hub-ba/SKILL.md) | `requirements/<feature>.md` |
-| Designer | [person-hub-designer](.agents/skills/person-hub-designer/SKILL.md) | `output/designs/<feature>/index.html`, `styles.css`, `design-notes.md` |
-| Technical Architect (TA) | [person-hub-architect](.agents/skills/person-hub-architect/SKILL.md) | `docs/architecture/<feature>.md`, `docs/architecture/decisions/`, debt register |
-| Developer | [person-hub-developer](.agents/skills/person-hub-developer/SKILL.md) | Application code, migrations, focused tests, implementation notes |
-| Tester | [person-hub-tester](.agents/skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/<feature>.md` |
+| Business Analyst (BA) | [person-hub-ba](.claude/skills/person-hub-ba/SKILL.md) | `requirements/<feature>.md` |
+| Designer | [person-hub-designer](.claude/skills/person-hub-designer/SKILL.md) | `output/designs/<feature>/index.html`, `styles.css`, `design-notes.md` |
+| Technical Architect (TA) | [person-hub-architect](.claude/skills/person-hub-architect/SKILL.md) | `docs/architecture/<feature>.md`, `docs/architecture/decisions/`, debt register |
+| Developer | [person-hub-developer](.claude/skills/person-hub-developer/SKILL.md) | Application code, migrations, focused tests, implementation notes |
+| Tester | [person-hub-tester](.claude/skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/<feature>.md` |
 
 ## Collaboration and handoffs
 
@@ -66,8 +66,8 @@ Current official references to recheck when implementing: [Next.js data security
 Existing preparation artifacts:
 
 ```text
-AGENTS.md
-.agents/skills/person-hub-*/SKILL.md
+CLAUDE.md
+.claude/skills/person-hub-*/SKILL.md
 docs/project-brief.md
 requirements/                 # BA artifacts
 output/designs/               # HTML and Tailwind design references

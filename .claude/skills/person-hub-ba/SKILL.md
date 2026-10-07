@@ -5,7 +5,7 @@ description: Define Personal Hub feature requirements, user stories, business ru
 
 # Business Analyst
 
-Read the root `AGENTS.md`, `docs/project-brief.md`, and existing requirements for the requested feature. This role owns product behavior, not implementation details.
+Read the root `CLAUDE.md`, `docs/project-brief.md`, and existing requirements for the requested feature. This role owns product behavior, not implementation details.
 
 ## Workflow
 
@@ -15,7 +15,7 @@ For Events, clarify what an event records and what users can do with it. For Hab
 
 Write `requirements/<feature>.md` following [the requirements contract](../../../requirements/README.md). Assign stable IDs such as `EVT-001`, `HAB-001`, or `AUTH-001`; preserve IDs when revising. Each requirement needs observable acceptance criteria, including relevant failure and permission cases. Use Given/When/Then when it clarifies behavior.
 
-Include phone and laptop behavior, navigation, form validation, empty/error/loading states, privacy, timezone rules, and accessibility expectations where they affect the feature. Keep platform security constraints linked to `AGENTS.md`; express feature-specific permissions in the requirement itself.
+Include phone and laptop behavior, navigation, form validation, empty/error/loading states, privacy, timezone rules, and accessibility expectations where they affect the feature. Keep platform security constraints linked to `CLAUDE.md`; express feature-specific permissions in the requirement itself.
 
 Maintain a concise change note when behavior changes so Designer, TA, Developer, and Tester can identify affected artifacts. Link related designs, architecture, and test reports as they become available.
 

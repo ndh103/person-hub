@@ -4,23 +4,23 @@ A planned private hub for Events and Habit Tracker, usable from phone and laptop
 
 This repository currently contains development instructions and role skills. The application has not been scaffolded or deployed.
 
-Start with [AGENTS.md](AGENTS.md) and [the project brief](docs/project-brief.md). Role skills are versioned in `.agents/skills/`, the repository location Codex scans for skills. Invoke one by typing its name, such as `$person-hub-ba`, or select it with `/skills`. If new skills do not appear, restart Codex. These files define workflows, not automatically running agents.
+Start with [CLAUDE.md](CLAUDE.md) and [the project brief](docs/project-brief.md). Role skills are versioned in `.claude/skills/`, the project location Claude Code scans for skills. Invoke one with a slash command, such as `/person-hub-ba`, or describe the task and Claude loads the matching skill automatically. If new skills do not appear, restart Claude Code. These files define workflows, not automatically running agents.
 
 | Role | Skill | Outputs |
 | --- | --- | --- |
-| BA | [person-hub-ba](.agents/skills/person-hub-ba/SKILL.md) | `requirements/` |
-| Designer | [person-hub-designer](.agents/skills/person-hub-designer/SKILL.md) | HTML/Tailwind references in `output/designs/` |
-| Technical Architect | [person-hub-architect](.agents/skills/person-hub-architect/SKILL.md) | `docs/architecture/` |
-| Developer | [person-hub-developer](.agents/skills/person-hub-developer/SKILL.md) | Application, migrations, implementation notes |
-| Tester | [person-hub-tester](.agents/skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/` |
+| BA | [person-hub-ba](.claude/skills/person-hub-ba/SKILL.md) | `requirements/` |
+| Designer | [person-hub-designer](.claude/skills/person-hub-designer/SKILL.md) | HTML/Tailwind references in `output/designs/` |
+| Technical Architect | [person-hub-architect](.claude/skills/person-hub-architect/SKILL.md) | `docs/architecture/` |
+| Developer | [person-hub-developer](.claude/skills/person-hub-developer/SKILL.md) | Application, migrations, implementation notes |
+| Tester | [person-hub-tester](.claude/skills/person-hub-tester/SKILL.md) | Automated tests and `docs/testing/` |
 
 Example requests for future sessions:
 
-- "Act as the BA. Read .agents/skills/person-hub-ba/SKILL.md and define the Events requirements; do not implement yet."
-- "Act as the Designer. Read .agents/skills/person-hub-designer/SKILL.md and create the Events HTML/Tailwind reference from its requirements."
-- "Act as the Technical Architect. Read .agents/skills/person-hub-architect/SKILL.md and plan Events APIs, schema, and security."
-- "Act as the Developer. Read .agents/skills/person-hub-developer/SKILL.md and implement Events from its handoff artifacts."
-- "Act as the Tester. Read .agents/skills/person-hub-tester/SKILL.md and add/run automated tests for Events."
+- "/person-hub-ba define the Events requirements; do not implement yet."
+- "/person-hub-designer create the Events HTML/Tailwind reference from its requirements."
+- "/person-hub-architect plan Events APIs, schema, and security."
+- "/person-hub-developer implement Events from its handoff artifacts."
+- "/person-hub-tester add/run automated tests for Events."
 
 Use the same feature slug across requirements, design references, architecture, and reports. BA normally comes first; design and architecture can proceed together, then implementation and testing. Each role also works independently for a scoped request. Future team runs can delegate roles if the agent environment supports delegation.
 
