@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home · Personal Hub</title>
+  <!--
+    Design reference: app shell + post-login landing (feature slug: app-shell). Status: draft.
+    Not production code. All data shown is synthetic fixture data. See design-notes.md.
+    External runtime dependencies: Google Fonts (Inter) and the pinned Tailwind browser runtime.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../_foundation/theme.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Apply the stored or system theme before first paint (prototype convenience).
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("ph-theme"); } catch (e) {}
+      var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <!-- Prototype only: pinned Tailwind v4 browser runtime. Never ship this in the app. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+  <style type="text/tailwindcss">
+    /* Mirrors shadcn/ui globals.css: map foundation variables to Tailwind colour utilities. */
+    @custom-variant dark (&:where(.dark, .dark *));
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --color-card: var(--card);
+      --color-card-foreground: var(--card-foreground);
+      --color-popover: var(--popover);
+      --color-popover-foreground: var(--popover-foreground);
+      --color-primary: var(--primary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-secondary: var(--secondary);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-muted: var(--muted);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-accent: var(--accent);
+      --color-accent-foreground: var(--accent-foreground);
+      --color-destructive: var(--destructive);
+      --color-destructive-foreground: var(--destructive-foreground);
+      --color-border: var(--border);
+      --color-input: var(--input);
+      --color-ring: var(--ring);
+      --color-sidebar: var(--sidebar);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar-primary: var(--sidebar-primary);
+      --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+      --color-sidebar-border: var(--sidebar-border);
+      --color-sidebar-ring: var(--sidebar-ring);
+      --radius-sm: calc(var(--radius) - 4px);
+      --radius-md: calc(var(--radius) - 2px);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) + 4px);
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-background text-foreground antialiased">
+
+  <!-- Icon sprite (Lucide paths, ISC licence). Production: lucide-react. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-grid-plus" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M17.5 14v7"/><path d="M14 17.5h7"/></symbol>
+  </svg>
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
+
+  <!-- Frame: the whole page sits on the sidebar colour; content floats on a rounded card. -->
+  <div class="min-h-dvh bg-sidebar lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+
+    <div id="drawer-backdrop" class="drawer-backdrop lg:hidden" hidden></div>
+
+    <!-- ===================== Sidebar (persistent on lg, drawer below lg) ===================== -->
+    <aside id="sidebar" class="sidebar on-sidebar flex flex-col bg-sidebar text-sidebar-foreground" aria-labelledby="brand-name">
+      <div class="flex items-start justify-between gap-2 px-5 pt-6 pb-2 lg:pt-8">
+        <a href="#/home" class="flex min-h-11 min-w-0 items-center gap-3 rounded-md" data-route-link>
+          <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground" aria-hidden="true">PH</span>
+          <span class="min-w-0 leading-tight">
+            <span id="brand-name" class="block text-base font-semibold">Personal Hub</span>
+            <span class="block truncate text-sm">you@example.com</span>
+          </span>
+        </a>
+        <button type="button" id="drawer-close" class="grid size-11 shrink-0 place-items-center rounded-md hover:bg-sidebar-accent lg:hidden" aria-label="Close navigation">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+
+      <nav aria-label="Apps" class="flex-1 overflow-y-auto px-3 pt-8 pb-4 lg:pt-14">
+        <ul class="space-y-1">
+          <li>
+            <a href="#/home" data-route="home" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-home"/></svg>
+              Home
+            </a>
+          </li>
+        </ul>
+        <p class="mt-8 mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
+        <ul class="space-y-1" aria-labelledby="apps-heading">
+          <li>
+            <a href="#/events" data-route="events" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg>
+              Events
+            </a>
+          </li>
+          <li>
+            <a href="#/habits" data-route="habits" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-check-circle"/></svg>
+              Habit Tracker
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="space-y-3 px-5 pb-6 lg:pb-8">
+        <button type="button" id="sign-out" class="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+          <svg class="icon size-4" aria-hidden="true"><use href="#i-log-out"/></svg>
+          Sign out
+        </button>
+        <div role="group" aria-label="Theme" class="grid grid-cols-2 gap-1 rounded-xl border border-sidebar-border p-1">
+          <button type="button" data-theme-choice="light" aria-pressed="true" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-sun"/></svg> Light
+          </button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-moon"/></svg> Dark
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================== Content column ===================== -->
+    <div id="content-column" class="flex min-h-dvh min-w-0 flex-col lg:py-5 lg:pr-5">
+
+      <!-- Phone/tablet top bar (sits on the frame colour) -->
+      <header class="on-sidebar sticky top-0 z-30 flex h-14 items-center gap-2 bg-sidebar px-2 text-sidebar-foreground lg:hidden">
+        <button type="button" id="drawer-open" class="grid size-11 place-items-center rounded-md hover:bg-sidebar-accent" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <p id="topbar-title" class="truncate text-base font-semibold">Home</p>
+      </header>
+
+      <main id="main" tabindex="-1" class="content-card flex-1 rounded-t-2xl bg-background lg:rounded-2xl">
+       <div class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14">
+
+        <!-- ============ HOME (default landing after sign-in) ============ -->
+        <section data-view="home" aria-labelledby="home-title">
+          <h1 id="home-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p class="mt-1 text-sm text-muted-foreground">Choose an app to continue.</p>
+
+          <ul class="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Apps">
+            <li>
+              <a href="#/events" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
+                <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
+                  <svg class="icon size-5"><use href="#i-calendar"/></svg>
+                </span>
+                <span class="mt-4 text-lg font-semibold">Events</span>
+                <span class="mt-1 text-sm text-muted-foreground">Record moments in your life, like buying a new TV.</span>
+                <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
+                  Open Events <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href="#/habits" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
+                <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
+                  <svg class="icon size-5"><use href="#i-check-circle"/></svg>
+                </span>
+                <span class="mt-4 text-lg font-semibold">Habit Tracker</span>
+                <span class="mt-1 text-sm text-muted-foreground">Keep track of the habits you are building.</span>
+                <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
+                  Open Habit Tracker <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </span>
+              </a>
+            </li>
+            <li class="sm:col-span-2">
+              <div class="flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+                <svg class="icon size-5" aria-hidden="true"><use href="#i-grid-plus"/></svg>
+                More apps will appear here and in the sidebar as they are added.
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ============ EVENTS module ============ -->
+        <section data-view="events" aria-labelledby="events-title" hidden>
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 id="events-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Events</h1>
+              <p class="mt-1 text-sm text-muted-foreground">Moments you have recorded, newest first.</p>
+            </div>
+            <button type="button" data-placeholder-action="New event" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90">
+              <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
+              New event
+            </button>
+          </div>
+
+          <div class="mt-6">
+            <!-- Ready -->
+            <div data-state="ready">
+              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data</p>
+              <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+                  <time datetime="2026-09-28" class="w-28 shrink-0 text-sm text-muted-foreground">28 Sep 2026</time>
+                  <div class="min-w-0"><p class="font-medium">Bought a new TV</p><p class="mt-0.5 text-sm text-muted-foreground">55-inch, for the living room.</p></div>
+                </li>
+                <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+                  <time datetime="2026-08-04" class="w-28 shrink-0 text-sm text-muted-foreground">4 Aug 2026</time>
+                  <div class="min-w-0"><p class="font-medium">First day at a new job</p></div>
+                </li>
+                <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+                  <time datetime="2026-06-15" class="w-28 shrink-0 text-sm text-muted-foreground">15 Jun 2026</time>
+                  <div class="min-w-0"><p class="font-medium">Moved into a new apartment</p><p class="mt-0.5 text-sm text-muted-foreground">A sample note that is a little longer to show how text wraps on a narrow phone screen without overflowing.</p></div>
+                </li>
+                <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+                  <time datetime="2026-05-02" class="w-28 shrink-0 text-sm text-muted-foreground">2 May 2026</time>
+                  <div class="min-w-0"><p class="font-medium">Car serviced</p></div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Loading -->
+            <div data-state="loading" aria-busy="true" hidden>
+              <p class="sr-only" role="status">Loading events…</p>
+              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
+                <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-3/4"></div></div></div>
+                <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div></div></div>
+                <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/5"></div><div class="skeleton h-3 w-2/3"></div></div></div>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div data-state="empty" hidden>
+              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
+                <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-calendar"/></svg></span>
+                <h2 class="mt-4 text-lg font-semibold">No events yet</h2>
+                <p class="mt-1 max-w-sm text-sm text-muted-foreground">Record your first life event, such as a purchase, a move or a milestone.</p>
+                <button type="button" data-placeholder-action="New event" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New event
+                </button>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div data-state="error" hidden>
+              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
+                <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
+                <div class="flex-1">
+                  <p class="font-medium text-destructive">Couldn’t load your events</p>
+                  <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
+                </div>
+                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ HABIT TRACKER module ============ -->
+        <section data-view="habits" aria-labelledby="habits-title" hidden>
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 id="habits-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Habit Tracker</h1>
+              <p class="mt-1 text-sm text-muted-foreground">Today · <time datetime="2026-10-08">Thursday, 8 October 2026</time></p>
+            </div>
+            <button type="button" data-placeholder-action="New habit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90">
+              <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
+              New habit
+            </button>
+          </div>
+
+          <div class="mt-6">
+            <!-- Ready -->
+            <div data-state="ready">
+              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data · check-in rules not yet defined</p>
+              <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                <li class="flex items-center gap-4 p-4">
+                  <div class="min-w-0 flex-1"><p class="font-medium">Drink 2 litres of water</p><p class="text-sm text-muted-foreground">Daily</p></div>
+                  <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <svg class="icon size-4" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Done</span><span class="sr-only"> — Drink 2 litres of water</span>
+                  </button>
+                </li>
+                <li class="flex items-center gap-4 p-4">
+                  <div class="min-w-0 flex-1"><p class="font-medium">Read for 20 minutes</p><p class="text-sm text-muted-foreground">Daily</p></div>
+                  <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Read for 20 minutes</span>
+                  </button>
+                </li>
+                <li class="flex items-center gap-4 p-4">
+                  <div class="min-w-0 flex-1"><p class="font-medium">Evening walk</p><p class="text-sm text-muted-foreground">Weekdays</p></div>
+                  <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Evening walk</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Loading -->
+            <div data-state="loading" aria-busy="true" hidden>
+              <p class="sr-only" role="status">Loading habits…</p>
+              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
+                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-16"></div></div><div class="skeleton h-11 w-28"></div></div>
+                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div><div class="skeleton h-3 w-16"></div></div><div class="skeleton h-11 w-28"></div></div>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div data-state="empty" hidden>
+              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
+                <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-check-circle"/></svg></span>
+                <h2 class="mt-4 text-lg font-semibold">No habits yet</h2>
+                <p class="mt-1 max-w-sm text-sm text-muted-foreground">Add a habit you want to build and check it off as you go.</p>
+                <button type="button" data-placeholder-action="New habit" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New habit
+                </button>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div data-state="error" hidden>
+              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
+                <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
+                <div class="flex-1">
+                  <p class="font-medium text-destructive">Couldn’t load your habits</p>
+                  <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
+                </div>
+                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Unknown app route ============ -->
+        <section data-view="not-found" aria-labelledby="nf-title" hidden>
+          <h1 id="nf-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">App not found</h1>
+          <p class="mt-1 text-sm text-muted-foreground">This app does not exist or is no longer available.</p>
+          <a href="#/home" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">Go to Home</a>
+        </section>
+
+        <!-- ============ Prototype-only controls (not product UI) ============ -->
+        <details id="proto-controls" class="mt-12 rounded-lg border border-dashed border-border p-4 text-sm" hidden>
+          <summary class="cursor-pointer font-medium text-muted-foreground">Prototype controls (not part of the product)</summary>
+          <fieldset class="mt-3">
+            <legend class="text-muted-foreground">Show state for <span id="proto-module">this app</span>:</legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="ready" checked class="accent-[var(--primary)]"> Ready</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="loading" class="accent-[var(--primary)]"> Loading</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="empty" class="accent-[var(--primary)]"> Empty</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="error" class="accent-[var(--primary)]"> Error</label>
+            </div>
+          </fieldset>
+        </details>
+       </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast region -->
+  <div class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4" role="status" aria-live="polite" id="toast-region"></div>
+
+  <script>
+  (function () {
+    var ROUTES = { home: "Home", events: "Events", habits: "Habit Tracker" };
+    var MODULES_WITH_STATES = { events: true, habits: true };
+    var moduleState = { events: "ready", habits: "ready" };
+
+    var sidebar = document.getElementById("sidebar");
+    var backdrop = document.getElementById("drawer-backdrop");
+    var openBtn = document.getElementById("drawer-open");
+    var closeBtn = document.getElementById("drawer-close");
+    var contentColumn = document.getElementById("content-column");
+    var topbarTitle = document.getElementById("topbar-title");
+    var protoControls = document.getElementById("proto-controls");
+    var protoModule = document.getElementById("proto-module");
+    var desktop = window.matchMedia("(min-width: 1024px)");
+    var currentRoute = null;
+
+    // ---------------- Routing (hash stands in for App Router routes) ----------------
+    function parseRoute() {
+      var m = location.hash.match(/^#\/([\w-]+)/);
+      return m ? m[1] : "home";
+    }
+
+    function render(focusHeading) {
+      var route = parseRoute();
+      var known = Object.prototype.hasOwnProperty.call(ROUTES, route);
+      var view = known ? route : "not-found";
+      currentRoute = view;
+
+      document.querySelectorAll("[data-view]").forEach(function (el) {
+        el.hidden = el.getAttribute("data-view") !== view;
+      });
+      document.querySelectorAll("[data-route]").forEach(function (a) {
+        if (a.getAttribute("data-route") === view) a.setAttribute("aria-current", "page");
+        else a.removeAttribute("aria-current");
+      });
+
+      var label = known ? ROUTES[view] : "App not found";
+      topbarTitle.textContent = label;
+      document.title = label + " · Personal Hub";
+
+      protoControls.hidden = !MODULES_WITH_STATES[view];
+      if (MODULES_WITH_STATES[view]) {
+        protoModule.textContent = ROUTES[view];
+        var checked = document.querySelector('input[name="proto-state"][value="' + moduleState[view] + '"]');
+        if (checked) checked.checked = true;
+        applyState(view, moduleState[view]);
+      }
+
+      if (isDrawerOpen()) closeDrawer(false);
+      if (focusHeading) {
+        var h1 = document.querySelector('[data-view="' + view + '"] h1');
+        if (h1) h1.focus();
+      }
+    }
+
+    window.addEventListener("hashchange", function () {
+      if (location.hash === "" || location.hash.indexOf("#/") === 0) render(true);
+    });
+
+    // Skip link moves focus without changing the route hash.
+    document.querySelector('a[href="#main"]').addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("main").focus();
+    });
+
+    // ---------------- Module states (prototype) ----------------
+    function applyState(view, state) {
+      moduleState[view] = state;
+      document.querySelectorAll('[data-view="' + view + '"] [data-state]').forEach(function (el) {
+        el.hidden = el.getAttribute("data-state") !== state;
+      });
+    }
+
+    document.querySelectorAll('input[name="proto-state"]').forEach(function (input) {
+      input.addEventListener("change", function () {
+        if (MODULES_WITH_STATES[currentRoute]) applyState(currentRoute, input.value);
+      });
+    });
+
+    document.querySelectorAll("[data-retry]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var view = currentRoute;
+        applyState(view, "loading");
+        setTimeout(function () {
+          applyState(view, "ready");
+          var radio = document.querySelector('input[name="proto-state"][value="ready"]');
+          if (radio) radio.checked = true;
+          toast(ROUTES[view] + " loaded.");
+        }, 900);
+      });
+    });
+
+    // ---------------- Drawer (phone/tablet) ----------------
+    function isDrawerOpen() { return sidebar.getAttribute("data-open") === "true"; }
+
+    function focusables() {
+      return Array.prototype.filter.call(
+        sidebar.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+        function (el) { return el.offsetParent !== null; }
+      );
+    }
+
+    function openDrawer() {
+      sidebar.setAttribute("data-open", "true");
+      sidebar.setAttribute("role", "dialog");
+      sidebar.setAttribute("aria-modal", "true");
+      backdrop.hidden = false;
+      contentColumn.inert = true;
+      openBtn.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
+      closeBtn.focus();
+    }
+
+    function closeDrawer(returnFocus) {
+      sidebar.removeAttribute("data-open");
+      sidebar.removeAttribute("role");
+      sidebar.removeAttribute("aria-modal");
+      backdrop.hidden = true;
+      contentColumn.inert = false;
+      openBtn.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
+      if (returnFocus) openBtn.focus();
+    }
+
+    openBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", function () { closeDrawer(true); });
+    backdrop.addEventListener("click", function () { closeDrawer(true); });
+
+    document.addEventListener("keydown", function (e) {
+      if (!isDrawerOpen()) return;
+      if (e.key === "Escape") { e.preventDefault(); closeDrawer(true); return; }
+      if (e.key === "Tab") {
+        var items = focusables();
+        if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    // Selecting the already-active item still closes the drawer.
+    sidebar.addEventListener("click", function (e) {
+      var link = e.target.closest("a[href^='#/']");
+      if (link && isDrawerOpen() && link.getAttribute("href") === location.hash) closeDrawer(true);
+    });
+
+    desktop.addEventListener("change", function (e) {
+      if (e.matches && isDrawerOpen()) closeDrawer(false);
+    });
+
+    // ---------------- Theme switch (Light / Dark segmented control) ----------------
+    var themeButtons = document.querySelectorAll("[data-theme-choice]");
+    function syncThemeButtons() {
+      var dark = document.documentElement.classList.contains("dark");
+      themeButtons.forEach(function (b) {
+        b.setAttribute("aria-pressed", String((b.getAttribute("data-theme-choice") === "dark") === dark));
+      });
+    }
+    themeButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dark = b.getAttribute("data-theme-choice") === "dark";
+        document.documentElement.classList.toggle("dark", dark);
+        try { localStorage.setItem("ph-theme", dark ? "dark" : "light"); } catch (e) {}
+        syncThemeButtons();
+      });
+    });
+    syncThemeButtons();
+
+    // ---------------- Fixture interactions ----------------
+    var toastTimer;
+    function toast(message) {
+      var region = document.getElementById("toast-region");
+      region.innerHTML = "";
+      var el = document.createElement("div");
+      el.className = "toast pointer-events-auto max-w-md rounded-lg border border-border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg";
+      el.textContent = message;
+      region.appendChild(el);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { region.innerHTML = ""; }, 4000);
+    }
+
+    document.querySelectorAll("[data-placeholder-action]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        toast("Prototype: “" + btn.getAttribute("data-placeholder-action") + "” will be designed with its feature requirements.");
+      });
+    });
+
+    document.querySelectorAll("[data-checkin]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var done = btn.getAttribute("aria-pressed") !== "true";
+        btn.setAttribute("aria-pressed", String(done));
+        btn.querySelector("use").setAttribute("href", done ? "#i-check-circle" : "#i-circle");
+        toast(done ? "Marked done for today (sample only)." : "Check-in removed (sample only).");
+      });
+    });
+
+    document.getElementById("sign-out").addEventListener("click", function () {
+      toast("Prototype: signing out ends the session and returns to the sign-in page.");
+    });
+
+    render(false);
+  })();
+  </script>
+</body>
+</html>

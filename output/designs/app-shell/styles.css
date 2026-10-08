@@ -1,0 +1,122 @@
+/*
+ * App shell — custom styles that Tailwind utilities do not express cleanly.
+ * Colors come only from ../_foundation/theme.css variables.
+ */
+
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-sans); touch-action: manipulation; }
+
+/* One consistent, visible focus indicator for every interactive control. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Headings/main receive focus programmatically after navigation; they are not controls. */
+[tabindex="-1"]:focus { outline: none; }
+
+/* Lucide-style icon sprite usage: <svg class="icon"><use href="#i-name"/></svg> */
+.icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+/* ---------- Sidebar: off-canvas drawer below lg, persistent column at lg+ ---------- */
+.sidebar {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  z-index: 50;
+  width: min(18rem, 85vw);
+  transform: translateX(-100%);
+  visibility: hidden; /* removes closed drawer from tab order and accessibility tree */
+  transition: transform 200ms ease-out, visibility 0s linear 200ms;
+}
+.sidebar[data-open="true"] {
+  transform: none;
+  visibility: visible;
+  transition: transform 200ms ease-out;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.3);
+}
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    width: auto;
+    height: 100dvh;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+}
+
+/* Same overlay treatment as the shadcn/ui Sheet overlay. */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.5);
+}
+
+/* Active navigation item: colour plus weight plus a leading bar, so it does not rely on colour alone. */
+.nav-link { position: relative; }
+.nav-link[aria-current="page"] {
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  font-weight: 600;
+}
+.nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--sidebar-primary);
+}
+.nav-link[aria-current="page"] .icon { color: var(--sidebar-accent-foreground); }
+
+/* Controls on the coloured frame (sidebar, phone top bar) use the sidebar ring for visible focus. */
+.on-sidebar :focus-visible { outline-color: var(--sidebar-ring); }
+
+/* Theme segmented control: pressed option is filled and bold. */
+.theme-choice[aria-pressed="true"] {
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  font-weight: 600;
+}
+
+/* Floating content card on the frame (laptop). */
+@media (min-width: 1024px) {
+  .content-card {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
+    outline: 1px solid var(--sidebar-border);
+    outline-offset: -1px;
+  }
+  .content-card:focus { outline: 1px solid var(--sidebar-border); }
+}
+
+/* Loading skeleton pulse. */
+.skeleton {
+  background: var(--muted);
+  border-radius: calc(var(--radius) - 4px);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse { 50% { opacity: 0.55; } }
+
+/* Toast enter animation. */
+.toast { animation: toast-in 180ms ease-out; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
