@@ -63,18 +63,6 @@ Current official references to recheck when implementing: [Next.js data security
 
 ## Directory conventions
 
-Existing preparation artifacts:
-
-```text
-CLAUDE.md
-.claude/skills/person-hub-*/SKILL.md
-docs/project-brief.md
-requirements/                 # BA artifacts
-output/designs/               # HTML and Tailwind design references
-docs/architecture/            # TA plans, decisions, and debt
-docs/testing/                 # Test plans, coverage, and reports
-```
-
 Suggested implementation layout, to be created only when implementation is requested:
 
 ```text
