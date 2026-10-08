@@ -18,3 +18,7 @@ playwright/.auth/
 # Local Supabase state
 supabase/.temp/
 supabase/.branches/
+
+# Python bytecode from skill scripts
+__pycache__/
+*.py[cod]
