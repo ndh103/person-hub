@@ -13,7 +13,7 @@ The hub-wide visual foundation lives in `output/designs/_foundation/`: `design-s
 
 Use the `ui-ux-pro-max` skill as advisory design research. Its output is a recommendation, never an override of requirements, `CLAUDE.md`, or the foundation. Run it with `python .claude/skills/ui-ux-pro-max/scripts/search.py` (`python` on Windows; `python3` elsewhere). Do not put personal data in queries.
 
-- Foundation only: when `_foundation/` is missing, or the user asks for a new visual direction, run `--design-system` once for the whole hub (for example `"personal life log habit tracker dashboard" --design-system -p "Personal Hub"`). Translate the chosen palette and fonts into `theme.css` and verify text/background pairs meet WCAG AA contrast in both themes. Do not use `--persist`: it writes `design-system/` at the repository root, which is not the source of truth here.
+- Foundation only: when `_foundation/` is missing, or the user asks for a new visual direction, run `--design-system` once for the whole hub (for example `"personal life log tasks projects tracker" --design-system -p "Personal Hub"`). Translate the chosen palette and fonts into `theme.css` and verify text/background pairs meet WCAG AA contrast in both themes. Do not use `--persist`: it writes `design-system/` at the repository root, which is not the source of truth here.
 - Per feature: do not regenerate the design system. Use focused `--domain` searches (`ux`, `chart`, `icons`, `typography`) and `--stack shadcn` to inform layout, states, accessibility, and component choices. Record useful findings and rejected recommendations briefly in design notes.
 - If a search returns no match, broaden the keywords or proceed with your own judgment and say so; do not invent a database result.
 

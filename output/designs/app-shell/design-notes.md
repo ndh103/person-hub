@@ -2,10 +2,10 @@
 
 - Feature slug: `app-shell`
 - Status: draft (exploratory; no requirement exists yet)
-- Date: 2026-10-08
+- Date: 2026-10-08; revised 2026-10-10 (Habit Tracker replaced by Finisher; Finisher listed first)
 - Source request: "Design a landing page for my person-hub, the screen a user lands on after logging in. Sidebar with a menu item per app (Events, Habit Tracker, …); clicking a menu item shows that app module on the right."
 - Related inputs: [CLAUDE.md](../../../CLAUDE.md), [project brief](../../../docs/project-brief.md), [foundation](../_foundation/design-system.md) and [theme.css](../_foundation/theme.css)
-- Related requirements: none yet. Suggested BA artifact: `requirements/app-shell.md`. Placeholder IDs below (`SHELL-*`) are design proposals, not confirmed requirements.
+- Related requirements: [requirements/finisher.md](../../../requirements/finisher.md) (FIN-001 navigation order and Today default). No shell requirement yet. Suggested BA artifact: `requirements/app-shell.md`. Placeholder IDs below (`SHELL-*`) are design proposals, not confirmed requirements.
 - Architecture: none yet.
 
 ## Preview
@@ -15,20 +15,22 @@ Open `output/designs/app-shell/index.html` directly in a browser (no server need
 - the pinned Tailwind v4 browser runtime `@tailwindcss/browser@4.1.11` from jsDelivr (prototype only, never copy into the app)
 - Inter from Google Fonts (falls back to system sans offline)
 
-Routes are hash URLs standing in for App Router paths: `#/home`, `#/events`, `#/habits`; any other `#/x` shows "App not found". Resize below 1024px to see the drawer. On Events and Habit Tracker, open "Prototype controls" at the bottom of the page to switch Ready / Loading / Empty / Error. The sidebar footer toggles light/dark.
+Routes are hash URLs standing in for App Router paths: `#/home`, `#/finisher`, `#/events`; any other `#/x` shows "App not found". Resize below 1024px to see the drawer. On Finisher and Events, open "Prototype controls" at the bottom of the page to switch Ready / Loading / Empty / Error. The sidebar footer toggles light/dark.
 
 ## Screens and states
 
 | Proposed ID | Screen / behaviour | States shown |
 | --- | --- | --- |
-| SHELL-001 | Persistent sidebar at ≥1024px: brand, Home, "Apps" group (Events, Habit Tracker), account footer (signed-in email, theme, sign out) | Active item |
+| SHELL-001 | Persistent sidebar at ≥1024px: brand, Home, "Apps" group (Finisher, then Events), account footer (signed-in email, theme, sign out) | Active item |
 | SHELL-002 | Below 1024px: sticky top bar (menu button + current app name); sidebar becomes a left drawer | Closed, open |
-| SHELL-003 | Selecting a menu item swaps the right-hand content to that module, updates URL, page title and active item | Home, Events, Habit Tracker, unknown app |
+| SHELL-003 | Selecting a menu item swaps the right-hand content to that module, updates URL, page title and active item | Home, Finisher, Events, unknown app (including the retired `#/habits`) |
 | SHELL-004 | Home: default landing after sign-in; welcome plus one card per app and a "more apps" placeholder | Ready |
-| SHELL-005 | Module content area (Events and Habit Tracker previews) | Ready (sample data), loading skeleton, empty with call to action, error with retry |
+| SHELL-005 | Module content area (Finisher Today and Events previews) | Ready (sample data), loading skeleton, empty with call to action, error with retry |
 | SHELL-006 | Sign out from the sidebar footer | Prototype toast only |
 
-Module content is illustrative. Event fields, habit schedules ("Daily", "Weekdays") and the "Done" check-in are fixtures to show the module area; their real rules belong to future Events and Habit Tracker requirements. "New event"/"New habit" only show a toast.
+Module content is illustrative. The Finisher preview shows a Today view (FIN-031): sessions today from projects, then overdue and due-today tasks, each with a "Done" toggle, plus the Today / Tasks / Projects / Closed tabs (FIN-001). Its exact layout, the Skip action, the Done-today group and the other tabs belong to the full Finisher design (`output/designs/finisher/`, not yet created). Event fields are fixtures until Events requirements exist. "Add task", "New project", "New event" and the non-Today tabs only show a toast.
+
+Change 2026-10-10: Habit Tracker was removed from the hub. Its nav item, Home card and module preview were replaced by Finisher, which is now the first app; Events is second.
 
 ## Layout and responsive rules
 
@@ -66,7 +68,8 @@ Only foundation tokens via semantic classes: `bg-background`, `text-foreground`,
 | "Sample data" chip | `Badge variant="secondary"` (prototype only) |
 | Loading rows | `Skeleton` |
 | Error banner | `Alert variant="destructive"` with retry `Button` |
-| Habit "Done" toggle | `Toggle` (pressed state) |
+| Finisher "Done" toggle (session / task) | `Toggle` (pressed state); the full Finisher design may switch tasks to `Checkbox` |
+| Finisher section tabs | `Tabs` with `TabsList` / `TabsTrigger` rendered as links (each tab has its own URL per FIN-001) |
 | Toasts | `Sonner` |
 | Sidebar header (monogram, name, email) | `SidebarHeader` (+ `Avatar`) |
 | Light/Dark switch | `ToggleGroup type="single"` (two `ToggleGroupItem`s); the reference uses `aria-pressed` buttons |
@@ -77,7 +80,7 @@ Note: shadcn's `Sidebar` switches to the Sheet at its own mobile breakpoint (768
 
 ## Implementation notes for TA / Developer
 
-- Map routes to App Router segments, e.g. `src/app/(app)/layout.tsx` (shell, requires an authenticated user) with `home/`, `events/`, `habits/` pages; post-sign-in redirect goes to `/home` (or `/`). Each module page is a separate feature module per CLAUDE.md.
+- Map routes to App Router segments, e.g. `src/app/(app)/layout.tsx` (shell, requires an authenticated user) with `home/`, `finisher/`, `events/` pages; post-sign-in redirect goes to `/home` (or `/`). Each module page is a separate feature module per CLAUDE.md.
 - The app list in the sidebar and on Home should come from one static registry (id, label, href, icon, description) so adding an app updates both.
 - The signed-in email shown in the footer must come from verified server-side identity; render nothing sensitive beyond what is needed. Shell responses are personal and must not be publicly cached.
 - Sign out must be a POST (no state-changing GET) and should redirect to the sign-in page.
@@ -92,20 +95,27 @@ Python is not installed, so `search.py` could not run; the skill's CSV data was 
 
 Headless Chrome via the DevTools protocol (scratch script, not committed), at 1280×800, 800×1000, 390×844 and 320×640:
 
-- No horizontal overflow at any tested width (`scrollWidth == clientWidth`), including Events and Habits at 390 and 320px.
-- Clicking Events / Habit Tracker swaps the view, sets the hash, `aria-current`, page title, and focuses the module `h1`. Unknown route shows "App not found" with no active item.
+- No horizontal overflow at any tested width (`scrollWidth == clientWidth`), including Events and the former Habit Tracker view at 390 and 320px (2026-10-08 run; see the 2026-10-10 re-check below).
+- (2026-10-08) Clicking Events / Habit Tracker swaps the view, sets the hash, `aria-current`, page title, and focuses the module `h1`. Unknown route shows "App not found" with no active item.
 - Phone: drawer opens with `role=dialog`, `aria-modal=true`, content `inert`, focus on close button; Tab from the last item wraps to the first; Escape and overlay click close it and return focus to the menu button; choosing Events closes the drawer and focuses the Events heading. 800px tablet uses the drawer.
 - Error state's "Try again" returns to loading and then ready.
 - Dark theme applies from `prefers-color-scheme: dark`; the Light/Dark switch sets the theme and `aria-pressed`. Screenshots of the orange frame, floating card, drawer and phone top bar reviewed in light and dark.
 - Tab from the last drawer control (Dark) wraps to the first (brand link).
 - Foundation colour contrast computed (see foundation doc).
 
+Re-check 2026-10-10 (headless Chrome via DevTools protocol, scratch script not committed) at 1280×800, 800×1000, 390×844 and 320×640:
+
+- Nav order is Home, Finisher, Events at every width. `#/finisher` and `#/events` render their views with the correct `aria-current` and page title. `#/habits` now shows "App not found" with no active item.
+- No horizontal overflow on Home, Finisher, Events or not-found at any tested width. The Finisher Ready, Loading, Empty and Error states all render without overflow at 320px.
+- Clicking Finisher from Home sets `#/finisher` and focuses the Finisher `h1`.
+- Screenshots of Finisher Today reviewed in light at 1280 and 320, and in dark at 1280. The drawer behaviour was not re-run because the drawer code is unchanged.
+
 Not checked: real screen readers (NVDA, VoiceOver), real mobile devices/Safari, 200% zoom, Windows High Contrast mode, and the shadcn implementation itself. The static reference shows patterns; it does not prove the production component is accessible.
 
 ## Unresolved questions
 
 1. Landing target after sign-in: this design uses a Home page with app cards. Alternatives: go straight to Events, or reopen the last-used app. (Assumption, easy to change.)
-2. Should Home ever show summaries (e.g. today's habits, recent events)? Dashboards are not confirmed scope, so Home is navigation only.
+2. Should Home ever show summaries (e.g. today's Finisher sessions, recent events)? Dashboards are not confirmed scope, so Home is navigation only.
 3. Light, playful orange (Claude-inspired, `#F59563` with dark text) chosen by the user on 2026-10-08; light/dark support is still an assumption.
 4. Desktop sidebar collapse to an icon rail (`collapsible="icon"`) is not shown; add if wanted.
 5. Mobile breakpoint for the drawer: 1024px here vs shadcn's 768px default.

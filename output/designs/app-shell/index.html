@@ -80,6 +80,7 @@
     <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
     <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
     <symbol id="i-grid-plus" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M17.5 14v7"/><path d="M14 17.5h7"/></symbol>
   </svg>
 
@@ -117,15 +118,15 @@
         <p class="mt-8 mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
         <ul class="space-y-1" aria-labelledby="apps-heading">
           <li>
-            <a href="#/events" data-route="events" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg>
-              Events
+            <a href="#/finisher" data-route="finisher" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-flag"/></svg>
+              Finisher
             </a>
           </li>
           <li>
-            <a href="#/habits" data-route="habits" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <svg class="icon size-5" aria-hidden="true"><use href="#i-check-circle"/></svg>
-              Habit Tracker
+            <a href="#/events" data-route="events" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg>
+              Events
             </a>
           </li>
         </ul>
@@ -168,6 +169,18 @@
 
           <ul class="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Apps">
             <li>
+              <a href="#/finisher" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
+                <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
+                  <svg class="icon size-5"><use href="#i-flag"/></svg>
+                </span>
+                <span class="mt-4 text-lg font-semibold">Finisher</span>
+                <span class="mt-1 text-sm text-muted-foreground">Finish your tasks and follow through on your projects, week by week.</span>
+                <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
+                  Open Finisher <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </span>
+              </a>
+            </li>
+            <li>
               <a href="#/events" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
                 <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
                   <svg class="icon size-5"><use href="#i-calendar"/></svg>
@@ -179,18 +192,6 @@
                 </span>
               </a>
             </li>
-            <li>
-              <a href="#/habits" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
-                <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
-                  <svg class="icon size-5"><use href="#i-check-circle"/></svg>
-                </span>
-                <span class="mt-4 text-lg font-semibold">Habit Tracker</span>
-                <span class="mt-1 text-sm text-muted-foreground">Keep track of the habits you are building.</span>
-                <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
-                  Open Habit Tracker <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
-                </span>
-              </a>
-            </li>
             <li class="sm:col-span-2">
               <div class="flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
                 <svg class="icon size-5" aria-hidden="true"><use href="#i-grid-plus"/></svg>
@@ -198,6 +199,123 @@
               </div>
             </li>
           </ul>
+        </section>
+
+        <!-- ============ FINISHER module (Today placeholder; full design: output/designs/finisher/) ============ -->
+        <section data-view="finisher" aria-labelledby="finisher-title" hidden>
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 id="finisher-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Finisher</h1>
+              <p class="mt-1 text-sm text-muted-foreground">Today · <time datetime="2026-10-09">Friday, 9 October 2026</time></p>
+            </div>
+            <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90">
+              <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
+              Add task
+            </button>
+          </div>
+
+          <!-- Finisher sections (FIN-001). Illustrative: only Today is shown in the shell reference. -->
+          <nav aria-label="Finisher sections" class="mt-5">
+            <ul class="grid grid-cols-4 gap-1 rounded-xl border border-border bg-muted p-1 text-sm font-medium sm:inline-grid">
+              <li><a href="#/finisher" aria-current="page" class="flex min-h-11 items-center justify-center rounded-lg px-2 aria-[current=page]:bg-background aria-[current=page]:text-foreground aria-[current=page]:shadow-sm sm:px-4">Today</a></li>
+              <li><button type="button" data-placeholder-action="Tasks tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Tasks</button></li>
+              <li><button type="button" data-placeholder-action="Projects tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Projects</button></li>
+              <li><button type="button" data-placeholder-action="Closed tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Closed</button></li>
+            </ul>
+          </nav>
+
+          <div class="mt-6">
+            <!-- Ready -->
+            <div data-state="ready" class="space-y-6">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <p class="inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data</p>
+                <p class="text-sm text-muted-foreground">1 of 3 sessions done today · 1 overdue task</p>
+              </div>
+
+              <div>
+                <h2 class="mb-2 text-sm font-semibold">Sessions today</h2>
+                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                  <li class="flex items-center gap-4 p-4">
+                    <div class="min-w-0 flex-1"><p class="font-medium">Watch ABK program</p><p class="text-sm text-muted-foreground">Teach my daughter English · 30 min · 19:00</p></div>
+                    <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                      <svg class="icon size-4" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Done</span><span class="sr-only"> — Watch ABK program</span>
+                    </button>
+                  </li>
+                  <li class="flex items-center gap-4 p-4">
+                    <div class="min-w-0 flex-1"><p class="font-medium">Learn together</p><p class="text-sm text-muted-foreground">Teach my daughter English · 30 min · 19:30</p></div>
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                      <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Learn together</span>
+                    </button>
+                  </li>
+                  <li class="flex items-center gap-4 p-4">
+                    <div class="min-w-0 flex-1"><p class="font-medium">Practice guitar chords</p><p class="text-sm text-muted-foreground">Play three songs on guitar · 20 min</p></div>
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                      <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Practice guitar chords</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h2 class="mb-2 text-sm font-semibold">Tasks</h2>
+                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                  <li class="flex items-center gap-4 p-4">
+                    <div class="min-w-0 flex-1"><p class="font-medium">Get new passport photos</p><p class="text-sm text-destructive">Overdue · due <time datetime="2026-10-07">Wed 7 Oct</time></p></div>
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                      <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Get new passport photos</span>
+                    </button>
+                  </li>
+                  <li class="flex items-center gap-4 p-4">
+                    <div class="min-w-0 flex-1"><p class="font-medium">Prepare paperwork and submit the school form</p><p class="text-sm text-muted-foreground">Due today · <time datetime="2026-10-09T17:00">17:00</time></p></div>
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                      <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Prepare paperwork and submit the school form</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div data-state="loading" aria-busy="true" hidden>
+              <p class="sr-only" role="status">Loading today’s plan…</p>
+              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
+                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-2/5"></div></div><div class="skeleton h-11 w-24"></div></div>
+                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div><div class="skeleton h-3 w-1/3"></div></div><div class="skeleton h-11 w-24"></div></div>
+                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/5"></div><div class="skeleton h-3 w-1/4"></div></div><div class="skeleton h-11 w-24"></div></div>
+              </div>
+            </div>
+
+            <!-- Empty -->
+            <div data-state="empty" hidden>
+              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
+                <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-flag"/></svg></span>
+                <h2 class="mt-4 text-lg font-semibold">Nothing scheduled today</h2>
+                <p class="mt-1 max-w-sm text-sm text-muted-foreground">Add a task you need to finish, or start a project and give it time slots in your week.</p>
+                <div class="mt-5 flex flex-wrap justify-center gap-2">
+                  <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90">
+                    <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> Add task
+                  </button>
+                  <button type="button" data-placeholder-action="New project" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                    <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New project
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error -->
+            <div data-state="error" hidden>
+              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
+                <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
+                <div class="flex-1">
+                  <p class="font-medium text-destructive">Couldn’t load today’s plan</p>
+                  <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
+                </div>
+                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
+                </button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- ============ EVENTS module ============ -->
@@ -275,82 +393,6 @@
           </div>
         </section>
 
-        <!-- ============ HABIT TRACKER module ============ -->
-        <section data-view="habits" aria-labelledby="habits-title" hidden>
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 id="habits-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Habit Tracker</h1>
-              <p class="mt-1 text-sm text-muted-foreground">Today · <time datetime="2026-10-08">Thursday, 8 October 2026</time></p>
-            </div>
-            <button type="button" data-placeholder-action="New habit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90">
-              <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
-              New habit
-            </button>
-          </div>
-
-          <div class="mt-6">
-            <!-- Ready -->
-            <div data-state="ready">
-              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data · check-in rules not yet defined</p>
-              <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
-                <li class="flex items-center gap-4 p-4">
-                  <div class="min-w-0 flex-1"><p class="font-medium">Drink 2 litres of water</p><p class="text-sm text-muted-foreground">Daily</p></div>
-                  <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
-                    <svg class="icon size-4" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Done</span><span class="sr-only"> — Drink 2 litres of water</span>
-                  </button>
-                </li>
-                <li class="flex items-center gap-4 p-4">
-                  <div class="min-w-0 flex-1"><p class="font-medium">Read for 20 minutes</p><p class="text-sm text-muted-foreground">Daily</p></div>
-                  <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
-                    <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Read for 20 minutes</span>
-                  </button>
-                </li>
-                <li class="flex items-center gap-4 p-4">
-                  <div class="min-w-0 flex-1"><p class="font-medium">Evening walk</p><p class="text-sm text-muted-foreground">Weekdays</p></div>
-                  <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
-                    <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Evening walk</span>
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Loading -->
-            <div data-state="loading" aria-busy="true" hidden>
-              <p class="sr-only" role="status">Loading habits…</p>
-              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
-                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-16"></div></div><div class="skeleton h-11 w-28"></div></div>
-                <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div><div class="skeleton h-3 w-16"></div></div><div class="skeleton h-11 w-28"></div></div>
-              </div>
-            </div>
-
-            <!-- Empty -->
-            <div data-state="empty" hidden>
-              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
-                <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-check-circle"/></svg></span>
-                <h2 class="mt-4 text-lg font-semibold">No habits yet</h2>
-                <p class="mt-1 max-w-sm text-sm text-muted-foreground">Add a habit you want to build and check it off as you go.</p>
-                <button type="button" data-placeholder-action="New habit" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90">
-                  <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New habit
-                </button>
-              </div>
-            </div>
-
-            <!-- Error -->
-            <div data-state="error" hidden>
-              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
-                <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
-                <div class="flex-1">
-                  <p class="font-medium text-destructive">Couldn’t load your habits</p>
-                  <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
-                </div>
-                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
-                  <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- ============ Unknown app route ============ -->
         <section data-view="not-found" aria-labelledby="nf-title" hidden>
           <h1 id="nf-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">App not found</h1>
@@ -381,9 +423,9 @@
 
   <script>
   (function () {
-    var ROUTES = { home: "Home", events: "Events", habits: "Habit Tracker" };
-    var MODULES_WITH_STATES = { events: true, habits: true };
-    var moduleState = { events: "ready", habits: "ready" };
+    var ROUTES = { home: "Home", finisher: "Finisher", events: "Events" };
+    var MODULES_WITH_STATES = { finisher: true, events: true };
+    var moduleState = { finisher: "ready", events: "ready" };
 
     var sidebar = document.getElementById("sidebar");
     var backdrop = document.getElementById("drawer-backdrop");
@@ -572,7 +614,7 @@
         var done = btn.getAttribute("aria-pressed") !== "true";
         btn.setAttribute("aria-pressed", String(done));
         btn.querySelector("use").setAttribute("href", done ? "#i-check-circle" : "#i-circle");
-        toast(done ? "Marked done for today (sample only)." : "Check-in removed (sample only).");
+        toast(done ? "Marked done (sample only)." : "Mark removed (sample only).");
       });
     });
 

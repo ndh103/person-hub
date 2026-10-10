@@ -13,7 +13,7 @@ Write `docs/testing/<feature>.md` following [the test contract](../../../docs/te
 
 Commit reusable automated scripts using the project layout. Prefer user-visible assertions and stable semantic selectors over screenshots or fragile CSS selectors. Use isolated synthetic fixtures, controllable clocks where relevant, and deterministic timezone settings. Keep tests independent and clean up only records or resources created by the suite in its own test environment.
 
-Cover desktop sidebar and phone drawer, keyboard/focus behavior, loading/empty/error states, form validation, persistence, and session expiry where applicable. Cover event date behavior and habit schedule, day boundaries, duplicate check-ins, and streak rules only as specified by BA.
+Cover desktop sidebar and phone drawer, keyboard/focus behavior, loading/empty/error states, form validation, persistence, and session expiry where applicable. Cover event date behavior and Finisher slot schedules, day boundaries, the session marking window, duplicate session marks, and weekly rates only as specified by BA.
 
 ## Security verification
 

@@ -6,8 +6,9 @@ Status: draft. Source: the user's initial project request. This brief records in
 
 - A website usable in phone and laptop browsers.
 - Multiple separate apps accessible from a sidebar menu.
-- Events records life events, for example buying a new TV.
-- Habit Tracker tracks personal habits.
+- Finisher is the first app in the navigation: short Tasks and longer Projects with weekly timetable slots whose sessions are checked off (see [requirements/finisher.md](../requirements/finisher.md)).
+- Events records life events, for example buying a new TV. It is second in the navigation and will be brainstormed later.
+- Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities.
 - Next.js provides the frontend and backend API in the same project.
 - Supabase provides the database and built-in authentication.
 - Tailwind CSS and preferably shadcn/ui provide frontend styling and components.
@@ -28,10 +29,10 @@ Ask only questions relevant to the feature being specified; do not block all wor
 
 - Access model: one invited account, invitation-only users, or public registration? Which sign-in method?
 - Events: required fields, date versus exact time, editing/deletion, tags/search, and any attachments?
-- Habits: daily/weekly/custom schedules, binary versus quantity tracking, missed days, backdating, and streak rules?
-- Timezone: account timezone, travel behavior, and when a habit day begins/ends?
+- Finisher: see the open questions in [requirements/finisher.md](../requirements/finisher.md).
+- Timezone: account timezone, travel behavior, and when a local day begins/ends for Finisher sessions and due dates?
 - Data lifecycle: deletion behavior, retention, export, and recovery expectations?
-- Product priorities: which feature should be specified and implemented first?
+- Product priorities: Finisher is specified first; confirm implementation order.
 - Visual preferences: light/dark mode, language, and any branding?
 
 Reminders, uploads, offline sync, sharing, notifications, and dashboards are not confirmed requirements. Add them only when requested or explicitly agreed as scope.

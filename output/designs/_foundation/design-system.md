@@ -8,7 +8,7 @@
 
 ## Direction
 
-Calm, private, utilitarian: a personal tool used daily on a phone and a laptop, not a marketing site. Minimal Swiss style: neutral surfaces, one restrained accent, generous whitespace, clear hierarchy, no decorative gradients or glass effects. Content (events, habits) should carry the colour, not the chrome.
+Calm, private, utilitarian: a personal tool used daily on a phone and a laptop, not a marketing site. Minimal Swiss style: neutral surfaces, one restrained accent, generous whitespace, clear hierarchy, no decorative gradients or glass effects. Content (tasks, sessions, events) should carry the colour, not the chrome.
 
 ## ui-ux-pro-max research
 
@@ -22,13 +22,13 @@ Python is not installed on this machine, so `search.py --design-system` could no
 | `typography.csv` #5 Minimal Swiss | Inter only, weight-based hierarchy, for dashboards/apps | Adopted. |
 | `products.csv` Analytics/Financial dashboards | Data-dense dashboards | Rejected: dashboards are not confirmed scope. |
 
-Run `python .claude/skills/ui-ux-pro-max/scripts/search.py "personal life log habit tracker dashboard" --design-system -p "Personal Hub"` when Python is available to confirm or revise this direction (do not use `--persist`).
+Run `python .claude/skills/ui-ux-pro-max/scripts/search.py "personal life log tasks projects tracker" --design-system -p "Personal Hub"` when Python is available to confirm or revise this direction (do not use `--persist`).
 
 ## Colour
 
 Light and dark themes both ship. Direction (user requests, 2026-10-08): a light, bright orange for a more playful feel, in the style of Claude Code / Anthropic, on warm ivory (light) and charcoal (dark) neutrals. This is colour inspiration only; no Anthropic logo, name, or brand assets are used.
 
-- `--primary` is `#F59563` in both themes, with near-black `--primary-foreground` (`#1F1E1D`, 7.42:1). Filled buttons, the pressed habit toggle and the logo monogram use this pair.
+- `--primary` is `#F59563` in both themes, with near-black `--primary-foreground` (`#1F1E1D`, 7.42:1). Filled buttons, the pressed session check-off toggle and the logo monogram use this pair.
 - Rule: on light surfaces orange is too light for text or focus rings (2.13:1 on ivory). Use `--accent-foreground` (deep rust `#8A3A1C`) for orange-tinted text and links, and `--ring` (`#C2603A`) for focus. In dark mode the orange itself is readable and is also the ring.
 - `--accent` / `--sidebar-accent` are peach tints (light) or brown (dark) for hover and active navigation; text and icons on them use `--accent-foreground`.
 - The active menu item's leading bar uses `--sidebar-primary`. In light mode it is decorative (1.94:1); the active state is carried by the accent background, semibold label and rust icon.

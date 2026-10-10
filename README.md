@@ -1,6 +1,6 @@
 # Personal Hub
 
-A planned private hub for Events and Habit Tracker, usable from phone and laptop browsers. Stack: Next.js frontend/API, Supabase database/Auth, Tailwind CSS, and shadcn/ui, targeting Vercel hosting.
+A planned private hub for Finisher (tasks and projects) and Events, usable from phone and laptop browsers. Stack: Next.js frontend/API, Supabase database/Auth, Tailwind CSS, and shadcn/ui, targeting Vercel hosting.
 
 This repository currently contains development instructions and role skills. The application has not been scaffolded or deployed.
 

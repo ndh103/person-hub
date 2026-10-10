@@ -2,7 +2,7 @@
 
 ## Purpose and current scope
 
-Build a private personal hub accessible from phone and laptop browsers, containing separate apps in a shared shell. Initial apps are Events (record life events, such as buying a TV) and Habit Tracker. Use a sidebar on larger screens and an accessible collapsible navigation drawer on phones.
+Build a private personal hub accessible from phone and laptop browsers, containing separate apps in a shared shell. Initial apps are Finisher (tasks and projects to follow through on; first in the navigation) and Events (record life events, such as buying a TV). Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities. Use a sidebar on larger screens and an accessible collapsible navigation drawer on phones.
 
 The repository is currently in preparation. Do not scaffold the application, install application dependencies, create a live database, or deploy simply because these instructions exist. Implement when the user requests implementation. Read [the project brief](docs/project-brief.md) for confirmed choices and unresolved product questions.
 
@@ -17,7 +17,7 @@ The repository is currently in preparation. Do not scaffold the application, ins
 
 Default application data flow: browser -> Next.js Route Handler -> server-only service/data access layer -> Supabase using the caller's authenticated session and RLS. Supabase Auth browser calls are allowed. Application data reads and writes belong behind the Next.js backend. Server Components may call the same server-only service directly; avoid HTTP calls to the application's own API just to render server-side pages. Explain changes to this boundary in an architecture decision.
 
-Keep Events and Habit Tracker as separate feature modules. Share the shell, navigation, authentication, common UI, and infrastructure. Prefer a modular monolith over separate services until a concrete need justifies more complexity.
+Keep Finisher and Events as separate feature modules. Share the shell, navigation, authentication, common UI, and infrastructure. Prefer a modular monolith over separate services until a concrete need justifies more complexity.
 
 ## Agent roles and skill routing
 
@@ -67,8 +67,8 @@ Suggested implementation layout, to be created only when implementation is reque
 
 ```text
 src/app/                      # Pages, shared layouts, app/api/**/route.ts
+src/features/finisher/        # Finisher UI and domain logic
 src/features/events/          # Events UI and domain logic
-src/features/habits/          # Habit Tracker UI and domain logic
 src/components/ui/            # shadcn/ui components
 src/components/shell/         # Navigation and shared shell
 src/lib/server/               # Server-only services and data access
@@ -81,7 +81,7 @@ tests/                        # Unit, integration, and browser tests
 ## Implementation and verification conventions
 
 - Prefer accessible semantic elements, keyboard navigation, visible focus, labelled forms, and mobile layouts without horizontal overflow. Cover loading, empty, error, validation, and success states.
-- Store event instants in UTC with timezone-aware types. Define user timezone and habit calendar-day semantics before implementing recurrence or streaks; date-only values are not UTC timestamps.
+- Store event instants in UTC with timezone-aware types. Define user timezone and the local-day semantics of Finisher sessions and task due dates before implementing recurrence; date-only values are not UTC timestamps.
 - Use reproducible migrations rather than undocumented dashboard changes. Generate database types after schema changes. Review irreversible migrations and live mutations according to the user's authorization.
 - Prefer Vitest and React Testing Library for targeted logic/component tests, Playwright for browser flows, and Supabase database tests for RLS. Follow installed project tooling if it differs and document the choice.
 - During implementation run available lint, TypeScript checks, relevant tests, and a production build for meaningful application changes. Do not invent package scripts or say unrun checks passed. For documentation-only changes, validate skills and references without scaffolding app tooling.

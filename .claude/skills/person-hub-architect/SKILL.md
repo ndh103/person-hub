@@ -17,7 +17,7 @@ For each API specify method/path, validated inputs, returned fields, authenticat
 
 Describe threats and controls for direct API requests, direct Supabase access, spoofed owner IDs, record-ID guessing, session expiry/revocation, CSRF, secret exposure, unsafe HTML, and accidental shared caching. Authentication alone does not prove resource ownership. Do not use service-role credentials as the normal data-access strategy.
 
-Define habit local-date semantics separately from event instants. Document concurrency and duplicate check-in rules if those are in scope. Resolve unclear behavior with BA rather than embedding new product rules in SQL.
+Define Finisher local-date semantics (session dates, due dates, marking window, weeks) separately from event instants. Document how slot changes and project status history keep past weekly rates stable, and the concurrency and duplicate session-mark rules. Resolve unclear behavior with BA rather than embedding new product rules in SQL.
 
 ## Decisions and debt
 
