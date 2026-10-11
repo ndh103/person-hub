@@ -119,4 +119,4 @@ Not checked: real screen readers (NVDA, VoiceOver), real mobile devices/Safari, 
 3. Light, playful orange (Claude-inspired, `#F59563` with dark text) chosen by the user on 2026-10-08; light/dark support is still an assumption.
 4. Desktop sidebar collapse to an icon rail (`collapsible="icon"`) is not shown; add if wanted.
 5. Mobile breakpoint for the drawer: 1024px here vs shadcn's 768px default.
-6. Account access model and sign-in page design are out of scope here (no `auth` requirement yet).
+6. Sign-in pages are out of scope here. Access model and flows are now in [requirements/auth.md](../../../requirements/auth.md) and [docs/architecture/auth.md](../../../docs/architecture/auth.md). Sign out must POST to `/api/auth/sign-out` (AUTH-006). The sign-in page design belongs in `output/designs/auth/`.
