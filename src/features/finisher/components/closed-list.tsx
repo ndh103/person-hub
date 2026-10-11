@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,17 +6,19 @@ import { Spinner } from "@/components/ui/spinner";
 import { finisherApi } from "../api";
 import { formatFullDate, formatRelativeDate, type LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
-import type { ClosedEntry, ClosedOutcome, ClosedPage, ClosedType } from "../types";
+import type { ClosedEntry, ClosedOutcome, ClosedPage, ClosedTabData, ClosedType } from "../types";
 import { RowList } from "./list-parts";
 
 const OUTCOME_LABEL: Record<ClosedEntry["outcome"], string> = { done: "Done", finished: "Finished", let_go: "Let go" };
 
 function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
-  const href = entry.kind === "task" ? `/finisher/tasks/${entry.id}` : `/finisher/projects/${entry.id}`;
   return (
     <li className="flex flex-col gap-1 p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={href} className="font-medium break-words underline-offset-4 hover:underline">
+        <Link
+          to={entry.kind === "task" ? "/finisher/tasks/$id" : "/finisher/projects/$id"}
+          params={{ id: entry.id }}
+          className="font-medium break-words underline-offset-4 hover:underline">
           {entry.title}
         </Link>
         <Badge variant={entry.outcome === "let_go" ? "outline" : "secondary"}>{OUTCOME_LABEL[entry.outcome]}</Badge>
@@ -57,7 +57,7 @@ function ClosedListInner({ type, outcome, page, today }: { type: ClosedType; out
     setLoading(true);
     setError(null);
     const query = new URLSearchParams({ type, outcome, cursor });
-    const result = await finisherApi<{ page: ClosedPage }>("GET", `/api/finisher/closed?${query}`);
+    const result = await finisherApi<ClosedTabData>("GET", `/api/finisher/closed?${query}`);
     setLoading(false);
     if (!result.ok) {
       setError(generalErrorMessage(result.error));

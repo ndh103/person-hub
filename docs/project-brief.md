@@ -9,11 +9,11 @@ Status: draft. Source: the user's initial project request. This brief records in
 - Finisher is the first app in the navigation: short Tasks and longer Projects with weekly timetable slots whose sessions are checked off (see [requirements/finisher.md](../requirements/finisher.md)).
 - Events records life events, for example buying a new TV. It is second in the navigation and will be brainstormed later.
 - Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities.
-- Next.js provides the frontend and backend API in the same project.
+- A React single-page app and a Hono API on one Cloudflare Worker, same origin ([ADR-0003](architecture/decisions/ADR-0003-spa-and-worker-api.md), 2026-10-11; this replaced the original Next.js plan).
 - Supabase provides the database and built-in authentication.
 - Tailwind CSS and preferably shadcn/ui provide frontend styling and components.
 - Backend security is the highest engineering priority; the backend retrieves data and serves the frontend.
-- Prefer free hosting, with Vercel as the intended Next.js hosting option.
+- Prefer free hosting, with Cloudflare's free Workers plan as the intended host.
 - Prepare agent instructions and skills first; application implementation is not yet requested.
 
 ## Working defaults to validate
@@ -21,7 +21,7 @@ Status: draft. Source: the user's initial project request. This brief records in
 - Private data per authenticated account, even if the initial installation has one user.
 - Responsive sidebar with a phone navigation drawer.
 - One application with separate feature modules and shared infrastructure.
-- Next.js App Router, TypeScript, and server-mediated application data access.
+- Vite, React, TypeScript, TanStack Router/Query, Hono on Workers, and API-mediated application data access.
 
 ## Questions for the next requirements task
 

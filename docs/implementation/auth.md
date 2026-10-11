@@ -10,6 +10,8 @@
   - [Foundation theme](../../output/designs/_foundation/theme.css)
 - Design gap: there is no `output/designs/auth/` reference yet. The pages follow the foundation tokens and the app-shell conventions (orange frame, floating card, 44px targets). Revisit them when the Designer delivers that reference.
 
+> **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Sign-in now runs in the browser, there are no cookies or `proxy.ts`, and the API verifies a Bearer token. The requirement coverage and the "Not verified" list still apply. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
+
 ## Scaffold (first application code in the repo)
 
 | Item | Version / choice |
@@ -137,4 +139,4 @@ These are the Tester's priority with a real project (architecture T1–T11). The
 
 - Designer: produce `output/designs/auth/`, then reconcile these pages with it.
 - ~~Implement the full sidebar shell.~~ Done 2026-10-11; see [finisher.md](finisher.md).
-- A Content-Security-Policy with script nonces is not set yet. The root layout uses one inline script (pre-paint theme), and Next.js needs a nonce or hash setup for a strict CSP. Review this when the shell lands.
+- ~~A Content-Security-Policy with script nonces is not set yet.~~ Done 2026-10-11: the SPA has a strict CSP in `public/_headers`, and the theme script is external ([platform.md](platform.md)).

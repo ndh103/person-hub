@@ -6,7 +6,7 @@
 
 ## Context
 
-FIN-017 requires that another user's records behave as if they do not exist, both through the API and **directly through the database with the caller's session**. It also requires that a session record can refer only to the caller's own slot, and only to a date for which FIN-026 schedules a session. CLAUDE.md requires policies that stay safe under direct Supabase requests, because the publishable key and the user's JWT are enough to call PostgREST without the Next.js backend.
+FIN-017 requires that another user's records behave as if they do not exist, both through the API and **directly through the database with the caller's session**. It also requires that a session record can refer only to the caller's own slot, and only to a date for which FIN-026 schedules a session. CLAUDE.md requires policies that stay safe under direct Supabase requests, because the publishable key and the user's JWT are enough to call PostgREST without the app's own API.
 
 Several Finisher writes change more than one row and must be atomic:
 
@@ -35,7 +35,7 @@ Option 3:
 - **Helpers.** These live in the `finisher_private` schema. PostgREST does not expose it, and execute rights are revoked.
 - **Foreign keys.** Composite foreign keys `(parent_id, user_id)` stop cross-user references, even for the owner role.
 - **App code.** The app's service layer still validates input first, for friendly field errors (`src/features/finisher/domain/validation.ts`). The database is the authority.
-- **Default data flow is unchanged.** The data still goes browser → Route Handler → server-only service → Supabase with the caller's session. Only the database side changes: writes are RPC calls instead of table writes. No secret or service-role key is used.
+- **Default data flow is unchanged.** The data still goes browser → API → server-only service → Supabase with the caller's session (since [ADR-0003](ADR-0003-spa-and-worker-api.md) the API is a Hono Worker, not a Next.js Route Handler). Only the database side changes: writes are RPC calls instead of table writes. No secret or service-role key is used.
 
 ## Consequences
 

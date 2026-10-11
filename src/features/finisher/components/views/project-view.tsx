@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@/components/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,10 +11,10 @@ import {
   weekdayShort,
 } from "../../domain/dates";
 import { formatWeekDetails, formatWeekRate } from "../../domain/schedule";
-import { getProject } from "../../server/queries";
+import { finisherQueries } from "../../api";
 import type { ProjectDetail, ProjectStatus } from "../../types";
 import { AddTaskButton } from "../add-task-button";
-import { ListSection, RowList } from "../list-parts";
+import { ListSection, NotFoundState, RowList } from "../list-parts";
 import { ProjectActions } from "../project-actions";
 import { StripCell } from "../session-control";
 import { SlotList } from "../slot-list";
@@ -96,9 +96,9 @@ function Weeks({ project }: { project: ProjectDetail }) {
 }
 
 /** FIN-024: project details, slots, 7-day strip, weekly rates and tasks. */
-export async function ProjectView({ id }: { id: string }) {
-  const project = await getProject(id);
-  if (!project) notFound();
+export function ProjectView({ id }: { id: string }) {
+  const { data: project } = useSuspenseQuery(finisherQueries.project(id));
+  if (!project) return <NotFoundState kind="project" />;
   const today = project.now.date;
   const open = project.status === "active" || project.status === "parked";
 
@@ -106,7 +106,7 @@ export async function ProjectView({ id }: { id: string }) {
     <article aria-labelledby="project-title" className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <Link
-          href="/finisher/projects"
+          to="/finisher/projects"
           className="-ml-2 inline-flex min-h-11 items-center gap-1.5 self-start rounded-md px-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon aria-hidden="true" className="size-4" />

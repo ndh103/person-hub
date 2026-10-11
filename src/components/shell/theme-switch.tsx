@@ -1,5 +1,3 @@
-"use client";
-
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";

@@ -51,6 +51,8 @@
 }
 
 :root {
+  /* Self-hosted Inter (@fontsource-variable/inter, imported in src/main.tsx). */
+  --font-inter: "Inter Variable";
   --radius: 0.625rem;
 
   --background: #faf9f5;

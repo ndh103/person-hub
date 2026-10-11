@@ -1,4 +1,5 @@
-import { getTasksTab } from "../../server/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { finisherQueries } from "../../api";
 import type { TaskGroupKey } from "../../types";
 import { AddTaskButton } from "../add-task-button";
 import { CollapsibleSection } from "../collapsible-section";
@@ -14,8 +15,8 @@ const OPEN_GROUPS: { key: TaskGroupKey; title: string }[] = [
 ];
 
 /** FIN-022: open tasks grouped by due date, then a collapsed Parked group. */
-export async function TasksView({ project }: { project: unknown }) {
-  const data = await getTasksTab(project);
+export function TasksView({ project }: { project?: string }) {
+  const { data } = useSuspenseQuery(finisherQueries.tasks(project));
   const { now, groups } = data;
   const parked = groups.parked;
   const anyOpen = OPEN_GROUPS.some((group) => groups[group.key].items.length > 0);

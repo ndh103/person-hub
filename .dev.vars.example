@@ -1,0 +1,7 @@
+# Worker (API) settings for local development. Copy to .dev.vars and fill in.
+# In production the deploy workflow passes them as Worker variables
+# (.github/workflows/ci-deploy.yml, GitHub environment "production").
+# Both are the same browser-safe values as in .env.local. The API uses the
+# caller's access token with the publishable key, so RLS always applies.
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me

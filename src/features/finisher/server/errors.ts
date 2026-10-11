@@ -1,4 +1,3 @@
-import "server-only";
 import type { FieldErrors } from "../domain/validation";
 import type { FinisherApiErrorCode } from "../messages";
 

@@ -1,9 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { XIcon } from "lucide-react";
+import { Link } from "@/components/link";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -24,9 +21,9 @@ import { ThemeSwitch } from "./theme-switch";
 
 /**
  * Hub navigation (SHELL-001/002): a persistent column from 1024px, a drawer
- * below it. `account` is the signed-in email, streamed from the server.
+ * below it. `account` is the signed-in email.
  */
-export function AppSidebar({ account }: { account: React.ReactNode }) {
+export function AppSidebar({ account }: { account: string | null }) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   return (
@@ -34,7 +31,7 @@ export function AppSidebar({ account }: { account: React.ReactNode }) {
       <SidebarHeader className="px-5 pt-6 pb-2 lg:pt-8">
         <div className="flex items-start justify-between gap-2">
           <Link
-            href={HOME_LINK.href}
+            to={HOME_LINK.href}
             className="flex min-h-11 min-w-0 items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             onClick={() => setOpenMobile(false)}
           >
@@ -65,9 +62,7 @@ export function AppSidebar({ account }: { account: React.ReactNode }) {
 
       <SidebarContent className="px-1 pt-6 lg:pt-12">
         <nav aria-label="Apps">
-          <Suspense fallback={<NavLinks activeId={null} />}>
-            <ActiveNavLinks />
-          </Suspense>
+          <ActiveNavLinks />
         </nav>
       </SidebarContent>
 
@@ -80,7 +75,7 @@ export function AppSidebar({ account }: { account: React.ReactNode }) {
 }
 
 function ActiveNavLinks() {
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   return <NavLinks activeId={activeLink(pathname)?.id ?? null} />;
 }
 
@@ -122,7 +117,8 @@ function NavItem({ app, active }: { app: HubApp; active: boolean }) {
         isActive={active}
         className="relative h-11 gap-3 rounded-lg px-3 text-[0.9375rem] data-active:font-semibold [&_svg]:size-5"
         render={
-          <Link href={app.href} aria-current={active ? "page" : undefined} onClick={() => setOpenMobile(false)} />
+          // A whole app is current on any of its pages, so match the path prefix.
+          <Link to={app.href} activeOptions={{ exact: false, includeSearch: false }} onClick={() => setOpenMobile(false)} />
         }
       >
         {active ? (

@@ -1,6 +1,4 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 
 const MAX_FRAMES = 120;
@@ -12,7 +10,7 @@ const MAX_FRAMES = 120;
  * unchanged (for example switching Finisher tabs), focus stays where it is.
  */
 export function RouteFocus() {
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const previous = useRef<{ pathname: string; heading: Element | null } | null>(null);
 
   useEffect(() => {

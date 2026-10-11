@@ -1,7 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { Link } from "@/components/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Button } from "@/components/ui/button";
@@ -10,18 +7,17 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OTP_CODE_LENGTH, parseEmail, parseOtpCode, parseSignInPassword } from "@/lib/auth/validation";
-import { navigateTo, postAuth } from "../api";
-import { authMessages, generalErrorMessage, signInNotice } from "../messages";
+import { navigateTo, sendSignInEmail, startGoogleSignIn, signInWithPassword, verifySignInCode } from "../api";
+import { authMessages, generalErrorMessage, signInNotice, type SignInSearch } from "../messages";
 import { FormAlert } from "./form-alert";
 import { SubmitButton } from "./submit-button";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
 /** AUTH-001, 002, 003, 010: the three sign-in methods. Password is the default. */
-export function SignInForm() {
-  const params = useSearchParams();
-  const next = params.get("next") ?? undefined;
-  const notice = signInNotice(params);
+export function SignInForm({ search }: { search: SignInSearch }) {
+  const next = search.next;
+  const notice = signInNotice(search);
 
   return (
     <div className="flex flex-col gap-5">
@@ -65,7 +61,7 @@ function PasswordSignIn({ next }: { next?: string }) {
     if (errors.email || errors.password) return;
 
     setPending(true);
-    const result = await postAuth<{ redirectTo: string }>("/api/auth/password", { email, password, next });
+    const result = await signInWithPassword(email, password, next);
     if (result.ok) {
       navigateTo(result.data.redirectTo);
       return;
@@ -98,7 +94,7 @@ function PasswordSignIn({ next }: { next?: string }) {
           <div className="flex items-center justify-between gap-2">
             <FieldLabel htmlFor={`${id}-password`}>Password</FieldLabel>
             <Link
-              href="/forgot-password"
+              to="/forgot-password"
               className="rounded-sm text-sm font-medium text-accent-foreground underline-offset-4 hover:underline"
             >
               Forgot password?
@@ -144,7 +140,7 @@ function EmailSignIn({ next }: { next?: string }) {
   async function sendEmail(address: string) {
     setFormError(null);
     setPending(true);
-    const result = await postAuth<{ sent: boolean }>("/api/auth/otp", { email: address, next });
+    const result = await sendSignInEmail(address, next);
     setPending(false);
     if (!result.ok) {
       setFormError(generalErrorMessage(result.error));
@@ -172,7 +168,7 @@ function EmailSignIn({ next }: { next?: string }) {
     }
     setFormError(null);
     setPending(true);
-    const result = await postAuth<{ redirectTo: string }>("/api/auth/otp/verify", { email: sentTo, code, next });
+    const result = await verifySignInCode(sentTo, code, next);
     if (result.ok) {
       navigateTo(result.data.redirectTo);
       return;
@@ -281,7 +277,7 @@ function GoogleSignIn({ next }: { next?: string }) {
   async function onContinue() {
     setFormError(null);
     setPending(true);
-    const result = await postAuth<{ url: string }>("/api/auth/google", { next });
+    const result = await startGoogleSignIn(next);
     if (result.ok) {
       navigateTo(result.data.url);
       return;

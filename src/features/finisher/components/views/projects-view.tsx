@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@/components/link";
 import { Badge } from "@/components/ui/badge";
 import { formatFullDate, formatRelativeDate } from "../../domain/dates";
 import { formatWeekDetails, formatWeekRate } from "../../domain/schedule";
-import { getProjectsTab } from "../../server/queries";
+import { finisherQueries } from "../../api";
 import type { ProjectCard } from "../../types";
 import { CollapsibleSection } from "../collapsible-section";
 import { EmptyState, ListSection, NewProjectLink, RowList } from "../list-parts";
@@ -12,7 +13,8 @@ function ProjectRow({ project, today }: { project: ProjectCard; today: string })
   return (
     <li>
       <Link
-        href={`/finisher/projects/${project.id}`}
+        to="/finisher/projects/$id"
+        params={{ id: project.id }}
         className="flex flex-col gap-1 p-4 outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
       >
         <span className="font-medium break-words">{project.title}</span>
@@ -46,8 +48,8 @@ function ProjectRow({ project, today }: { project: ProjectCard; today: string })
 }
 
 /** FIN-033: Active projects with this week's rate, then a collapsed Parked group. */
-export async function ProjectsView() {
-  const data = await getProjectsTab();
+export function ProjectsView() {
+  const { data } = useSuspenseQuery(finisherQueries.projects());
   const today = data.now.date;
   const parkedDue = data.parked.filter((project) => project.revisitDate !== null && project.revisitDate <= today).length;
 

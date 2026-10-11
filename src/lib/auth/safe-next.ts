@@ -31,6 +31,8 @@ export function safeNext(value: unknown, siteOrigin?: string): string {
 
   if (!candidate.startsWith("/") || candidate.startsWith("//")) return DEFAULT_NEXT;
   // Browsers treat "\" like "/", so "/\evil.test" would become "//evil.test".
+  // Control characters are rejected on purpose.
+  // eslint-disable-next-line no-control-regex
   if (/[\\\u0000-\u001f\u007f]/.test(candidate)) return DEFAULT_NEXT;
 
   let resolved: URL;

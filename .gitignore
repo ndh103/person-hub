@@ -1,13 +1,17 @@
-# Dependencies and Next.js build output
+# Dependencies and build output
 node_modules/
-.next/
-out/
+dist/
 *.tsbuildinfo
+
+# Wrangler local state and generated runtime types
+.wrangler/
+worker-configuration.d.ts
 
 # Local secrets; commit placeholder examples only
 .env*
 !.env.example
-.vercel/
+.dev.vars*
+!.dev.vars.example
 
 # Test output and authenticated browser state
 coverage/
@@ -23,8 +27,7 @@ supabase/.branches/
 __pycache__/
 *.py[cod]
 
-# Next.js generated and misc
-next-env.d.ts
+# Misc
 build/
 *.pem
 npm-debug.log*

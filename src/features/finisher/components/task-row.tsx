@@ -1,8 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Link } from "@/components/link";
 import { CheckIcon, CircleIcon, MoreHorizontalIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +20,7 @@ import { generalErrorMessage } from "../messages";
 import type { ProjectOption, TaskDetail, TaskItem } from "../types";
 import { DeleteDialog, LetGoDialog, ParkDialog } from "./lifecycle-dialogs";
 import { TaskFormDialog } from "./task-form-dialog";
+import { useFinisherRefresh } from "./use-refresh";
 
 /** Due wording, e.g. "Overdue · due Wed 7 Oct" or "Due today · 17:00"; full date for assistive tech. */
 export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
@@ -57,8 +56,7 @@ export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
  * success offers Undo (reopen).
  */
 export function TaskCheck({ task }: { task: TaskItem }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const refresh = useFinisherRefresh();
   const [optimisticDone, setOptimisticDone] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const done = optimisticDone ?? task.status === "done";
@@ -80,10 +78,7 @@ export function TaskCheck({ task }: { task: TaskItem }) {
         actionProps: { children: "Undo", onClick: () => void setDone(false) },
       });
     }
-    startTransition(() => {
-      router.refresh();
-      setOptimisticDone(null);
-    });
+    void refresh().finally(() => setOptimisticDone(null));
   }
 
   return (
@@ -117,11 +112,11 @@ export function TaskActionsMenu({
   /** Detail data for Edit; when absent, Edit links to the task page. */
   editTask?: TaskDetail;
   /** Where to go after deleting (the task page itself would no longer exist). */
-  deleteRedirect?: string;
+  deleteRedirect?: "/finisher/tasks";
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const refresh = useFinisherRefresh();
   const [dialog, setDialog] = useState<OpenDialog>(null);
-  const [, startTransition] = useTransition();
   const open = task.status === "open" || task.status === "parked";
 
   async function simple(action: "unpark" | "reopen") {
@@ -131,7 +126,7 @@ export function TaskActionsMenu({
       return;
     }
     toast.add({ title: action === "unpark" ? `Unparked “${task.title}”` : `Reopened “${task.title}”`, type: "success" });
-    startTransition(() => router.refresh());
+    void refresh();
   }
 
   return (
@@ -152,7 +147,7 @@ export function TaskActionsMenu({
                   Edit
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem className="min-h-11" render={<Link href={`/finisher/tasks/${task.id}`} />}>
+                <DropdownMenuItem className="min-h-11" render={<Link to="/finisher/tasks/$id" params={{ id: task.id }} />}>
                   Open and edit
                 </DropdownMenuItem>
               )
@@ -214,8 +209,7 @@ export function TaskActionsMenu({
         onDeleted={
           deleteRedirect
             ? () => {
-                router.replace(deleteRedirect);
-                router.refresh();
+                void navigate({ to: deleteRedirect, replace: true }).then(() => refresh());
               }
             : undefined
         }
@@ -242,7 +236,8 @@ export function TaskRow({
       {closable ? <TaskCheck task={task} /> : null}
       <div className="min-w-0 flex-1">
         <Link
-          href={`/finisher/tasks/${task.id}`}
+          to="/finisher/tasks/$id"
+          params={{ id: task.id }}
           className={cn(
             "font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline",
             task.status === "done" && "text-muted-foreground line-through",

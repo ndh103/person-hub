@@ -1,15 +1,12 @@
 /**
- * The hub's canonical origin, used for auth redirect URLs and the Origin check.
- * NEXT_PUBLIC_SITE_URL wins; Vercel previews fall back to their deployment URL.
+ * The hub's own origin, used for Supabase Auth redirect URLs. The SPA and the
+ * API share one origin (ADR-0003), so this is wherever the page was loaded
+ * from. Supabase still only redirects to URLs on its allowlist.
  */
-export function getSiteOrigin(): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL;
-  if (configured) return new URL(configured).origin;
-  const vercelUrl = process.env.VERCEL_URL;
-  if (vercelUrl) return `https://${vercelUrl}`;
-  return "http://localhost:3000";
+export function siteOrigin(): string {
+  return window.location.origin;
 }
 
 export function siteUrl(path: string): URL {
-  return new URL(path, getSiteOrigin());
+  return new URL(path, siteOrigin());
 }

@@ -1,5 +1,3 @@
-"use client";
-
 import { useId } from "react";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import type { FieldErrors } from "../domain/validation";

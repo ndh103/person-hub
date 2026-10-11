@@ -4,18 +4,20 @@
 
 Build a private personal hub accessible from phone and laptop browsers, containing separate apps in a shared shell. Initial apps are Finisher (tasks and projects to follow through on; first in the navigation) and Events (record life events, such as buying a TV). Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities. Use a sidebar on larger screens and an accessible collapsible navigation drawer on phones.
 
-The repository is currently in preparation. Do not scaffold the application, install application dependencies, create a live database, or deploy simply because these instructions exist. Implement when the user requests implementation. Read [the project brief](docs/project-brief.md) for confirmed choices and unresolved product questions.
+The application exists (auth, shell, Finisher). Do not create a live database or deploy simply because these instructions exist. Implement when the user requests implementation. Read [the project brief](docs/project-brief.md) for confirmed choices and unresolved product questions.
 
 ## Stack and engineering direction
 
-- Next.js App Router and TypeScript for UI and backend API in one project.
+Decided in [ADR-0003](docs/architecture/decisions/ADR-0003-spa-and-worker-api.md) (2026-10-11, replacing the earlier Next.js/Vercel direction):
+
+- SPA: Vite, React, TypeScript, TanStack Router (routes in `src/app/router.tsx`) and TanStack Query.
+- API: Hono on Cloudflare Workers, with Zod at the request boundary. One Worker serves both the SPA's static assets and `/api/*` on the same origin (`wrangler.jsonc`).
 - Tailwind CSS, with shadcn/ui preferred for reusable interactive components.
 - Supabase Postgres and Supabase Auth; do not implement a separate password system.
-- Target Vercel deployment with a server runtime for Next.js APIs. Next.js is the framework, not a hosting provider. A static export alone cannot serve this backend.
-- Aim to fit free hosting tiers; check current provider terms and limits before choosing features or deploying. Do not promise permanent free operation.
+- Target Cloudflare's free Workers plan. Aim to fit free hosting tiers; check current provider terms and limits before choosing features or deploying. Do not promise permanent free operation.
 - Choose compatible supported package versions during scaffolding, pin through the package manager lockfile, and verify version-specific APIs in official documentation. Do not encode guessed versions in plans.
 
-Default application data flow: browser -> Next.js Route Handler -> server-only service/data access layer -> Supabase using the caller's authenticated session and RLS. Supabase Auth browser calls are allowed. Application data reads and writes belong behind the Next.js backend. Server Components may call the same server-only service directly; avoid HTTP calls to the application's own API just to render server-side pages. Explain changes to this boundary in an architecture decision.
+Default application data flow: browser (TanStack Query) -> Hono route in the Worker (`src/worker`) -> feature service/data access layer (`src/features/*/server`) -> Supabase using the caller's access token and RLS. Supabase Auth runs in the browser (`src/lib/supabase/client.ts`); the browser sends the access token as `Authorization: Bearer`. Application data reads and writes belong behind the API, never direct from browser code. Browser code must not import Worker or server modules, and the Worker must not import browser modules (ESLint enforces both). Explain changes to this boundary in an architecture decision.
 
 Keep Finisher and Events as separate feature modules. Share the shell, navigation, authentication, common UI, and infrastructure. Prefer a modular monolith over separate services until a concrete need justifies more complexity.
 
@@ -47,32 +49,34 @@ Do not turn a role handoff into an automatic approval gate. Ask for missing info
 
 Security is a required feature, including for an app initially used by one person.
 
-- Verify identity on the server using the supported Supabase SSR flow. Do not trust a client-supplied user ID or the unverified user object from `getSession()` for authorization. Use verified claims for identity; use `getUser()` where a fresh Auth-server check is required, and document session revocation behavior.
-- Every Route Handler, Server Action if introduced, and data access entry point enforces authentication and record ownership. Page redirects and middleware/proxy checks supplement these controls.
+- Verify identity on the server from the Bearer access token with `getClaims(token)` (signature and expiry), requiring a signed-in, non-anonymous user. Do not trust a client-supplied user ID or the browser's `getSession()` view for authorization. Use `getUser()` where a fresh Auth-server check is required, and document session revocation behavior.
+- Every API route and data access entry point enforces authentication and record ownership. Client-side route guards are a convenience only.
 - Use the caller's session with a publishable/anon key for ordinary application queries. Keep secret/service-role keys server-only and out of normal user request paths because elevated credentials can bypass RLS. Introduce elevated operations only for a documented need with separate authorization and tests.
 - Enable RLS explicitly in migrations for user-data tables. Restrict grants and create operation-specific owner policies, including insert/update checks. Model `user_id` ownership from `auth.uid()`; prevent reassignment and cross-user references with database constraints and policies as appropriate. Review views, functions, and storage access separately if introduced.
-- The Next.js backend is not the only possible route to Supabase: database policies must remain safe under direct Supabase requests. Test anonymous, owner, and another authenticated user for reads and writes.
+- The Worker API is not the only possible route to Supabase: database policies must remain safe under direct Supabase requests. Test anonymous, owner, and another authenticated user for reads and writes.
 - Validate inputs on the server, allowlist writable fields, bound payloads and pagination, and parameterize queries. Derive ownership server-side. Never spread arbitrary request bodies into database updates.
-- Protect cookie-authenticated mutations from CSRF with appropriate origin checks or tokens. No state-changing GET requests. Restrict CORS to intentional origins; document callback/redirect allowlists and cookie behavior.
-- Personal responses must not enter a shared public cache. Choose and verify appropriate response caching and server rendering behavior; do not rely on framework defaults for confidentiality.
+- The API uses Bearer tokens, not cookies. Keep the write guards (foreign `Origin` refused, JSON-only write bodies) and send no CORS headers unless an ADR adds an intentional origin. No state-changing GET requests to the API. Document callback/redirect allowlists.
+- Tokens live in browser storage, so treat XSS as session theft: keep the CSP in `public/_headers` strict (no inline scripts), avoid `dangerouslySetInnerHTML`, and review new dependencies.
+- Personal responses must not enter a shared or browser cache: API responses are `private, no-store`, app HTML is `no-store`, and personal data stays in TanStack Query's in-memory cache, never in browser storage. Do not rely on platform defaults for confidentiality.
 - Return only needed fields. Do not expose raw database errors, credentials, tokens, or personal journal content in logs, analytics, test reports, or client bundles. Mark server-only modules accordingly.
 - Use bounded, documented abuse controls for authentication and writes when implementing public endpoints; in-memory counters alone are not reliable across serverless instances. Avoid paid infrastructure without an explicit need.
 - Keep secrets out of Git. Document variable names with placeholders, separating browser-safe values from server secrets. Review dependency and security-header configuration during implementation.
 
-Current official references to recheck when implementing: [Next.js data security](https://nextjs.org/docs/app/guides/data-security), [Next.js authentication](https://nextjs.org/docs/app/guides/authentication), [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), and [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
+Current official references to recheck when implementing: [Supabase JWTs and `getClaims`](https://supabase.com/docs/guides/auth/jwts), [Supabase PKCE flow](https://supabase.com/docs/guides/auth/sessions/pkce-flow), [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Workers static assets](https://developers.cloudflare.com/workers/static-assets/), and [Hono](https://hono.dev/docs/).
 
 ## Directory conventions
 
-Suggested implementation layout, to be created only when implementation is requested:
-
 ```text
-src/app/                      # Pages, shared layouts, app/api/**/route.ts
-src/features/finisher/        # Finisher UI and domain logic
-src/features/events/          # Events UI and domain logic
+index.html, src/main.tsx      # SPA entry
+src/app/                      # Router (router.tsx), layouts and pages
+src/worker/                   # Hono API: app, auth middleware, HTTP guards, feature routes
+src/features/<feature>/       # Feature UI (components/), domain logic (domain/), API client (api.ts)
+src/features/<feature>/server # Worker-only services and data access
 src/components/ui/            # shadcn/ui components
 src/components/shell/         # Navigation and shared shell
-src/lib/server/               # Server-only services and data access
-src/lib/supabase/             # Explicit browser/server Auth client boundaries
+src/lib/supabase/             # Browser Supabase Auth client
+src/lib/api.ts                # Browser fetch helper (Bearer token)
+public/_headers               # Security and cache headers for static assets
 supabase/migrations/          # Schema, grants, constraints, RLS
 supabase/tests/               # Database security tests
 tests/                        # Unit, integration, and browser tests
