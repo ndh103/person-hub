@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@/components/link";
 import { formatDuration, formatFullDate } from "../../domain/dates";
-import { getToday } from "../../server/queries";
+import { finisherQueries } from "../../api";
 import type { SessionItem } from "../../types";
 import { AddTaskButton } from "../add-task-button";
 import { CollapsibleSection } from "../collapsible-section";
@@ -14,7 +15,7 @@ function SessionRow({ session }: { session: SessionItem }) {
       <div className="min-w-0 flex-1">
         <p className="font-medium break-words">{session.activity}</p>
         <p className="text-sm break-words text-muted-foreground">
-          <Link href={`/finisher/projects/${session.projectId}`} className="underline-offset-4 hover:underline">
+          <Link to="/finisher/projects/$id" params={{ id: session.projectId }} className="underline-offset-4 hover:underline">
             {session.projectTitle}
           </Link>
           {" · "}
@@ -28,8 +29,8 @@ function SessionRow({ session }: { session: SessionItem }) {
 }
 
 /** FIN-031: sessions today, overdue, due today, then a collapsed Done today group. */
-export async function TodayView() {
-  const data = await getToday();
+export function TodayView() {
+  const { data } = useSuspenseQuery(finisherQueries.today());
   const { now } = data;
   const overdueCount = data.overdue.length;
   const revisitTotal = data.revisitDue.tasks + data.revisitDue.projects;
@@ -49,7 +50,8 @@ export async function TodayView() {
         {revisitTotal > 0 ? (
           <p className="text-sm">
             <Link
-              href={data.revisitDue.tasks > 0 ? "/finisher/tasks#parked" : "/finisher/projects#parked"}
+              to={data.revisitDue.tasks > 0 ? "/finisher/tasks" : "/finisher/projects"}
+              hash="parked"
               className="font-medium text-accent-foreground underline underline-offset-4"
             >
               {revisitTotal} parked {revisitTotal === 1 ? "item is" : "items are"} due for revisit

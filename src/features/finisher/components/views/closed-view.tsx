@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@/components/link";
 import { cn } from "@/lib/utils";
-import { getClosed } from "../../server/queries";
+import { finisherQueries } from "../../api";
 import type { ClosedCounts, ClosedOutcome, ClosedType } from "../../types";
 import { ClosedList } from "../closed-list";
 import { EmptyState } from "../list-parts";
@@ -17,24 +18,21 @@ const OUTCOMES: { value: ClosedOutcome; label: string }[] = [
   { value: "let_go", label: "Let go" },
 ];
 
-function href(type: ClosedType, outcome: ClosedOutcome) {
-  const params = new URLSearchParams();
-  if (type !== "all") params.set("type", type);
-  if (outcome !== "all") params.set("outcome", outcome);
-  const query = params.toString();
-  return query ? `/finisher/closed?${query}` : "/finisher/closed";
+/** The Closed tab's query string; "all" is the absence of a filter. */
+export type ClosedSearch = { type?: Exclude<ClosedType, "all">; outcome?: Exclude<ClosedOutcome, "all"> };
+
+function search(type: ClosedType, outcome: ClosedOutcome): ClosedSearch {
+  return { type: type === "all" ? undefined : type, outcome: outcome === "all" ? undefined : outcome };
 }
 
 function FilterLinks<T extends string>({
   label,
   options,
-  current,
   build,
 }: {
   label: string;
   options: { value: T; label: string }[];
-  current: T;
-  build: (value: T) => string;
+  build: (value: T) => ClosedSearch;
 }) {
   return (
     <nav aria-label={label}>
@@ -42,11 +40,13 @@ function FilterLinks<T extends string>({
         {options.map((option) => (
           <li key={option.value}>
             <Link
-              href={build(option.value)}
-              aria-current={option.value === current ? "true" : undefined}
+              to="/finisher/closed"
+              search={build(option.value)}
+              // The current filter is marked aria-current by the link (exact path and query).
+              activeOptions={{ exact: true, includeSearch: true }}
               className={cn(
                 "inline-flex min-h-11 items-center rounded-lg border px-3 text-sm outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
-                "aria-[current=true]:border-primary aria-[current=true]:bg-accent aria-[current=true]:font-semibold aria-[current=true]:text-accent-foreground",
+                "aria-[current=page]:border-primary aria-[current=page]:bg-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent-foreground",
               )}
             >
               {option.label}
@@ -73,13 +73,13 @@ function Summary({ counts, type, outcome }: { counts: ClosedCounts; type: Closed
 }
 
 /** FIN-032: closed tasks and projects, most recently closed first. */
-export async function ClosedView({ type, outcome }: { type: unknown; outcome: unknown }) {
-  const data = await getClosed(type, outcome, null);
+export function ClosedView({ type, outcome }: ClosedSearch) {
+  const { data } = useSuspenseQuery(finisherQueries.closed(type, outcome));
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <FilterLinks label="Type" options={TYPES} current={data.type} build={(value) => href(value, data.outcome)} />
-        <FilterLinks label="Outcome" options={OUTCOMES} current={data.outcome} build={(value) => href(data.type, value)} />
+        <FilterLinks label="Type" options={TYPES} build={(value) => search(value, data.outcome)} />
+        <FilterLinks label="Outcome" options={OUTCOMES} build={(value) => search(data.type, value)} />
       </div>
       <Summary counts={data.counts} type={data.type} outcome={data.outcome} />
       {data.page.items.length ? (

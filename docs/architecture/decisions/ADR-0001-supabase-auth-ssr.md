@@ -1,6 +1,6 @@
 # ADR-0001: Supabase SSR cookie sessions with server-side auth routes
 
-- Status: accepted (adopted for the auth work; this is not a record of user approval)
+- Status: superseded by [ADR-0003](ADR-0003-spa-and-worker-api.md) on 2026-10-11 (the app moved to a single-page app with a Worker API; sign-in now runs in the browser). Kept for history.
 - Date: 2026-10-11
 - Related: [docs/architecture/auth.md](../auth.md), [requirements/auth.md](../../../requirements/auth.md)
 

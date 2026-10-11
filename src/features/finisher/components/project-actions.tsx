@@ -1,8 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Link } from "@/components/link";
 import { MoreHorizontalIcon, PartyPopperIcon, RotateCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +17,7 @@ import type { LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
 import type { ProjectStatus } from "../types";
 import { DeleteDialog, FinishDialog, LetGoDialog, ParkDialog, ReopenProjectDialog } from "./lifecycle-dialogs";
+import { useFinisherRefresh } from "./use-refresh";
 
 type Dialog = "finish" | "park" | "letgo" | "delete" | "reopen" | null;
 
@@ -32,8 +31,8 @@ export function ProjectActions({
   today: LocalDate;
   openTasks: number;
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const navigate = useNavigate();
+  const refresh = useFinisherRefresh();
   const [dialog, setDialog] = useState<Dialog>(null);
   const open = project.status === "active" || project.status === "parked";
   const toggle = (name: Exclude<Dialog, null>) => (next: boolean) => setDialog(next ? name : null);
@@ -45,7 +44,7 @@ export function ProjectActions({
       return;
     }
     toast.add({ title: `“${project.title}” is active again`, type: "success" });
-    startTransition(() => router.refresh());
+    void refresh();
   }
 
   return (
@@ -75,7 +74,7 @@ export function ProjectActions({
         <DropdownMenuContent align="end" className="w-52">
           {open ? (
             <DropdownMenuGroup>
-              <DropdownMenuItem className="min-h-11" render={<Link href={`/finisher/projects/${project.id}/edit`} />}>
+              <DropdownMenuItem className="min-h-11" render={<Link to="/finisher/projects/$id/edit" params={{ id: project.id }} />}>
                 Edit details
               </DropdownMenuItem>
               <DropdownMenuItem className="min-h-11" onClick={() => setDialog("park")}>
@@ -121,8 +120,8 @@ export function ProjectActions({
         id={project.id}
         title={project.title}
         onDeleted={() => {
-          router.replace("/finisher/projects");
-          router.refresh();
+          // Leave the deleted project's page before refreshing, so it never refetches as "not found".
+          void navigate({ to: "/finisher/projects", replace: true }).then(() => refresh());
         }}
       />
     </div>

@@ -43,12 +43,19 @@ export function generalErrorMessage(error: AuthApiErrorCode | "network"): string
   }
 }
 
+/** The sign-in page's query string, validated by its route (src/app/router.tsx). */
+export type SignInSearch = {
+  next?: string;
+  error?: string;
+  reason?: string;
+  signed_out?: string;
+};
+
 /** Notice shown on the sign-in page from its query string. */
-export function signInNotice(params: URLSearchParams): { tone: "info" | "error"; text: string } | null {
-  const error = params.get("error");
-  if (error === "google_no_access") return { tone: "error", text: authMessages.googleNoAccess };
-  if (error === "google") return { tone: "error", text: authMessages.googleFailed };
-  if (params.get("reason") === "expired") return { tone: "info", text: authMessages.sessionEnded };
-  if (params.get("signed_out") === "1") return { tone: "info", text: authMessages.signedOut };
+export function signInNotice(search: SignInSearch): { tone: "info" | "error"; text: string } | null {
+  if (search.error === "google_no_access") return { tone: "error", text: authMessages.googleNoAccess };
+  if (search.error === "google") return { tone: "error", text: authMessages.googleFailed };
+  if (search.reason === "expired") return { tone: "info", text: authMessages.sessionEnded };
+  if (search.signed_out === "1") return { tone: "info", text: authMessages.signedOut };
   return null;
 }

@@ -1,24 +1,25 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@/components/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatFullDate } from "../../domain/dates";
-import { getTaskPage } from "../../server/queries";
+import { finisherQueries } from "../../api";
 import type { TaskStatus } from "../../types";
+import { NotFoundState } from "../list-parts";
 import { TaskActionsMenu, TaskCheck, TaskDue } from "../task-row";
 
 const STATUS_LABEL: Record<TaskStatus, string> = { open: "Open", parked: "Parked", done: "Done", let_go: "Let go" };
 
 /** FIN-020: a task's details. Done and Let go tasks are read-only apart from Reopen and Delete. */
-export async function TaskView({ id }: { id: string }) {
-  const data = await getTaskPage(id);
-  if (!data) notFound();
+export function TaskView({ id }: { id: string }) {
+  const { data } = useSuspenseQuery(finisherQueries.task(id));
+  if (!data) return <NotFoundState kind="task" />;
   const { task, projects, today: todayDate } = data;
 
   return (
     <article aria-labelledby="task-title" className="flex max-w-2xl flex-col gap-6">
       <Link
-        href="/finisher/tasks"
+        to="/finisher/tasks"
         className="-ml-2 inline-flex min-h-11 items-center gap-1.5 self-start rounded-md px-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
@@ -57,7 +58,7 @@ export async function TaskView({ id }: { id: string }) {
         <dt className="text-muted-foreground">Project</dt>
         <dd className="break-words">
           {task.projectId && task.projectTitle ? (
-            <Link href={`/finisher/projects/${task.projectId}`} className="text-accent-foreground underline underline-offset-4">
+            <Link to="/finisher/projects/$id" params={{ id: task.projectId }} className="text-accent-foreground underline underline-offset-4">
               {task.projectTitle}
             </Link>
           ) : (

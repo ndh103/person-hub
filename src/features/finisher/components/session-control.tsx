@@ -1,7 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { CheckCircle2Icon, CircleIcon, MoreHorizontalIcon, SkipForwardIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +13,11 @@ import { finisherApi } from "../api";
 import type { LocalDate } from "../domain/dates";
 import type { SessionState } from "../domain/schedule";
 import { generalErrorMessage } from "../messages";
+import { useFinisherRefresh } from "./use-refresh";
 
 /** Saves a session mark optimistically and reverts with a message on failure (FIN-031). */
 function useSessionMark(slotId: string, date: LocalDate, saved: SessionState) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const refresh = useFinisherRefresh();
   const [optimistic, setOptimistic] = useState<SessionState | null>(null);
   const state = optimistic ?? saved;
 
@@ -32,10 +29,8 @@ function useSessionMark(slotId: string, date: LocalDate, saved: SessionState) {
       toast.add({ title: `Couldn’t update “${label}”`, description: generalErrorMessage(result.error), type: "error" });
       return;
     }
-    startTransition(() => {
-      router.refresh();
-      setOptimistic(null);
-    });
+    // Keep the optimistic state until the refreshed views have the saved mark.
+    void refresh().finally(() => setOptimistic(null));
   }
 
   return { state, mark };

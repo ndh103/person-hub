@@ -1,5 +1,3 @@
-"use client";
-
 import { useRef, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import {

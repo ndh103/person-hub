@@ -1,4 +1,3 @@
-import "server-only";
 import {
   addDays,
   diffDays,
@@ -47,7 +46,7 @@ import {
   type TaskStatus,
   type TodayData,
 } from "../types";
-import { finisherContext, type FinisherContext } from "./context";
+import type { FinisherContext } from "./context";
 import { fromDbError } from "./errors";
 
 /**
@@ -221,8 +220,7 @@ function sessionsFor(schedule: ProjectSchedule | undefined, from: LocalDate, to:
 // Today (FIN-031)
 // ---------------------------------------------------------------------------
 
-export async function getToday(): Promise<TodayData> {
-  const ctx = await finisherContext();
+export async function getToday(ctx: FinisherContext): Promise<TodayData> {
   const { now } = ctx;
   const index = await projectIndex(ctx);
   const activeIds = [...index.values()].filter((project) => project.status === "active").map((project) => project.id);
@@ -345,8 +343,7 @@ async function taskGroupPage(
   };
 }
 
-export async function getTasksTab(filterValue: unknown): Promise<TasksTabData> {
-  const ctx = await finisherContext();
+export async function getTasksTab(ctx: FinisherContext, filterValue: unknown): Promise<TasksTabData> {
   const index = await projectIndex(ctx);
   const filter = parseProjectFilter(filterValue);
   const pages = await Promise.all(TASK_GROUPS.map((group) => taskGroupPage(ctx, index, group, filter, 0)));
@@ -359,25 +356,23 @@ export async function getTasksTab(filterValue: unknown): Promise<TasksTabData> {
 }
 
 /** One more page of a task group ("Load more"). Offsets are bounded by the caller. */
-export async function getTaskGroup(group: TaskGroupKey, filterValue: unknown, offset: number): Promise<TaskPage> {
-  const ctx = await finisherContext();
+export async function getTaskGroup(ctx: FinisherContext, group: TaskGroupKey, filterValue: unknown, offset: number): Promise<TaskPage> {
   const index = await projectIndex(ctx);
   return taskGroupPage(ctx, index, group, parseProjectFilter(filterValue), offset);
 }
 
 /** Task page data: the task, project options for editing, and the caller's today. */
 export async function getTaskPage(
+  ctx: FinisherContext,
   taskId: string,
 ): Promise<{ task: TaskDetail; projects: ProjectOption[]; today: LocalDate } | null> {
-  const ctx = await finisherContext();
-  const task = await getTask(taskId, ctx);
+  const task = await getTask(ctx, taskId);
   if (!task) return null;
   return { task, projects: projectOptions(await projectIndex(ctx)), today: ctx.now.date };
 }
 
-export async function getTask(taskId: string, context?: FinisherContext): Promise<TaskDetail | null> {
+export async function getTask(ctx: FinisherContext, taskId: string): Promise<TaskDetail | null> {
   if (!isUuid(taskId)) return null;
-  const ctx = context ?? (await finisherContext());
   const result = await ctx.supabase
     .from("finisher_tasks")
     .select(`${TASK_COLUMNS}, notes, close_note, closed_at, created_at`)
@@ -398,8 +393,7 @@ export async function getTask(taskId: string, context?: FinisherContext): Promis
 }
 
 /** What "Add task" and "New project" need: the caller's today and project options. */
-export async function getFinisherBasics(): Promise<{ today: LocalDate; projects: ProjectOption[] }> {
-  const ctx = await finisherContext();
+export async function getFinisherBasics(ctx: FinisherContext): Promise<{ today: LocalDate; projects: ProjectOption[] }> {
   return { today: ctx.now.date, projects: projectOptions(await projectIndex(ctx)) };
 }
 
@@ -407,8 +401,7 @@ export async function getFinisherBasics(): Promise<{ today: LocalDate; projects:
 // Projects tab (FIN-033) and project detail (FIN-024)
 // ---------------------------------------------------------------------------
 
-export async function getProjectsTab(): Promise<ProjectsTabData> {
-  const ctx = await finisherContext();
+export async function getProjectsTab(ctx: FinisherContext): Promise<ProjectsTabData> {
   const { now } = ctx;
   const index = await projectIndex(ctx);
   const open = [...index.values()].filter((project) => project.status === "active" || project.status === "parked");
@@ -460,9 +453,8 @@ type ProjectRow = {
   closed_at: string | null;
 };
 
-export async function getProject(projectId: string): Promise<ProjectDetail | null> {
+export async function getProject(ctx: FinisherContext, projectId: string): Promise<ProjectDetail | null> {
   if (!isUuid(projectId)) return null;
-  const ctx = await finisherContext();
   const { now } = ctx;
   const result = await ctx.supabase
     .from("finisher_projects")
@@ -582,8 +574,7 @@ async function countRows(ctx: FinisherContext, table: string, status: string): P
   return result.count ?? 0;
 }
 
-export async function getClosed(typeValue: unknown, outcomeValue: unknown, cursorValue: unknown): Promise<ClosedTabData> {
-  const ctx = await finisherContext();
+export async function getClosed(ctx: FinisherContext, typeValue: unknown, outcomeValue: unknown, cursorValue: unknown): Promise<ClosedTabData> {
   const type = parseClosedType(typeValue);
   const outcome = parseClosedOutcome(outcomeValue);
   const cursor = parseClosedCursor(cursorValue);

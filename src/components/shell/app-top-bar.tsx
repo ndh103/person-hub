@@ -1,8 +1,5 @@
-"use client";
-
 import { MenuIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { activeLink } from "./apps";
@@ -23,14 +20,13 @@ export function AppTopBar() {
         <MenuIcon />
       </Button>
       <p className="truncate text-base font-semibold">
-        <Suspense fallback="Personal Hub">
-          <CurrentAppName />
-        </Suspense>
+        <CurrentAppName />
       </p>
     </header>
   );
 }
 
 function CurrentAppName() {
-  return activeLink(usePathname())?.label ?? "Personal Hub";
+  const pathname = useLocation({ select: (location) => location.pathname });
+  return activeLink(pathname)?.label ?? "Personal Hub";
 }

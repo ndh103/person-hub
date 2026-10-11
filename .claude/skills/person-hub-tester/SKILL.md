@@ -17,7 +17,7 @@ Cover desktop sidebar and phone drawer, keyboard/focus behavior, loading/empty/e
 
 ## Security verification
 
-Use at least two ordinary authenticated test users and an unauthenticated client. Check allowed owner operations and denied cross-user reads, inserts, updates, deletes, spoofed owner IDs, and cross-user references. Exercise the Next.js API and direct Supabase access; an API-only test cannot prove RLS works. Provision fixtures with a test admin only if necessary; execute authorization assertions as the actual test identities.
+Use at least two ordinary authenticated test users and an unauthenticated client. Check allowed owner operations and denied cross-user reads, inserts, updates, deletes, spoofed owner IDs, and cross-user references. Exercise the Worker API and direct Supabase access; an API-only test cannot prove RLS works. Provision fixtures with a test admin only if necessary; execute authorization assertions as the actual test identities.
 
 Verify server input validation, ownership checks, CSRF rejection, relevant cache isolation, and safe returned errors for changed boundaries. Check that browser artifacts do not expose elevated credentials. Include bypass attempts via guessed IDs and direct requests rather than testing only the visible UI.
 

@@ -1,4 +1,3 @@
-import "server-only";
 import {
   isUuid,
   parseMarkInput,
@@ -10,7 +9,7 @@ import {
   parseTaskInput,
   type Parsed,
 } from "../domain/validation";
-import { finisherContext, type FinisherContext } from "./context";
+import type { FinisherContext } from "./context";
 import { fromDbError, invalid, notFound } from "./errors";
 
 /**
@@ -38,8 +37,7 @@ async function rpc<T>(ctx: FinisherContext, fn: string, args: Record<string, unk
   return data as T;
 }
 
-export async function createTask(body: Body): Promise<{ id: string }> {
-  const ctx = await finisherContext();
+export async function createTask(ctx: FinisherContext, body: Body): Promise<{ id: string }> {
   const input = unwrap(parseTaskInput(body, ctx.now.date));
   const id = await rpc<string>(ctx, "finisher_create_task", {
     p_tz: ctx.timeZone,
@@ -52,9 +50,8 @@ export async function createTask(body: Body): Promise<{ id: string }> {
   return { id };
 }
 
-export async function updateTask(taskId: string, body: Body): Promise<void> {
+export async function updateTask(ctx: FinisherContext, taskId: string, body: Body): Promise<void> {
   const id = requireId(taskId);
-  const ctx = await finisherContext();
   const input = unwrap(parseTaskInput(body, ctx.now.date));
   await rpc(ctx, "finisher_update_task", {
     p_tz: ctx.timeZone,
@@ -67,9 +64,8 @@ export async function updateTask(taskId: string, body: Body): Promise<void> {
   });
 }
 
-export async function taskAction(taskId: string, body: Body): Promise<{ status: string }> {
+export async function taskAction(ctx: FinisherContext, taskId: string, body: Body): Promise<{ status: string }> {
   const id = requireId(taskId);
-  const ctx = await finisherContext();
   const input = unwrap(parseTaskAction(body, ctx.now.date));
   const status = await rpc<string>(ctx, "finisher_task_action", {
     p_tz: ctx.timeZone,
@@ -81,14 +77,12 @@ export async function taskAction(taskId: string, body: Body): Promise<{ status: 
   return { status };
 }
 
-export async function deleteTask(taskId: string): Promise<void> {
+export async function deleteTask(ctx: FinisherContext, taskId: string): Promise<void> {
   const id = requireId(taskId);
-  const ctx = await finisherContext();
   await rpc(ctx, "finisher_delete_task", { p_task_id: id });
 }
 
-export async function createProject(body: Body): Promise<{ id: string }> {
-  const ctx = await finisherContext();
+export async function createProject(ctx: FinisherContext, body: Body): Promise<{ id: string }> {
   const input = unwrap(parseNewProject(body, ctx.now.date));
   const id = await rpc<string>(ctx, "finisher_create_project", {
     p_tz: ctx.timeZone,
@@ -106,9 +100,8 @@ export async function createProject(body: Body): Promise<{ id: string }> {
   return { id };
 }
 
-export async function updateProject(projectId: string, body: Body): Promise<void> {
+export async function updateProject(ctx: FinisherContext, projectId: string, body: Body): Promise<void> {
   const id = requireId(projectId);
-  const ctx = await finisherContext();
   const { data: current, error } = await ctx.supabase
     .from("finisher_projects")
     .select("target_date")
@@ -127,9 +120,8 @@ export async function updateProject(projectId: string, body: Body): Promise<void
   });
 }
 
-export async function projectAction(projectId: string, body: Body): Promise<{ status: string }> {
+export async function projectAction(ctx: FinisherContext, projectId: string, body: Body): Promise<{ status: string }> {
   const id = requireId(projectId);
-  const ctx = await finisherContext();
   const input = unwrap(parseProjectAction(body, ctx.now.date));
   const note = input.action === "finish" ? input.reflection : input.action === "let_go" ? input.reason : null;
   const status = await rpc<string>(ctx, "finisher_project_action", {
@@ -142,15 +134,13 @@ export async function projectAction(projectId: string, body: Body): Promise<{ st
   return { status };
 }
 
-export async function deleteProject(projectId: string): Promise<void> {
+export async function deleteProject(ctx: FinisherContext, projectId: string): Promise<void> {
   const id = requireId(projectId);
-  const ctx = await finisherContext();
   await rpc(ctx, "finisher_delete_project", { p_project_id: id });
 }
 
-export async function addSlot(projectId: string, body: Body): Promise<{ id: string }> {
+export async function addSlot(ctx: FinisherContext, projectId: string, body: Body): Promise<{ id: string }> {
   const id = requireId(projectId);
-  const ctx = await finisherContext();
   const input = unwrap(parseSlotInput(body));
   const slotId = await rpc<string>(ctx, "finisher_add_slot", {
     p_tz: ctx.timeZone,
@@ -163,9 +153,8 @@ export async function addSlot(projectId: string, body: Body): Promise<{ id: stri
   return { id: slotId };
 }
 
-export async function updateSlot(slotId: string, body: Body): Promise<void> {
+export async function updateSlot(ctx: FinisherContext, slotId: string, body: Body): Promise<void> {
   const id = requireId(slotId);
-  const ctx = await finisherContext();
   const input = unwrap(parseSlotInput(body));
   await rpc(ctx, "finisher_update_slot", {
     p_tz: ctx.timeZone,
@@ -177,14 +166,12 @@ export async function updateSlot(slotId: string, body: Body): Promise<void> {
   });
 }
 
-export async function removeSlot(slotId: string): Promise<void> {
+export async function removeSlot(ctx: FinisherContext, slotId: string): Promise<void> {
   const id = requireId(slotId);
-  const ctx = await finisherContext();
   await rpc(ctx, "finisher_remove_slot", { p_tz: ctx.timeZone, p_slot_id: id });
 }
 
-export async function markSession(body: Body): Promise<{ state: string }> {
-  const ctx = await finisherContext();
+export async function markSession(ctx: FinisherContext, body: Body): Promise<{ state: string }> {
   const input = unwrap(parseMarkInput(body));
   const state = await rpc<string>(ctx, "finisher_mark_session", {
     p_tz: ctx.timeZone,

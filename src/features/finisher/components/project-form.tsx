@@ -1,7 +1,5 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@/components/link";
 import { useRef, useState } from "react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +16,7 @@ import { fieldErrorMessage } from "../messages";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { EMPTY_SLOT, SlotFields, slotPayload, type SlotValues } from "./slot-fields";
 import { useMutation } from "./use-mutation";
+import { useFinisherRefresh } from "./use-refresh";
 
 type ProjectValues = { title: string; goal: string; doneWhen: string; targetDate: string };
 
@@ -29,7 +28,8 @@ export function ProjectForm({
   today: LocalDate;
   project?: { id: string; title: string; goal: string | null; doneWhen: string; targetDate: LocalDate | null };
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const refresh = useFinisherRefresh();
   const formRef = useRef<HTMLFormElement>(null);
   const editing = Boolean(project);
   const [values, setValues] = useState<ProjectValues>({
@@ -40,7 +40,6 @@ export function ProjectForm({
   });
   const [slots, setSlots] = useState<SlotValues[]>([]);
   const { run, pending, fieldErrors, setFieldErrors, formError } = useMutation();
-  const cancelHref = project ? `/finisher/projects/${project.id}` : "/finisher/projects";
 
   function set<K extends keyof ProjectValues>(key: K, value: ProjectValues[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -60,8 +59,8 @@ export function ProjectForm({
       });
       if (!result.ok) return focusFirstInvalid(formRef.current);
       toast.add({ title: "Project saved", type: "success" });
-      router.push(cancelHref);
-      router.refresh();
+      await refresh();
+      void navigate({ to: "/finisher/projects/$id", params: { id: project!.id } });
       return;
     }
 
@@ -76,7 +75,8 @@ export function ProjectForm({
     });
     if (!result.ok) return focusFirstInvalid(formRef.current);
     toast.add({ title: "Project created", type: "success" });
-    router.push(`/finisher/projects/${result.data.id}`);
+    void refresh();
+    void navigate({ to: "/finisher/projects/$id", params: { id: result.data.id } });
   }
 
   const slotsError = fieldErrorMessage("slots", fieldErrors.slots);
@@ -180,7 +180,7 @@ export function ProjectForm({
       ) : null}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row">
-        <Button variant="outline" className="h-11" nativeButton={false} render={<Link href={cancelHref} />}>
+        <Button variant="outline" className="h-11" nativeButton={false} render={project ? <Link to="/finisher/projects/$id" params={{ id: project.id }} /> : <Link to="/finisher/projects" />}>
           Cancel
         </Button>
         <Button type="submit" className="h-11" disabled={pending}>

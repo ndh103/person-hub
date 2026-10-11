@@ -19,7 +19,7 @@ Use the `ui-ux-pro-max` skill as advisory design research. Its output is a recom
 
 ## Deliverable
 
-Create `output/designs/<feature>/index.html`, `styles.css`, and `design-notes.md` following [the design contract](../../../output/designs/README.md). The HTML is an implementation reference, not production Next.js code.
+Create `output/designs/<feature>/index.html`, `styles.css`, and `design-notes.md` following [the design contract](../../../output/designs/README.md). The HTML is an implementation reference, not production React code.
 
 Link or import `../_foundation/theme.css` and style with semantic token classes (`bg-background`, `text-muted-foreground`, `bg-primary`) rather than raw palette utilities or hex values, so the reference maps directly onto the shadcn theme. Use semantic HTML and Tailwind utility classes. If existing tooling can compile Tailwind, use it and provide locally loadable CSS. Otherwise, a pinned official Tailwind browser/CDN runtime may be used for the mockup only; explain the network dependency and preview instructions in the notes. Do not install application tooling simply to deliver a reference. `styles.css` contains necessary custom tokens/styles; avoid duplicating utility CSS.
 

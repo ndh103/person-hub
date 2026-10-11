@@ -1,10 +1,8 @@
-"use client";
-
 import { useId, useState } from "react";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NEW_PASSWORD_MIN_LENGTH, parseNewPassword } from "@/lib/auth/validation";
-import { navigateTo, postAuth } from "../api";
+import { navigateTo, updatePassword } from "../api";
 import { authMessages, generalErrorMessage } from "../messages";
 import { FormAlert } from "./form-alert";
 import { SubmitButton } from "./submit-button";
@@ -29,7 +27,7 @@ export function SetPasswordForm({ email }: { email: string | null }) {
     if (nextErrors.password || nextErrors.confirm) return;
 
     setPending(true);
-    const result = await postAuth<{ redirectTo: string }>("/api/auth/password/update", { password });
+    const result = await updatePassword(password);
     if (result.ok) {
       navigateTo(result.data.redirectTo);
       return;

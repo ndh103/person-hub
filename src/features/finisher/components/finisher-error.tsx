@@ -1,12 +1,13 @@
-"use client";
-
+import { useQueryErrorResetBoundary } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { CircleAlertIcon, RefreshCwIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 /**
- * Error state with Retry (FIN-001). Shows no error detail: server errors
- * reach the browser only as a digest, and never with partial data.
+ * Error state with Retry (FIN-001). Shows no error detail: the API returns
+ * only safe codes, and a failed view never renders partial data.
  */
 export function FinisherError({ retry }: { retry: () => void }) {
   return (
@@ -22,4 +23,15 @@ export function FinisherError({ retry }: { retry: () => void }) {
       </Button>
     </Alert>
   );
+}
+
+/**
+ * Route error boundary for Finisher pages: clears the failed queries, and
+ * Retry reloads the page's data.
+ */
+export function FinisherRouteError() {
+  const router = useRouter();
+  const queryErrors = useQueryErrorResetBoundary();
+  useEffect(() => queryErrors.reset(), [queryErrors]);
+  return <FinisherError retry={() => void router.invalidate()} />;
 }

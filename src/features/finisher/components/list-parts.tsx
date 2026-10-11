@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { FlagIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
@@ -50,10 +50,28 @@ export function EmptyState({
 
 export function NewProjectLink({ variant = "outline" }: { variant?: "default" | "outline" }) {
   return (
-    <Button variant={variant} className="h-11 px-4" nativeButton={false} render={<Link href="/finisher/projects/new" />}>
+    <Button variant={variant} className="h-11 px-4" nativeButton={false} render={<Link to="/finisher/projects/new" />}>
       <PlusIcon data-icon="inline-start" />
       New project
     </Button>
+  );
+}
+
+/**
+ * A task or project that doesn't exist, or belongs to someone else: the API
+ * answers 404 for both, so the page can't tell them apart (FIN-017).
+ */
+export function NotFoundState({ kind }: { kind: "task" | "project" }) {
+  return (
+    <section aria-labelledby="not-found-title" className="flex flex-col items-start gap-3">
+      <h1 id="not-found-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none">
+        {kind === "task" ? "Task not found" : "Project not found"}
+      </h1>
+      <p className="text-sm text-muted-foreground">It may have been deleted, or the link may be wrong.</p>
+      <Button variant="outline" className="h-11" nativeButton={false} render={<Link to={kind === "task" ? "/finisher/tasks" : "/finisher/projects"} />}>
+        {kind === "task" ? "Go to Tasks" : "Go to Projects"}
+      </Button>
+    </section>
   );
 }
 

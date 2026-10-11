@@ -11,6 +11,8 @@
   - [Auth implementation](auth.md)
 - Decisions made here: [ADR-0002: Finisher writes go through database functions](../architecture/decisions/ADR-0002-finisher-rpc-writes.md) (proposed)
 
+> **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
+
 ## Handoff gaps
 
 - **No Finisher design (`output/designs/finisher/`).** Layouts follow the app-shell reference (its Finisher Today preview, tokens, 44px targets, card lists) and the layout rules in FIN-018. Replace or adjust them when the Designer delivers the Finisher reference.
@@ -172,10 +174,10 @@ Two bugs found and fixed during these checks:
 
 ## Debt and follow-ups
 
-- No per-user write rate limit. Supabase has none on PostgREST by default, and CLAUDE.md asks for documented abuse controls. TA to decide; options are a Postgres-side counter table, or Vercel firewall rules.
+- No per-user write rate limit. Supabase has none on PostgREST by default, and CLAUDE.md asks for documented abuse controls. TA to decide; options are a Postgres-side counter table, or a Cloudflare rate-limiting rule.
 - **Timezone aliases.** A browser zone that `Intl` accepts but Postgres lacks makes writes fail with a generic error. This is rare; consider mapping it or falling back to UTC.
 - **Undo after check-off reopens to Open.** A task that was Parked before it was completed does not return to Parked.
 - **Closed-tab cursor.** It pages by `closed_at` only, so two items closed in the same microsecond at a page boundary could be skipped.
 - **Read limits.** The project index is capped at 1,000 projects and the task lists at their page sizes. The PostgREST `max_rows` setting (1,000 by default) caps other reads silently.
 - **Drawer overlay.** It uses shadcn's default (10% black with blur), not the 50% black in the shell design.
-- **Content-Security-Policy with nonces.** Still open, from the auth notes.
+- ~~**Content-Security-Policy with nonces.**~~ Done 2026-10-11 ([platform.md](platform.md)).

@@ -1,40 +1,29 @@
-import "server-only";
-import { cookies } from "next/headers";
-import { requireUser, type SessionUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SessionUser } from "@/worker/auth";
 import { DEFAULT_TIME_ZONE, isValidTimeZone, zonedNow, type LocalNow } from "../domain/dates";
-import { TIME_ZONE_COOKIE } from "../time-zone";
+
+/** Request header carrying the browser's IANA timezone (assumption A1). */
+export const TIME_ZONE_HEADER = "x-time-zone";
 
 export type FinisherContext = {
   user: SessionUser;
-  supabase: Awaited<ReturnType<typeof createClient>>;
+  /** Bound to the caller's access token, so RLS and the write functions see the caller's identity. */
+  supabase: SupabaseClient;
   timeZone: string;
   now: LocalNow;
 };
 
 /**
- * Entry point for every Finisher read and write. Verifies the session
- * (throws UnauthenticatedError) and returns a Supabase client bound to the
- * caller's session, so RLS and the write functions see the caller's identity.
+ * Every Finisher read and write receives one of these. It is built by the
+ * Worker's auth middleware only after the access token has been verified
+ * (src/worker/auth.ts), so holding a context means the caller is signed in.
  */
-export async function finisherContext(): Promise<FinisherContext> {
-  const user = await requireUser();
-  const supabase = await createClient();
-  const timeZone = await readTimeZone();
+export function finisherContext(user: SessionUser, supabase: SupabaseClient, timeZoneHeader: string | undefined): FinisherContext {
+  const timeZone = parseTimeZone(timeZoneHeader);
   return { user, supabase, timeZone, now: zonedNow(timeZone) };
 }
 
-/** The browser's IANA timezone (assumption A1), from a cookie the shell keeps current. */
-export async function readTimeZone(): Promise<string> {
-  const value = (await cookies()).get(TIME_ZONE_COOKIE)?.value;
-  const decoded = value ? safeDecode(value) : null;
-  return decoded && isValidTimeZone(decoded) ? decoded : DEFAULT_TIME_ZONE;
-}
-
-function safeDecode(value: string): string | null {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return null;
-  }
+/** The browser's timezone from the request header, or the default when missing or unknown. */
+export function parseTimeZone(value: string | undefined): string {
+  return value && value.length <= 64 && isValidTimeZone(value) ? value : DEFAULT_TIME_ZONE;
 }

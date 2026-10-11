@@ -1,7 +1,5 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useId, useTransition } from "react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useId } from "react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,8 +8,8 @@ import type { ProjectFilter as Filter, ProjectOption } from "../types";
 /** FIN-022 filter: All, one project, or No project. Kept in the URL (?project=). */
 export function ProjectFilter({ value, projects }: { value: Filter; projects: ProjectOption[] }) {
   const id = useId();
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const navigate = useNavigate();
+  const pending = useRouterState({ select: (state) => state.status === "pending" });
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -22,7 +20,7 @@ export function ProjectFilter({ value, projects }: { value: Filter; projects: Pr
         value={value}
         onChange={(event) => {
           const next = event.target.value;
-          startTransition(() => router.push(next === "all" ? "/finisher/tasks" : `/finisher/tasks?project=${next}`));
+          void navigate({ to: "/finisher/tasks", search: next === "all" ? {} : { project: next } });
         }}
       >
         <NativeSelectOption value="all">All tasks</NativeSelectOption>

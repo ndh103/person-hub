@@ -1,5 +1,3 @@
-"use client";
-
 import { useId } from "react";
 import { FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -48,8 +46,8 @@ function TaskGroupListInner({
     if (next === null) return;
     setLoading(true);
     setError(null);
-    const query = new URLSearchParams({ group, project: filter, offset: String(next) });
-    const result = await finisherApi<TaskPage>("GET", `/api/finisher/tasks?${query}`);
+    const query = new URLSearchParams({ project: filter, offset: String(next) });
+    const result = await finisherApi<TaskPage>("GET", `/api/finisher/task-groups/${group}?${query}`);
     setLoading(false);
     if (!result.ok) {
       setError(generalErrorMessage(result.error));

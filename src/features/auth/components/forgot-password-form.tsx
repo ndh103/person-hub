@@ -1,10 +1,8 @@
-"use client";
-
 import { useId, useState } from "react";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { parseEmail } from "@/lib/auth/validation";
-import { postAuth } from "../api";
+import { requestPasswordReset } from "../api";
 import { authMessages, generalErrorMessage } from "../messages";
 import { FormAlert } from "./form-alert";
 import { SubmitButton } from "./submit-button";
@@ -26,7 +24,7 @@ export function ForgotPasswordForm() {
     if (!address) return;
 
     setPending(true);
-    const result = await postAuth<{ sent: boolean }>("/api/auth/forgot", { email: address });
+    const result = await requestPasswordReset(address);
     setPending(false);
     if (result.ok) setSent(true);
     else setFormError(generalErrorMessage(result.error));

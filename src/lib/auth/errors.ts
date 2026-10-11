@@ -1,12 +1,9 @@
 /**
- * Error codes the auth API returns to the browser. Supabase messages are never
- * forwarded; they are mapped to these codes so responses don't reveal whether
- * an account exists (AUTH-008).
+ * Error codes the sign-in functions (src/features/auth/api.ts) report to the
+ * pages. Supabase messages are never shown; they are mapped to these codes so
+ * the page never reveals whether an account exists (AUTH-008).
  */
 export type AuthApiErrorCode =
-  | "invalid_request"
-  | "invalid_origin"
-  | "unsupported_media_type"
   | "invalid_credentials"
   | "invalid_code"
   | "weak_password"

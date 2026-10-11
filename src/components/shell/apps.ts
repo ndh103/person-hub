@@ -1,9 +1,12 @@
 import { CalendarIcon, FlagIcon, HomeIcon, type LucideIcon } from "lucide-react";
 
+/** Top-level destinations; the router checks these paths exist. */
+type AppPath = "/home" | "/finisher" | "/events";
+
 export type HubApp = {
   id: string;
   label: string;
-  href: string;
+  href: AppPath;
   icon: LucideIcon;
   description: string;
 };

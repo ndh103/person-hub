@@ -1,19 +1,46 @@
 # Personal Hub
 
-A planned private hub for Finisher (tasks and projects) and Events, usable from phone and laptop browsers. Stack: Next.js frontend/API, Supabase database/Auth, Tailwind CSS, and shadcn/ui, targeting Vercel hosting.
+A private hub for Finisher (tasks and projects) and Events, usable from phone and laptop browsers.
 
-The Next.js application implements sign-in with Supabase Auth (password, magic link or code, and Google, for invited users only), the sidebar shell, and Finisher. Events is a placeholder. Nothing has been deployed, and the Finisher migration has not been applied to a Supabase project.
+Stack ([ADR-0003](docs/architecture/decisions/ADR-0003-spa-and-worker-api.md)):
+
+- a React single-page app (Vite, TanStack Router and Query, Tailwind CSS, shadcn/ui);
+- a Hono API with Zod;
+- both served by one Cloudflare Worker, aimed at the free Workers plan;
+- Supabase Postgres (RLS) and Supabase Auth.
+
+What's built:
+
+- sign-in with Supabase Auth: password, magic link or code, and Google, for invited users only;
+- the sidebar shell;
+- Finisher.
+
+Events is a placeholder. Nothing has been deployed, and the Finisher migration hasn't been applied to a Supabase project.
 
 ## Run locally
 
-1. Node ≥ 22 (22.13+ or 24 LTS recommended), then `npm ci`.
-2. Copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable key.
-3. Configure the Supabase project as described in [docs/architecture/auth.md](docs/architecture/auth.md#configuration) (sign-ups off, redirect URLs, email templates, SMTP, Google).
-4. `npm run dev` and open http://localhost:3000.
+1. Node ≥ 22.12 (24 LTS recommended), then `npm ci`.
+2. Copy `.env.example` to `.env.local` (SPA) and `.dev.vars.example` to `.dev.vars` (Worker), and fill in your Supabase project URL and publishable key in both.
+3. Configure the Supabase project as described in [docs/architecture/auth.md](docs/architecture/auth.md#configuration) (sign-ups off, redirect URLs including `http://localhost:3000/**`, email templates, SMTP, Google).
+4. Run `npm run dev` (the Vite dev server, with the API Worker running in workerd) and open http://localhost:3000.
 
 For Finisher, apply `supabase/migrations/` to the project (see [docs/implementation/finisher.md](docs/implementation/finisher.md#migration-and-setup)).
 
-Checks: `npm run lint`, `npm run typecheck`, `npm test` (unit tests, plus database security tests on an in-process Postgres), `npm run build`. Implementation status and verification: [auth](docs/implementation/auth.md), [Finisher and shell](docs/implementation/finisher.md).
+Checks:
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm test`: unit and API tests, plus database security tests on an in-process Postgres
+- `npm run build`
+- `npm run preview`: serves the production build in workerd
+
+Deployment steps (not yet run): [docs/implementation/platform.md](docs/implementation/platform.md#deploying-not-done-needs-your-authorization).
+
+Implementation notes:
+
+- [platform (SPA and Worker)](docs/implementation/platform.md)
+- [auth](docs/implementation/auth.md)
+- [Finisher and shell](docs/implementation/finisher.md)
 
 ## Working with the role skills
 
