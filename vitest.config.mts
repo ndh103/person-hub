@@ -11,7 +11,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.ts", "supabase/tests/**/*.test.ts"],
+    // The database tests boot an in-process Postgres (PGlite) per file.
+    testTimeout: 30_000,
     env: {
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
       NEXT_PUBLIC_SUPABASE_URL: "https://project-ref.supabase.co",

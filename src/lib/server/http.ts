@@ -30,8 +30,7 @@ export function redirectTo(path: string): Response {
  * Returns an error response to send, or null when the request may proceed.
  */
 export function rejectUnsafePost(request: Request): Response | null {
-  const origin = request.headers.get("origin");
-  if (!origin || origin !== getSiteOrigin()) return jsonError("invalid_origin", 403);
+  if (!isSameOrigin(request)) return jsonError("invalid_origin", 403);
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
     return jsonError("unsupported_media_type", 415);
@@ -39,17 +38,26 @@ export function rejectUnsafePost(request: Request): Response | null {
   return null;
 }
 
+/** True when the request carries an Origin header equal to the hub's own origin. */
+export function isSameOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  return origin !== null && origin === getSiteOrigin();
+}
+
 /** Reads a small JSON object body; returns null when it is missing, too large or not an object. */
-export async function readJsonObject(request: Request): Promise<Record<string, unknown> | null> {
+export async function readJsonObject(
+  request: Request,
+  maxBytes: number = MAX_JSON_BYTES,
+): Promise<Record<string, unknown> | null> {
   const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > MAX_JSON_BYTES) return null;
+  if (declared > maxBytes) return null;
   let text: string;
   try {
     text = await request.text();
   } catch {
     return null;
   }
-  if (text.length > MAX_JSON_BYTES) return null;
+  if (text.length > maxBytes) return null;
   try {
     const parsed: unknown = JSON.parse(text);
     return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)

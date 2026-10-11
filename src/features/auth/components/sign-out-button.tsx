@@ -3,10 +3,11 @@
 import { LogOutIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { navigateTo, postAuth } from "../api";
 
 /** AUTH-006: POSTs to sign out (never a GET), then returns to the sign-in page. */
-export function SignOutButton() {
+export function SignOutButton({ className }: { className?: string }) {
   const [pending, setPending] = useState(false);
 
   async function onSignOut() {
@@ -17,7 +18,7 @@ export function SignOutButton() {
   }
 
   return (
-    <Button type="button" variant="ghost" className="h-11" disabled={pending} onClick={onSignOut}>
+    <Button type="button" variant="ghost" className={cn("h-11", className)} disabled={pending} onClick={onSignOut}>
       <LogOutIcon data-icon="inline-start" />
       Sign out
     </Button>

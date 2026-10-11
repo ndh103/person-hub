@@ -136,5 +136,5 @@ These are the Tester's priority with a real project (architecture T1–T11). The
 ## Follow-ups
 
 - Designer: produce `output/designs/auth/`, then reconcile these pages with it.
-- Implement the full sidebar shell (`output/designs/app-shell/`). `(app)/layout.tsx` is currently a minimal frame with the sign-out button.
+- ~~Implement the full sidebar shell.~~ Done 2026-10-11; see [finisher.md](finisher.md).
 - A Content-Security-Policy with script nonces is not set yet. The root layout uses one inline script (pre-paint theme), and Next.js needs a nonce or hash setup for a strict CSP. Review this when the shell lands.

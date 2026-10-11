@@ -2,7 +2,7 @@
 
 A planned private hub for Finisher (tasks and projects) and Events, usable from phone and laptop browsers. Stack: Next.js frontend/API, Supabase database/Auth, Tailwind CSS, and shadcn/ui, targeting Vercel hosting.
 
-The Next.js application is scaffolded and implements sign-in with Supabase Auth: password, magic link or code, and Google, for invited users only. Finisher and Events are not built yet, and nothing has been deployed.
+The Next.js application implements sign-in with Supabase Auth (password, magic link or code, and Google, for invited users only), the sidebar shell, and Finisher. Events is a placeholder. Nothing has been deployed, and the Finisher migration has not been applied to a Supabase project.
 
 ## Run locally
 
@@ -11,7 +11,9 @@ The Next.js application is scaffolded and implements sign-in with Supabase Auth:
 3. Configure the Supabase project as described in [docs/architecture/auth.md](docs/architecture/auth.md#configuration) (sign-ups off, redirect URLs, email templates, SMTP, Google).
 4. `npm run dev` and open http://localhost:3000.
 
-Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`. Implementation status and verification: [docs/implementation/auth.md](docs/implementation/auth.md).
+For Finisher, apply `supabase/migrations/` to the project (see [docs/implementation/finisher.md](docs/implementation/finisher.md#migration-and-setup)).
+
+Checks: `npm run lint`, `npm run typecheck`, `npm test` (unit tests, plus database security tests on an in-process Postgres), `npm run build`. Implementation status and verification: [auth](docs/implementation/auth.md), [Finisher and shell](docs/implementation/finisher.md).
 
 ## Working with the role skills
 

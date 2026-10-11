@@ -1,0 +1,181 @@
+# Finisher and app shell: implementation notes
+
+- Feature slugs: `finisher`, `app-shell`
+- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified").
+- Date: 2026-10-11
+- Inputs:
+  - [requirements/finisher.md](../../requirements/finisher.md) v2 (FIN-001 to FIN-033)
+  - [App shell design](../../output/designs/app-shell/design-notes.md) and its `index.html`
+  - [Foundation theme](../../output/designs/_foundation/theme.css)
+  - [ADR-0001](../architecture/decisions/ADR-0001-supabase-auth-ssr.md)
+  - [Auth implementation](auth.md)
+- Decisions made here: [ADR-0002: Finisher writes go through database functions](../architecture/decisions/ADR-0002-finisher-rpc-writes.md) (proposed)
+
+## Handoff gaps
+
+- **No Finisher design (`output/designs/finisher/`).** Layouts follow the app-shell reference (its Finisher Today preview, tokens, 44px targets, card lists) and the layout rules in FIN-018. Replace or adjust them when the Designer delivers the Finisher reference.
+- **No Finisher architecture (`docs/architecture/finisher.md`).** The requirements hand the TA these questions:
+  - the tables;
+  - the slot and status history;
+  - the date calculations;
+  - transition enforcement;
+  - idempotent marking.
+
+  I answered them in ADR-0002 and in "Data model" below so that implementation could proceed. The TA should review them.
+
+## Requirement coverage
+
+| ID | Where |
+| --- | --- |
+| FIN-001 | `components/shell/apps.ts` (Finisher first, then Events); `app/(app)/finisher/(tabs)/` with one URL per tab; `finisher-tabs.tsx`; loading skeletons in every page; `error.tsx` with Retry; title "Finisher · Personal Hub"; focus on the heading after navigation (`route-focus.tsx`) |
+| FIN-031 | `views/today-view.tsx`, `getToday()`: sessions (timed first), overdue, due today, collapsed "Done today"; optimistic session check-off that reverts on failure (`session-control.tsx`); Skip in the item menu; summary line; revisit-due count with link; empty state |
+| FIN-019, 020 | `task-form-dialog.tsx` (create and edit, the project is preselected on a project page, values are kept on error, the submit button is disabled while pending); `views/task-view.tsx` |
+| FIN-021 | `TaskCheck` in `task-row.tsx` (optimistic, toast with Undo → reopen) |
+| FIN-022 | `views/tasks-view.tsx`, `task-group-list.tsx`: Overdue / Today / Upcoming / No date, then a collapsed Parked group with "Due for revisit"; project filter in `?project=`; 50 per group with "Load more" (`GET /api/finisher/tasks`) |
+| FIN-023, 024 | `project-form.tsx` (new with slots, edit), `views/project-view.tsx`, `project-actions.tsx` |
+| FIN-025 | `slot-list.tsx`, `slot-fields.tsx`; versioned slots, where changes apply from today (`finisher_update_slot`, `finisher_remove_slot`); removal is confirmed |
+| FIN-026 | `finisher_private.is_scheduled` (database) and `domain/schedule.ts` `listSessions` (reads) |
+| FIN-027 | `finisher_mark_session` (window, schedule and idempotent upsert); 7-day strip `StripCell` |
+| FIN-028 | `summarizeWeek`, `formatWeekRate`, `formatWeekDetails`: the current week and 4 previous weeks; "No sessions scheduled"; counts as text |
+| FIN-033 | `views/projects-view.tsx` |
+| FIN-029, 012, 013, 030, 016 | `lifecycle-dialogs.tsx` (Finish with Done when and the open-task count, Let go with a reason, Park and change date, Reopen with confirmation, Delete naming the item); database lifecycle in `finisher_task_action` and `finisher_project_action` |
+| FIN-032 | `views/closed-view.tsx`, `closed-list.tsx`: type and outcome filters, counts with no percentage, 20 per page with "Load more" (`GET /api/finisher/closed`), duration and sessions for projects, reason or reflection |
+| FIN-017 | See "Security controls" |
+| FIN-018 | Single column below `lg`, two columns at `lg`; tabs fit at 320px; 44px targets; secondary actions in menus; real buttons with `aria-pressed` and item names; labelled fields with linked errors (`form-field.tsx`), focus moved to the first invalid field |
+| SHELL-001 to 004 | `components/shell/*`, `app/(app)/layout.tsx`, `home/page.tsx`, and an `events/page.tsx` placeholder ("Coming soon") so the nav item is not a 404 |
+
+## Data model (`supabase/migrations/20261011120000_finisher.sql`)
+
+| Table | Purpose |
+| --- | --- |
+| `finisher_projects` | Status, revisit date, `close_note` (reflection or reason), `started_on` (local date), `closed_at` (UTC) |
+| `finisher_project_periods` | Dates when the project was Active, as `[start_on, end_on)`. Park, finish and let go close the open period at today. Unpark and reopen open one from today, rejoining a period that ended today. |
+| `finisher_slots` / `finisher_slot_versions` | Slot identity plus versions valid over `[valid_from, valid_to)`. An edit closes the current version at today and opens a new one, or updates it in place when it started today. |
+| `finisher_session_marks` | One row per (slot, date) holding `done` or `skipped`. Unmarked means no row, and the primary key makes marking idempotent. |
+| `finisher_tasks` | Status, due date and optional time, revisit date, reason, `closed_at`. The project link uses a composite foreign key with `on delete set null (project_id)` (assumption A5). |
+
+Scheduling rule (FIN-026): a session exists on date D when all of these hold:
+- a version covering D includes D's ISO weekday;
+- a period covers D.
+
+A recorded mark always counts as a session. This means a session marked today stays scheduled after the slot changes or is removed (FIN-025).
+
+Week summary (FIN-028): `done / scheduled`, plus counts of skipped, missed, unmarked and remaining sessions:
+- **Missed:** unmarked, older than 7 days.
+- **Unmarked:** past, still within the marking window.
+- **Remaining:** today or later in the week.
+
+Timezone (assumption A1): `TimeZoneSync` writes the browser's IANA zone to the `ph-tz` cookie (SameSite=Lax, 1 year, not HttpOnly, because it is not a secret). The server validates it with `Intl` and passes it as `p_tz`. The database checks it against `pg_timezone_names` and derives "today" itself. UTC is the fallback.
+
+## API (`src/app/api/finisher/**`)
+
+All routes go through `handleFinisherRequest` (`features/finisher/server/route.ts`):
+
+- Mutations require `Origin` = site origin (otherwise 403) and a JSON content type when they have a body (otherwise 415).
+- The session is checked before any input is read (401 otherwise).
+- Bodies are limited to 32 KB and must be JSON objects.
+- Errors come back as `{ error, fields? }` using safe codes.
+- Every response sends `Cache-Control: private, no-store`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/finisher/tasks?group&project&offset` | Load more tasks. `offset` must be a multiple of 50 between 0 and 10,000. |
+| `POST /api/finisher/tasks` | Create a task |
+| `PATCH` / `DELETE /api/finisher/tasks/[id]` | Edit or delete a task |
+| `POST /api/finisher/tasks/[id]/actions` | `done`, `park`, `unpark`, `let_go`, `reopen` |
+| `POST /api/finisher/projects` | Create a project with slots |
+| `PATCH` / `DELETE /api/finisher/projects/[id]` | Edit or delete a project |
+| `POST /api/finisher/projects/[id]/actions` | `finish`, `park`, `unpark`, `let_go`, `reopen` |
+| `POST /api/finisher/projects/[id]/slots` | Add a slot |
+| `PATCH` / `DELETE /api/finisher/slots/[id]` | Edit or remove a slot |
+| `PUT /api/finisher/sessions` | `{slotId, date, state}`, where `state` is `done`, `skipped` or `unmarked` |
+| `GET /api/finisher/closed?type&outcome&cursor` | Load more closed items |
+
+Server Components call the same server-only queries directly (`features/finisher/server/queries.ts`), without an internal HTTP request.
+
+## Security controls as built
+
+- Identity comes from `requireUser()` (`getClaims()`) in every route and again in `finisherContext()` at the start of every query and mutation.
+- Reads use the caller's session with the publishable key, and RLS limits rows to the owner. Writes are database functions that derive the owner from `auth.uid()` (ADR-0002).
+- Direct table writes are not granted to anyone. The private helpers are not executable through the API.
+- Composite foreign keys stop cross-user links: task → project, slot → project, version → slot, mark → slot.
+- Only allowlisted fields are parsed. Unknown fields, including `user_id` and `status`, are ignored. A malformed ID returns 404 without a database call.
+- Responses and pages are `private, no-store`. The static shell from partial prerendering holds only skeletons, and personal content streams in at request time. Document titles for task and project pages are generic, so personal titles stay out of browser history and tab titles.
+- Logs contain only error codes. Database messages, which can echo personal text, are dropped.
+- Abuse controls: body size limits, bounded pagination, and an idempotent marking design. **There is no per-user write rate limit** (see Debt).
+
+## Checks run (2026-10-11, Windows, Node 22.2.0)
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Pass |
+| `npm run lint` | Pass |
+| `npm test` | **122 passed**, in 6 files. |
+| `npm run build` | Pass. All Finisher pages are partially prerendered (◐), and all APIs are dynamic. |
+| `npm audit --omit=dev` | **7 high**, all from one new advisory on `braces` (GHSA-vfj7-8cjw-p6xm, every version affected). The path is `shadcn` → `fast-glob` / `ts-morph` → `micromatch` → `braces`. `shadcn` is a runtime dependency only because `globals.css` imports `shadcn/tailwind.css`. The vulnerable code is the CLI's file globbing, which the app never runs. The only offered fix (`--force`) downgrades shadcn to 1.0.0, so it was not applied. This is not caused by this change: the lockfile diff only adds `@electric-sql/pglite`. Recheck when `braces` publishes a fix. |
+
+The 122 tests break down as follows:
+
+| Test file | What it runs |
+| --- | --- |
+| `supabase/tests/finisher-rls.test.ts` (42) | The **real migration** on PGlite with Supabase-like roles, default grants and `auth.uid()`, covering: <ul><li>anonymous, owner and other-user reads and writes;</li><li>direct table writes refused;</li><li>lifecycle tables;</li><li>validation limits;</li><li>marking window edges at day 0, 7 and 8 and the future;</li><li>a slot edit and removal mid-history;</li><li>park and unpark on the same day;</li><li>deleting a project.</li></ul> A mutation check confirmed these tests fail when the owner predicate is removed from the read policy. |
+| `tests/unit/finisher-domain.test.ts` (19) | Timezone and DST handling, overdue checks at the day boundary, the schedule with slot edits and park/unpark, week summaries, and validation |
+| `tests/unit/finisher-routes.test.ts` (11) | The CSRF guard, 401 before any data access, allowlisting, ownership not taken from input, error mapping with no leaked text, and pagination bounds |
+| Earlier auth tests (50) | Unchanged |
+
+**Browser run against a mock Supabase.** The harness lives in a scratch directory and is not committed. It ran the production build (`next start`) against a small local stand-in for Supabase:
+- Auth `/user` was mocked.
+- A subset of PostgREST was translated to SQL on PGlite with the real migration, role and RLS per request.
+
+The run used headless Chrome with the timezone `Asia/Ho_Chi_Minh` and passed **126 of 126 checks**:
+
+- **Pages.** All ten pages render at 1280, 390 and 320 px, plus dark mode at 1280, with no horizontal overflow and no console errors.
+- **Today.** Navigation order and `aria-current` are correct, the title is right, and the `ph-tz` cookie is set. Marking a session is optimistic and the summary updates. Skip works, and Done today appears.
+- **Tasks.** Add task validation works: a required title, a time without a date rejected, and focus moved to the field. A new task appears without a reload. Check-off with Undo works, as do the task groups, the Parked group labelled "Due for revisit", and the project filter.
+- **Project page.** Marking a past session in the 7-day strip works. A slot edit applies, and the Finish dialog shows the Done when and the open-task count.
+- **Closed tab.** It shows the filters' counts, the reflection and the reason.
+- **Phone drawer.** It opens as a dialog. Choosing an app closes it, and focus moves to the heading. Escape closes it.
+- **Security probes.**
+  - A second user gets 404 when acting on the owner's task or deleting the owner's project, and sees only their own tasks.
+  - A cross-origin POST gets 403.
+  - An anonymous API call gets 401.
+  - An anonymous page request gets a 307 to `/sign-in?next=…`.
+  - Pages are `private, no-store`.
+
+Two bugs found and fixed during these checks:
+- `Intl` date formatting differed by ICU version ("Wed, 7 Oct" vs "Wed 7 Oct"), a hydration risk. Dates are now formatted by hand.
+- A slot added, marked and removed on the same day lost its only version. Today's version is now kept.
+
+## Not verified
+
+- **No real Supabase project.** Nothing was run against one: PostgREST's exact filter and embedding behaviour, real JWT verification, the Supabase default grants on an actual project, and Postgres 15/17 (PGlite is Postgres 18) are untested. The migration has **not** been applied anywhere.
+- **Database types** were not generated (`supabase gen types`): the Supabase CLI is not installed. The queries use hand-written row types.
+- **Accessibility tools.** No real screen readers (NVDA, VoiceOver), real phones or Safari, 200% zoom, or forced-colors mode.
+
+## Migration and setup
+
+1. Review `supabase/migrations/20261011120000_finisher.sql` and then apply it to the project, with `supabase db push` or the SQL editor, after your own authorization. It creates the six tables, the `finisher_private` schema and twelve functions. Rollback: drop the `finisher_*` functions, the tables and `finisher_private`. All Finisher data is lost.
+2. In the API settings, keep `finisher_private` out of the exposed schemas (it is not exposed by default).
+3. Run `supabase gen types typescript` once the CLI is available, and consider replacing the hand-written row types.
+4. No new environment variables. `.env.example` is unchanged.
+
+## Tester notes
+
+- `npm test` runs the database tests in-process. No Docker or Supabase CLI is needed.
+- Priorities with a real project:
+  - FIN-017 through PostgREST directly with a second account: `select`/`insert`/`update`/`delete` on each `finisher_*` table, and RPC calls with the other user's IDs.
+  - The `anon` key with no session.
+  - A day boundary in a non-UTC zone.
+  - Marking on day 7 and day 8.
+  - Park and unpark mid-week.
+- Suggested committed Playwright flows mirror the scratch run above. Authenticated browser state must stay out of Git.
+
+## Debt and follow-ups
+
+- No per-user write rate limit. Supabase has none on PostgREST by default, and CLAUDE.md asks for documented abuse controls. TA to decide; options are a Postgres-side counter table, or Vercel firewall rules.
+- **Timezone aliases.** A browser zone that `Intl` accepts but Postgres lacks makes writes fail with a generic error. This is rare; consider mapping it or falling back to UTC.
+- **Undo after check-off reopens to Open.** A task that was Parked before it was completed does not return to Parked.
+- **Closed-tab cursor.** It pages by `closed_at` only, so two items closed in the same microsecond at a page boundary could be skipped.
+- **Read limits.** The project index is capped at 1,000 projects and the task lists at their page sizes. The PostgREST `max_rows` setting (1,000 by default) caps other reads silently.
+- **Drawer overlay.** It uses shadcn's default (10% black with blur), not the 50% black in the shell design.
+- **Content-Security-Policy with nonces.** Still open, from the auth notes.
