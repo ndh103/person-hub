@@ -137,7 +137,7 @@ The email templates are unchanged and point at `{{ .SiteURL }}/auth/confirm?toke
 | Name | Where | Purpose |
 | --- | --- | --- |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | `.env.local` (build time; bundled into the SPA by design) | Browser Auth client |
-| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | `.dev.vars` locally; `wrangler secret put` in production | Worker client acting as the caller |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | `.dev.vars` locally; Worker variables set by the deploy workflow in production | Worker client acting as the caller |
 
 All four are browser-safe values. The Google client secret is stored in Supabase. The secret key (`sb_secret_…`) is not added anywhere. Only `.env.example` and `.dev.vars.example` are committed.
 

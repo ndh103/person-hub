@@ -114,14 +114,42 @@ Every route runs `requireUser` first (see auth below). Writes also pass `guardWr
 3. Supabase dashboard: add `http://localhost:3000/**` and `http://localhost:4173/**` to the redirect URLs, and the same origins to the Google OAuth client's JavaScript origins. The rest of the checklist is in [architecture](../architecture/auth.md#configuration).
 4. Run `npm run dev` and open http://localhost:3000. For the production build in workerd, run `npm run preview` (port 4173).
 
-## Deploying (not done; needs your authorization)
+## Deploying
 
-1. `npx wrangler login`.
-2. `npx wrangler secret put SUPABASE_URL` and `npx wrangler secret put SUPABASE_PUBLISHABLE_KEY`.
-3. Make sure `.env.local` (or CI env) has the `VITE_*` values. They are baked in at build time.
-4. `npm run deploy`. The site is served at `https://person-hub.<account-subdomain>.workers.dev`, or attach a custom domain.
-5. Add that origin to the Supabase Site URL and redirect URLs, and to the Google JavaScript origins.
-6. Rollback: `npx wrangler rollback`.
+Deploys go through GitHub Actions ([.github/workflows/ci-deploy.yml](../../.github/workflows/ci-deploy.yml), added 2026-10-11; it has not run on GitHub yet).
+
+- **`check`** runs on every pull request and push: `npm ci`, lint, typecheck, test and a build.
+- **`deploy`** runs only for pushes to `main` (or a manual run on `main`), after `check` passes, in the `production` environment, one at a time.
+  1. It checks that the settings below exist, and refuses a "publishable" key that looks like a secret key.
+  2. It builds the SPA with `VITE_SUPABASE_*` from the environment variables.
+  3. It runs `wrangler deploy --var SUPABASE_URL:… --var SUPABASE_PUBLISHABLE_KEY:…`.
+
+  This keeps one copy of the two browser-safe Supabase values, used for both the SPA build and the Worker.
+- **Hardening:** actions pinned to commit SHAs (`actions/checkout` v7.0.1, `actions/setup-node` v7.0.0), `contents: read` permissions, `persist-credentials: false`, and no `${{ }}` expressions inside shell scripts. Wrangler comes from the lockfile rather than a third-party deploy action.
+
+### One-time setup
+
+1. **Cloudflare.** The Worker name must be `person-hub` (`wrangler.jsonc`).
+   - Create an API token: My Profile → API Tokens → template **Edit Cloudflare Workers**, limited to your account.
+   - Note the Account ID.
+   - Don't also enable the dashboard's Git integration (Workers Builds) for this repo, or each push deploys twice.
+2. **Remove old secrets.** If `SUPABASE_URL` or `SUPABASE_PUBLISHABLE_KEY` were ever set with `wrangler secret put`, delete them (`npx wrangler secret delete <name>`). The workflow now sets those names as plain variables, and the two would clash.
+3. **GitHub** → Settings → Environments → **New environment `production`**. Under deployment branches, allow only `main`. Then add:
+
+   | Kind | Name | Value |
+   | --- | --- | --- |
+   | Secret | `CLOUDFLARE_API_TOKEN` | The token from step 1 |
+   | Variable | `CLOUDFLARE_ACCOUNT_ID` | Your account ID |
+   | Variable | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
+   | Variable | `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (never the secret key) |
+   | Variable | `SITE_URL` (optional) | The live URL, shown as a link on each deploy |
+
+4. **Supabase and Google.** Add the live origin (`https://person-hub.<account-subdomain>.workers.dev` or your custom domain) to the Supabase Site URL and redirect URLs, and to the Google OAuth JavaScript origins.
+
+### Manual deploy and rollback
+
+- `npm run deploy` from a machine logged in with `npx wrangler login` builds with `.env.local` and deploys with `--keep-vars`, so the Worker keeps the variables the last CI deploy set. Without that flag, Wrangler would delete them.
+- Rollback: `npx wrangler rollback`, or revert the commit on `main`.
 
 ## Debt and follow-ups
 

@@ -1,0 +1,102 @@
+# Checks every pull request and push; deploys main to Cloudflare Workers.
+# Setup (GitHub → Settings): see docs/implementation/platform.md, "Deploying".
+name: CI and deploy
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: the jobs only read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # Unit and API tests, plus the database security tests on an in-process Postgres.
+      - run: npm test
+      # Proves the SPA and Worker build; this output is not deployed.
+      - run: npx vite build
+
+  deploy:
+    name: Deploy to Cloudflare
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Holds the deploy secrets and variables; restrict it to the main branch.
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    # Never run two deploys at once, and never cancel one halfway.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      # Browser-safe Supabase values (ADR-0003): baked into the SPA at build
+      # time and passed to the Worker as plain variables.
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check deploy configuration
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=0
+          for name in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!name}" ]; then echo "::error::Variable $name is not set in the production environment."; missing=1; fi
+          done
+          if [ "$HAS_TOKEN" != "true" ]; then echo "::error::Secret CLOUDFLARE_API_TOKEN is not set in the production environment."; missing=1; fi
+          case "$SUPABASE_PUBLISHABLE_KEY" in
+            sb_secret_*|*service_role*) echo "::error::SUPABASE_PUBLISHABLE_KEY looks like a secret key. Use the publishable key."; missing=1 ;;
+          esac
+          exit $missing
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: npx vite build
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          npx wrangler deploy
+          --var "SUPABASE_URL:$SUPABASE_URL"
+          --var "SUPABASE_PUBLISHABLE_KEY:$SUPABASE_PUBLISHABLE_KEY"
+          --message "GitHub Actions: $GITHUB_SHA"

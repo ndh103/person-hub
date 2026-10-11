@@ -34,7 +34,7 @@ Checks:
 - `npm run build`
 - `npm run preview`: serves the production build in workerd
 
-Deployment steps (not yet run): [docs/implementation/platform.md](docs/implementation/platform.md#deploying-not-done-needs-your-authorization).
+Deployment: GitHub Actions deploys `main` to Cloudflare; one-time setup in [docs/implementation/platform.md](docs/implementation/platform.md#deploying).
 
 Implementation notes:
 
