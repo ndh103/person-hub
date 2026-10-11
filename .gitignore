@@ -22,3 +22,10 @@ supabase/.branches/
 # Python bytecode from skill scripts
 __pycache__/
 *.py[cod]
+
+# Next.js generated and misc
+next-env.d.ts
+build/
+*.pem
+npm-debug.log*
+.DS_Store

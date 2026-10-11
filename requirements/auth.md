@@ -136,6 +136,7 @@ Only people the owner has invited can sign in to the hub, on phone and laptop br
 
 ## Change notes
 
+- 2026-10-11 (implementation): AUTH-002 rate limiting was clarified so that it is consistent with AUTH-008. A per-address email limit shows the same "we sent…" message, and the page offers resend only after a 60-second countdown. "Please wait a moment" appears only for limits that do not depend on the address.
 - 2026-10-11: Initial version. This answers the brief's open question about the access model and sign-in method.
 
 ## Handoff dependencies

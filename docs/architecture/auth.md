@@ -37,7 +37,7 @@
 | Path (future) | Responsibility |
 | --- | --- |
 | `src/lib/supabase/server.ts` | `createClient()` builds a `createServerClient` with the publishable key and `cookies()` `getAll`/`setAll`, once per request. In Server Components, `setAll` is wrapped in try/catch because they cannot write cookies. |
-| `src/lib/supabase/client.ts` | `createBrowserClient` (a singleton). It is not used for application data. It is reserved for any browser-only Auth call that is ever needed. |
+| `src/lib/supabase/client.ts` | **Not created** (2026-10-11): no flow needs a browser Supabase client. Add one only for a documented browser-only Auth need. |
 | `src/proxy.ts` | Refreshes the session (FLOW-0) and redirects signed-out **page** requests to `/sign-in?next=…`. It adds `Cache-Control: private, no-store` and returns the Supabase response object together with its cookies. |
 | `src/lib/server/auth.ts` (`server-only`) | `requireUser()` calls `getClaims()` and returns `{ userId: claims.sub, email }`, or throws an `Unauthenticated` error that route handlers map to 401. `requireFreshUser()` calls `getUser()` for sensitive operations. It also contains `safeNext(value)` and `assertSameOrigin(request)`. |
 | `src/app/(auth)/…` | Pages outside the shell: `sign-in`, `sign-in/check-email`, `forgot-password`, `auth/error`. |
@@ -61,7 +61,7 @@ All `/api/auth/*` endpoints:
 | Method and path | Calls | Success | Failure (client sees) | Req |
 | --- | --- | --- | --- | --- |
 | POST `/api/auth/password` `{email, password, next?}` | `signInWithPassword` | 200 `{redirectTo}` + session cookies | 400 `invalid_credentials` (for any auth error); 429 `rate_limited`; 500 `unavailable` | AUTH-001 |
-| POST `/api/auth/otp` `{email, next?}` | `signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: SITE + '/auth/confirm?next=…' } })` | 200 `{sent: true}`, **including** when Supabase refuses because the user doesn't exist | 429 `rate_limited`; 500 `unavailable` | AUTH-002, 008 |
+| POST `/api/auth/otp` `{email, next?}` | `signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: SITE + safeNext(next) path } })`. The template returns this URL as `next`; only the path is kept, because a query string would not survive being embedded in the link. | 200 `{sent: true}`, **including** when Supabase refuses because the user doesn't exist | 429 `rate_limited`; 500 `unavailable` | AUTH-002, 008 |
 | POST `/api/auth/otp/verify` `{email, token, next?}` | `verifyOtp({ email, token, type: 'email' })` | 200 `{redirectTo}` + cookies | 400 `invalid_code` | AUTH-002 |
 | POST `/api/auth/google` `{next?}` | `signInWithOAuth({ provider: 'google', options: { redirectTo: SITE + '/auth/callback?next=…' } })` | 200 `{url}`. The PKCE code-verifier cookie is set **on this response**, and the page then does `location.assign(url)` | 500 `unavailable` | AUTH-003 |
 | POST `/api/auth/forgot` `{email}` | `resetPasswordForEmail(email, { redirectTo: SITE + '/auth/confirm?next=/account/set-password' })` | Always 200 `{sent: true}` | 429 `rate_limited` | AUTH-005, 008 |
@@ -70,7 +70,7 @@ All `/api/auth/*` endpoints:
 | GET `/auth/confirm?token_hash&type&next` | `verifyOtp({ token_hash, type })`, where `type` ∈ {`email`, `recovery`, `invite`}. Any other value is rejected. | 303 → `safeNext(next)` (recovery and invite go to `/account/set-password`) | 303 → `/auth/error` | AUTH-002, 004, 005, 009 |
 | GET `/auth/callback?code&next` (or `?error=…`) | `exchangeCodeForSession(code)` | 303 → `safeNext(next)` | `error` param or exchange failure → 303 `/sign-in?error=google`. A refusal because sign-up is disabled → `/sign-in?error=google_no_access` | AUTH-003 |
 
-Rate-limit note: Supabase limits email sends per address and per time window, and a 429 for an unknown address could leak information. Wherever possible, map rate limits to the same generic "please wait" message for every address (AUTH-008). This is a residual risk to test (R5).
+Rate-limit note (implemented 2026-10-11): a **per-address** email-send limit (`over_email_send_rate_limit`) is answered with the same `200 {sent:true}` as success, because reporting it would reveal that the address exists. The page enforces its own 60-second resend cooldown instead. Only IP- or client-wide limits (`over_request_rate_limit`) return 429 `rate_limited`. Timing differences between known and unknown addresses remain a residual risk to test (R5).
 
 The two GET routes establish a session. They are a **documented exception** to "no state-changing GET": they are entry points that external redirects require, they are protected by single-use token hashes and PKCE verifiers, and they only ever sign in the user the token was issued for.
 
@@ -194,7 +194,7 @@ The shell footer button POSTs to `/api/auth/sign-out`. The handler calls `signOu
 - The access token (a JWT) is stored in `sb-<project-ref>-auth-token` cookies, set by `@supabase/ssr` and refreshed by the proxy shortly before it expires.
 - `getClaims()` verifies the JWT locally. A session that has been **revoked**, by signing out elsewhere or by the dashboard, therefore stays accepted until the access token expires: up to the project's JWT expiry, 1 hour by default. Reducing the JWT expiry shortens this window. The refresh fails after revocation, so the user is signed out at the next refresh.
 - Any operation that must see revocation immediately uses `requireFreshUser()` (`getUser()`, a network call to Auth). Initially this is only the password change.
-- Cookie attributes: those set by `@supabase/ssr` (path `/`, `SameSite=Lax`, `Secure` in production). Do not override them to `SameSite=None`.
+- Cookie attributes (implemented 2026-10-11): `cookieOptions` sets `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` whenever `NEXT_PUBLIC_SITE_URL` is https. `@supabase/ssr` defaults to neither HttpOnly nor Secure. This is safe because no browser code reads these cookies (ADR-0001). Never use `SameSite=None`.
 
 ## Configuration
 
@@ -203,7 +203,7 @@ The shell footer button POSTs to `/api/auth/sign-out`. The handler calls `signOu
 | Area | Setting |
 | --- | --- |
 | Authentication → Sign In / Providers | **Allow new users to sign up: off.** Confirm email: on. Email provider: on. Google: on, with Client ID and Client Secret. Anonymous sign-ins: off. Manual linking: off. |
-| Authentication → URL Configuration | Site URL = the production URL. Redirect URLs: `http://localhost:3000/**`, `https://*-<vercel-team-slug>.vercel.app/**` (previews; see R4), and exact production paths `https://<prod-host>/auth/confirm` and `https://<prod-host>/auth/callback`. |
+| Authentication → URL Configuration | Site URL = the production URL. Redirect URLs: `http://localhost:3000/**`, `https://*-<vercel-team-slug>.vercel.app/**` (previews; see R4), and `https://<prod-host>/**`. A host-wide wildcard is needed because magic links redirect to the requested app path. `safeNext` still restricts the final destination. |
 | Authentication → Email templates | Edit the templates as listed below. |
 | Authentication → SMTP | **Set up custom SMTP before real use.** The built-in sender is limited to about 2 emails per hour. Check a provider's current free tier before choosing one (open question Q3 in the requirements). |
 | Authentication → Rate limits / Attack protection | Keep the defaults, and record their values in the test report. Optional CAPTCHA is not needed while sign-up is disabled. |
@@ -259,7 +259,7 @@ Sign-in needs **no server secret**. The Google client secret is stored in Supaba
 - **R3.** Revocation delay of up to the JWT expiry (see Session lifecycle).
 - **R4.** Vercel preview deployments use the same Supabase project as production unless separated, and the preview wildcard in the redirect allowlist lets any preview complete a sign-in. Mitigation: enable Vercel Deployment Protection on previews, or use a separate Supabase project for previews. Decide this at deployment time.
 - **R5.** Rate-limit responses may differ between known and unknown emails. Test this, and keep the "please wait" message identical for all addresses.
-- **R6.** Whether cookies set in a Route Handler through `cookies()` reach the browser on a JSON response, for the PKCE verifier in FLOW-3, must be verified on the scaffolded Next.js version.
+- **R6. Resolved 2026-10-11.** On Next.js 16.4.0, cookies set through `cookies()` in a Route Handler do reach the browser on a JSON response. This was observed for the PKCE verifier `Set-Cookie` headers from `POST /api/auth/google`; see docs/implementation/auth.md.
 
 ## Implementation steps (when implementation is requested)
 
