@@ -6,9 +6,10 @@
  * the application's globals.css. Light values on :root, dark values on .dark
  * (shadcn's class-based dark mode). Feature designs must not redefine these.
  *
- * Palette: bright, light orange (#F59563) with dark text, on ivory/charcoal neutrals (Claude-inspired).
- * Orange is never used as text or focus ring on light surfaces; use accent-foreground / ring.
- * Light sidebar = Anthropic orange (#D97757) frame with near-black text (5.33:1); never dim that text.
+ * Palette (2026-10-11, lighter): orange #F46530 with WHITE text (3.11:1, AA large text only; user choice, see design-system.md).
+ * Hover darkens to --primary-hover (#E0551F, 3.83:1); never lighten. Focus ring on light surfaces is #D94F1C.
+ * Light sidebar = the same orange frame with white text; active/hover pill #E0551F; never dim that text.
+ * Orange-tinted text on light surfaces uses --accent-foreground (rust), not --primary.
  */
 
 :root {
@@ -23,8 +24,9 @@
   --card-foreground: #141413;
   --popover: #ffffff;
   --popover-foreground: #141413;
-  --primary: #f59563;
-  --primary-foreground: #1f1e1d;
+  --primary: #f46530;
+  --primary-foreground: #ffffff;
+  --primary-hover: #e0551f;
   --secondary: #f0eee6;
   --secondary-foreground: #3d3d3a;
   --muted: #f0eee6;
@@ -35,16 +37,16 @@
   --destructive-foreground: #ffffff;
   --border: #e8e6dc;
   --input: #8a8880;
-  --ring: #c2603a;
+  --ring: #d94f1c;
 
-  --sidebar: #d97757;
-  --sidebar-foreground: #1f1e1d;
-  --sidebar-primary: #1f1e1d;
-  --sidebar-primary-foreground: #faf9f5;
-  --sidebar-accent: #e4a089;
-  --sidebar-accent-foreground: #1f1e1d;
-  --sidebar-border: #bd6a4e;
-  --sidebar-ring: #1f1e1d;
+  --sidebar: #f46530;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #f46530;
+  --sidebar-accent: #e0551f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ff9a62;
+  --sidebar-ring: #ffffff;
 }
 
 .dark {
@@ -54,8 +56,9 @@
   --card-foreground: #faf9f5;
   --popover: #30302e;
   --popover-foreground: #faf9f5;
-  --primary: #f59563;
-  --primary-foreground: #1f1e1d;
+  --primary: #f46530;
+  --primary-foreground: #ffffff;
+  --primary-hover: #e0551f;
   --secondary: #30302e;
   --secondary-foreground: #e8e6dc;
   --muted: #30302e;
@@ -70,8 +73,8 @@
 
   --sidebar: #1a1918;
   --sidebar-foreground: #e8e6dc;
-  --sidebar-primary: #f59563;
-  --sidebar-primary-foreground: #1f1e1d;
+  --sidebar-primary: #f46530;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #43291e;
   --sidebar-accent-foreground: #ffc9b0;
   --sidebar-border: #3e3d39;

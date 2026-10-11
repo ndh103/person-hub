@@ -1,7 +1,7 @@
 # Personal Hub design system (foundation)
 
 - Status: draft
-- Date: 2026-10-08
+- Date: 2026-10-08; revised 2026-10-11 (bright orange with white text)
 - Source: first designer request (app shell landing page). The visual direction is not yet user-approved.
 - Tokens: [theme.css](theme.css), the single source of truth for colors, fonts and radius.
 - First consumer: [app-shell design](../app-shell/design-notes.md)
@@ -26,16 +26,18 @@ Run `python .claude/skills/ui-ux-pro-max/scripts/search.py "personal life log ta
 
 ## Colour
 
-Light and dark themes both ship. Direction (user requests, 2026-10-08): a light, bright orange for a more playful feel, in the style of Claude Code / Anthropic, on warm ivory (light) and charcoal (dark) neutrals. This is colour inspiration only; no Anthropic logo, name, or brand assets are used.
+Light and dark themes both ship. Direction (user requests, 2026-10-11): an orange theme with **white text** on orange, for buttons and for the sidebar frame, then "lighter orange please" with a reference shot (bright orange drawer and button, white text, roughly #FF9A62 to #FF6B3A). Colour inspiration only; no third-party brand assets are used.
 
-- `--primary` is `#F59563` in both themes, with near-black `--primary-foreground` (`#1F1E1D`, 7.42:1). Filled buttons, the pressed session check-off toggle and the logo monogram use this pair.
-- Rule: on light surfaces orange is too light for text or focus rings (2.13:1 on ivory). Use `--accent-foreground` (deep rust `#8A3A1C`) for orange-tinted text and links, and `--ring` (`#C2603A`) for focus. In dark mode the orange itself is readable and is also the ring.
-- `--accent` / `--sidebar-accent` are peach tints (light) or brown (dark) for hover and active navigation; text and icons on them use `--accent-foreground`.
-- The active menu item's leading bar uses `--sidebar-primary`. In light mode it is decorative (1.94:1); the active state is carried by the accent background, semibold label and rust icon.
-- Sidebar / frame (2026-10-08, user reference: coloured frame with a floating content card): light theme uses Anthropic orange `#D97757` as `--sidebar`, which is also the page frame colour behind the content card. White text on it fails AA (3.12:1), so sidebar text is near-black `#1F1E1D` (5.33:1) at full strength. Never dim it: 80% opacity already drops to 3.96:1. Hierarchy comes from size, weight and uppercase. The active item uses a lighter orange pill `--sidebar-accent` `#E4A089` (text 7.68:1), bold text and a near-black bar (`--sidebar-primary`). Focus on the frame uses `--sidebar-ring` (near-black). Dark theme frame is `#1A1918` behind a `#262624` card.
+- `--primary` is bright orange `#F46530` in both themes, with white `--primary-foreground`. Filled buttons, the pressed session check-off toggle and the skip link use this pair.
+- **Accepted contrast trade-off (user choice):** white on `#F46530` is **3.11:1**. That meets WCAG AA only for large text (≥24px, or ≥18.66px bold) and for non-text UI; normal-size white labels (buttons, sidebar links) fall short of 4.5:1. `#F46530` is the lightest orange that still reaches 3:1; the reference's own `#FF6B3A`-ish orange is about 2.8:1. Mitigations: white labels on orange are semibold (buttons) or medium (nav), never dimmed, and active/hover states use a darker orange. The darker `#C4511A` (4.63:1, full AA) was tried earlier the same day and rejected as too dark.
+- `--primary-hover` `#E0551F` (white 3.83:1) is a foundation addition beyond the shadcn variable set. Hover **darkens**; never use `hover:bg-primary/90` or opacity, which lightens the button and lowers white-text contrast further.
+- `--ring` is `#D94F1C` in light (3.92:1 on background, 4.13:1 on card); `#F46530` alone would be 2.95:1 on ivory, under the 3:1 non-text minimum. Dark keeps `#F59563`.
+- Orange-tinted text and links on light surfaces use `--accent-foreground` (rust `#8A3A1C`); never use `--primary` as text on light surfaces (2.95:1). `--accent` (peach tint light, brown dark) remains the hover and icon-tile surface in content.
+- Sidebar / frame (light): `--sidebar` is the same `#F46530` with white `--sidebar-foreground` (3.11:1). Never dim that text. Hover and the active item use a darker orange pill `--sidebar-accent` `#E0551F` with white text (3.83:1); the active item adds semibold text and a white leading bar (`--sidebar-primary`). The reference's translucent white cards were not used for the active pill, because lightening the pill would drop white text further. The monogram is white with orange letters (3.11:1). Focus on the frame uses a white ring (`--sidebar-ring`, 3.11:1 non-text). `--sidebar-border` `#FF9A62` is decorative only.
+- Sidebar / frame (dark): kept charcoal `#1A1918` behind a `#262624` card, with light text and the brown active pill (assumption, easy to change). The monogram and active bar use the primary orange with white text.
 - Destructive stays red (`#B91C1C` light, `#F87171` dark), distinct from the orange.
 
-Superseded earlier the same day: teal primary, then deep terracotta `#B4532F` with white text.
+History: teal, then terracotta `#B4532F` with white text, then light orange `#F59563` with near-black text on a `#D97757` frame (all 2026-10-08); `#C4511A` with white text (2026-10-11, rejected as too dark); bright `#F46530` with white text (2026-10-11, current).
 
 ### Contrast checks (WCAG 2.x ratio, computed with a script)
 
@@ -43,25 +45,27 @@ Superseded earlier the same day: teal primary, then deep terracotta `#B4532F` wi
 | --- | --- | --- |
 | foreground / background | 17.50 | 14.39 |
 | card-foreground / card | 18.43 | 12.55 |
-| primary-foreground / primary (buttons, monogram) | 7.42 | 7.42 |
-| accent-foreground / accent (active nav text, icon) | 6.71 | 9.04 |
+| primary-foreground / primary (buttons, pressed toggle) | **3.11** (large text only) | **3.11** (large text only) |
+| primary-foreground / primary-hover (button hover) | 3.83 | 3.83 |
+| accent-foreground / accent | 6.71 | 9.04 |
 | accent-foreground text / card (links) | 7.77 | 8.96 |
 | muted-foreground / muted | 5.67 | 6.42 |
 | muted-foreground / background | 6.26 | 7.36 |
 | secondary-foreground / secondary | 9.38 | 10.57 |
 | destructive-foreground / destructive | 6.47 | 6.15 |
 | destructive text on card | 6.47 | 4.78 |
-| sidebar-foreground / sidebar (frame) | 5.33 | 14.03 |
-| sidebar-accent-foreground / sidebar-accent (active pill) | 7.68 | 9.04 |
-| sidebar-primary-foreground / sidebar-primary (monogram) | 15.80 | 7.42 |
-| sidebar-ring / sidebar (non-text) | 5.33 | 7.83 |
-| ring / background (non-text, ≥3:1) | 3.96 | 6.76 |
-| ring / card (non-text, ≥3:1) | 4.18 | 5.90 |
+| sidebar-foreground / sidebar (frame) | **3.11** (large text only) | 14.03 |
+| sidebar-accent-foreground / sidebar-accent (active pill, hover) | 3.83 | 9.04 |
+| sidebar-primary-foreground / sidebar-primary (monogram) | 3.11 | 3.11 |
+| sidebar-ring / sidebar (non-text, ≥3:1) | 3.11 | 7.83 |
+| sidebar-ring / sidebar-accent (non-text, ≥3:1) | 3.83 | n/a |
+| ring / background (non-text, ≥3:1) | 3.92 | 6.76 |
+| ring / card (non-text, ≥3:1) | 4.13 | 5.90 |
 | input border / card (non-text, ≥3:1) | 3.55 | 3.48 |
 | input border / background (non-text, ≥3:1) | 3.37 | 3.99 |
-| primary / background (decorative in light) | 2.13 | 6.76 |
+| primary button edge / background (non-text) | 2.95 | 4.87 |
 
-All text pairs meet AA (4.5:1). `--border` is decorative separation only; form controls use `--input`.
+All text pairs meet AA (4.5:1) except white on the orange primary, sidebar and hover pill (3.11 to 3.83:1), an accepted user choice listed above. `--border` is decorative separation only; form controls use `--input`.
 
 ## Typography
 
@@ -93,9 +97,9 @@ Lucide (shadcn/ui default, `lucide-react` in production), 20px in navigation, 16
 
 ## Using the tokens
 
-Copy `theme.css` values into the app's `globals.css` and map them for Tailwind v4 with `@theme inline { --color-background: var(--background); … }` exactly as shadcn/ui does. Design references show that mapping inline. Class names to use: `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `bg-primary text-primary-foreground`, `bg-sidebar`, `bg-sidebar-accent`, `border-border`, `ring-ring`, etc. No raw hex or palette utilities (`bg-orange-700`) in feature designs.
+Copy `theme.css` values into the app's `globals.css` and map them for Tailwind v4 with `@theme inline { --color-background: var(--background); … }` exactly as shadcn/ui does. Design references show that mapping inline. Also map `--color-primary-hover: var(--primary-hover)`. Class names to use: `bg-background`, `hover:bg-primary-hover`, `text-foreground`, `bg-card`, `text-muted-foreground`, `bg-primary text-primary-foreground`, `bg-sidebar`, `bg-sidebar-accent`, `border-border`, `ring-ring`, etc. No raw hex or palette utilities (`bg-orange-700`) in feature designs.
 
 ## Open questions
 
-- Orange direction confirmed by the user on 2026-10-08. Light/dark support still assumed; language and branding remain unresolved.
+- Bright orange `#F46530` with white text chosen by the user on 2026-10-11, accepting AA-large-only contrast for white labels. If full AA is later required, darken to `#C4511A` or switch labels to near-black. Dark-mode sidebar kept charcoal as an assumption. Light/dark support still assumed; language and branding remain unresolved.
 - Product name and logo mark: "Personal Hub" with a monogram placeholder is used until branding is decided.

@@ -2,7 +2,7 @@
 
 - Feature slug: `app-shell`
 - Status: draft (exploratory; no requirement exists yet)
-- Date: 2026-10-08; revised 2026-10-10 (Habit Tracker replaced by Finisher; Finisher listed first)
+- Date: 2026-10-08; revised 2026-10-10 (Habit Tracker replaced by Finisher; Finisher listed first); revised 2026-10-11 (bright orange with white text)
 - Source request: "Design a landing page for my person-hub, the screen a user lands on after logging in. Sidebar with a menu item per app (Events, Habit Tracker, …); clicking a menu item shows that app module on the right."
 - Related inputs: [CLAUDE.md](../../../CLAUDE.md), [project brief](../../../docs/project-brief.md), [foundation](../_foundation/design-system.md) and [theme.css](../_foundation/theme.css)
 - Related requirements: [requirements/finisher.md](../../../requirements/finisher.md) (FIN-001 navigation order and Today default). No shell requirement yet. Suggested BA artifact: `requirements/app-shell.md`. Placeholder IDs below (`SHELL-*`) are design proposals, not confirmed requirements.
@@ -30,11 +30,13 @@ Routes are hash URLs standing in for App Router paths: `#/home`, `#/finisher`, `
 
 Module content is illustrative. The Finisher preview shows a Today view (FIN-031): sessions today from projects, then overdue and due-today tasks, each with a "Done" toggle, plus the Today / Tasks / Projects / Closed tabs (FIN-001). Its exact layout, the Skip action, the Done-today group and the other tabs belong to the full Finisher design (`output/designs/finisher/`, not yet created). Event fields are fixtures until Events requirements exist. "Add task", "New project", "New event" and the non-Today tabs only show a toast.
 
+Change 2026-10-11: colours follow the revised foundation. Filled buttons and the pressed Done toggle are bright orange `#F46530` with white semibold text; the light sidebar, phone top bar and page frame are the same orange with white text (nav labels now medium weight); hover and the active nav pill are a darker orange `#E0551F`. White on this orange is 3.11:1 (AA large text only), an accepted user choice; see the foundation. Button hover changed from `hover:opacity-90` (which lightened the button and dropped white text below AA) to `hover:bg-primary-hover`. No layout or behaviour changed.
+
 Change 2026-10-10: Habit Tracker was removed from the hub. Its nav item, Home card and module preview were replaced by Finisher, which is now the first app; Events is second.
 
 ## Layout and responsive rules
 
-Visual style follows a user-supplied reference (2026-10-08): the whole page sits on the sidebar colour (Anthropic orange in light, near-black in dark), the sidebar has no border, and content floats on a large rounded card. The sidebar header shows the monogram, hub name and signed-in email. The footer has Sign out and a segmented Light/Dark switch. The reference's per-item count badges and external-link section are not used: counts are not confirmed scope.
+Visual style follows a user-supplied reference (2026-10-08): the whole page sits on the sidebar colour (bright orange `#F46530` with white text in light, near-black in dark), the sidebar has no border, and content floats on a large rounded card. The sidebar header shows the monogram, hub name and signed-in email. The footer has Sign out and a segmented Light/Dark switch. The reference's per-item count badges and external-link section are not used: counts are not confirmed scope.
 
 
 - ≥1024px (`lg`): two-column grid `17rem | 1fr` on `bg-sidebar`. Sidebar is `sticky`, full viewport height, with independent scroll for a long nav. The content card (`main.content-card`) has 20px top/right/bottom inset, `rounded-2xl`, `bg-background`, a soft shadow and a 1px `--sidebar-border` outline. Inner content is `max-w-5xl` with `px-12 py-14` padding.
@@ -45,7 +47,7 @@ Visual style follows a user-supplied reference (2026-10-08): the whole page sits
 
 ## Navigation behaviour
 
-- Active app: `aria-current="page"` on the link, styled as a lighter pill (`--sidebar-accent`), semibold label and a 3px leading bar in `--sidebar-primary` (near-black in light, orange in dark), so it does not rely on colour alone.
+- Active app: `aria-current="page"` on the link, styled as a darker orange pill (`--sidebar-accent`, white text) in light or a brown pill in dark, semibold label and a 3px leading bar in `--sidebar-primary` (white in light, orange in dark), so it does not rely on colour alone.
 - On navigation: content view swaps, `document.title` becomes `<App> · Personal Hub`, top-bar title updates, and focus moves to the new page's `h1` so screen-reader and keyboard users land on the new content. Initial load does not move focus.
 - Drawer: opens from the menu button (`aria-expanded`, `aria-controls`); while open it gets `role="dialog"` + `aria-modal="true"`, the rest of the page is `inert`, focus moves to the close button and Tab/Shift+Tab wrap inside. Closes on Escape, close button, overlay click, or selecting an item. Escape/close/overlay return focus to the menu button; selecting a different app moves focus to that app's heading. Resizing to desktop closes it.
 - When the drawer is closed it is `visibility: hidden`, so its links are removed from tab order and the accessibility tree.
@@ -54,7 +56,7 @@ Visual style follows a user-supplied reference (2026-10-08): the whole page sits
 
 ## Tokens
 
-Only foundation tokens via semantic classes: `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `bg-primary`/`text-primary-foreground`, `bg-accent`, `bg-sidebar`, `text-sidebar-foreground`, `bg-sidebar-accent`, `border-border`, `border-input`, `text-destructive`, `text-accent-foreground` (orange-tinted links; primary orange is never used as text on light surfaces). `styles.css` adds no new tokens; it holds the drawer positioning, active-item treatment, focus outline, skeleton pulse, toast animation, and reduced-motion overrides. The overlay uses `rgb(0 0 0 / 0.5)`, matching the shadcn Sheet overlay.
+Only foundation tokens via semantic classes: `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `bg-primary`/`text-primary-foreground`, `hover:bg-primary-hover` (foundation addition, mapped as `--color-primary-hover` in the inline `@theme`), `bg-accent`, `bg-sidebar`, `text-sidebar-foreground`, `bg-sidebar-accent`, `border-border`, `border-input`, `text-destructive`, `text-accent-foreground` (orange-tinted links; primary orange is never used as text on light surfaces). `styles.css` adds no new tokens; it holds the drawer positioning, active-item treatment, focus outline, skeleton pulse, toast animation, and reduced-motion overrides. The overlay uses `rgb(0 0 0 / 0.5)`, matching the shadcn Sheet overlay.
 
 ## shadcn/ui mapping (proposed)
 
@@ -64,7 +66,7 @@ Only foundation tokens via semantic classes: `bg-background`, `text-foreground`,
 | Menu button in top bar | `SidebarTrigger` |
 | Content column | `SidebarInset` |
 | App cards on Home | `Card` + `CardHeader`/`CardTitle`/`CardDescription` inside a `Link` |
-| Primary/outline buttons | `Button` (`default`, `outline`) |
+| Primary/outline buttons | `Button` (`default`, `outline`); change the `default` variant hover from `hover:bg-primary/90` to `hover:bg-primary-hover` |
 | "Sample data" chip | `Badge variant="secondary"` (prototype only) |
 | Loading rows | `Skeleton` |
 | Error banner | `Alert variant="destructive"` with retry `Button` |
@@ -110,13 +112,15 @@ Re-check 2026-10-10 (headless Chrome via DevTools protocol, scratch script not c
 - Clicking Finisher from Home sets `#/finisher` and focuses the Finisher `h1`.
 - Screenshots of Finisher Today reviewed in light at 1280 and 320, and in dark at 1280. The drawer behaviour was not re-run because the drawer code is unchanged.
 
+Re-check 2026-10-11 (colour and label weight only): headless Chrome screenshots of Finisher at 1280×800 in light and dark were reviewed after the switch to the lighter `#F46530`: orange frame/sidebar with white text, darker active pill with white bar, orange buttons and pressed Done toggle with white semibold text. All new colour pairs computed with a script (see foundation). The 390px screenshot was clipped by headless Chrome's minimum window width, so phone overflow was not re-measured; no layout code changed. Hover and focus states were not screenshotted.
+
 Not checked: real screen readers (NVDA, VoiceOver), real mobile devices/Safari, 200% zoom, Windows High Contrast mode, and the shadcn implementation itself. The static reference shows patterns; it does not prove the production component is accessible.
 
 ## Unresolved questions
 
 1. Landing target after sign-in: this design uses a Home page with app cards. Alternatives: go straight to Events, or reopen the last-used app. (Assumption, easy to change.)
 2. Should Home ever show summaries (e.g. today's Finisher sessions, recent events)? Dashboards are not confirmed scope, so Home is navigation only.
-3. Light, playful orange (Claude-inspired, `#F59563` with dark text) chosen by the user on 2026-10-08; light/dark support is still an assumption.
+3. Bright orange `#F46530` with white text chosen by the user on 2026-10-11 (after `#C4511A` was too dark); white labels are below AA for normal-size text. The dark-mode sidebar stays charcoal (assumption); light/dark support is still an assumption.
 4. Desktop sidebar collapse to an icon rail (`collapsible="icon"`) is not shown; add if wanted.
 5. Mobile breakpoint for the drawer: 1024px here vs shadcn's 768px default.
 6. Sign-in pages are out of scope here. Access model and flows are now in [requirements/auth.md](../../../requirements/auth.md) and [docs/architecture/auth.md](../../../docs/architecture/auth.md). Sign out must POST to `/api/auth/sign-out` (AUTH-006). The sign-in page design belongs in `output/designs/auth/`.
