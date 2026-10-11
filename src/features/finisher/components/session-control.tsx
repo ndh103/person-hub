@@ -53,7 +53,7 @@ export function SessionCheck({ slotId, date, state: saved, activity }: { slotId:
         variant="outline"
         aria-pressed={state === "done"}
         aria-label={state === "skipped" ? `Undo skip for “${activity}”` : `Mark “${activity}” done`}
-        className="h-11 gap-2 px-3 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+        className="h-11 gap-2 px-3 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
         onClick={() => void mark(marked ? "unmarked" : "done", activity)}
       >
         {state === "done" ? (
@@ -122,7 +122,7 @@ export function StripCell({
         render={
           <Button
             variant="outline"
-            className="h-14 w-full flex-col gap-0.5 px-1 text-xs data-[state=done]:border-primary data-[state=done]:bg-primary data-[state=done]:text-primary-foreground"
+            className="h-14 w-full flex-col gap-0.5 px-1 text-xs data-[state=done]:border-primary data-[state=done]:bg-primary data-[state=done]:text-primary-foreground data-[state=done]:hover:bg-primary-hover data-[state=done]:hover:text-primary-foreground"
             data-state={state}
             aria-label={`${activity}, ${fullDate}: ${STATE_TEXT[state]}. Change`}
           />

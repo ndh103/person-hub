@@ -72,7 +72,7 @@ export function SlotFields({
               key={day}
               value={String(day)}
               aria-label={weekdayLong(day)}
-              className="min-h-11 w-full px-0 data-pressed:border-primary data-pressed:bg-primary data-pressed:text-primary-foreground"
+              className="min-h-11 w-full px-0 data-pressed:border-primary data-pressed:bg-primary data-pressed:text-primary-foreground data-pressed:hover:bg-primary-hover data-pressed:hover:text-primary-foreground"
             >
               {weekdayShort(day).slice(0, 2)}
             </ToggleGroupItem>

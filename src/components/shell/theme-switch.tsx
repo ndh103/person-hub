@@ -41,11 +41,11 @@ export function ThemeSwitch() {
       spacing={1}
       className="grid w-full grid-cols-2 rounded-xl border border-sidebar-border p-1"
     >
-      <ToggleGroupItem value="light" className="min-h-11 w-full data-pressed:bg-sidebar-accent data-pressed:font-semibold">
+      <ToggleGroupItem value="light" className="min-h-11 w-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:font-semibold data-pressed:text-sidebar-accent-foreground">
         <SunIcon data-icon="inline-start" />
         Light
       </ToggleGroupItem>
-      <ToggleGroupItem value="dark" className="min-h-11 w-full data-pressed:bg-sidebar-accent data-pressed:font-semibold">
+      <ToggleGroupItem value="dark" className="min-h-11 w-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:font-semibold data-pressed:text-sidebar-accent-foreground">
         <MoonIcon data-icon="inline-start" />
         Dark
       </ToggleGroupItem>

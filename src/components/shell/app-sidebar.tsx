@@ -115,7 +115,7 @@ function NavItem({ app, active }: { app: HubApp; active: boolean }) {
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={active}
-        className="relative h-11 gap-3 rounded-lg px-3 text-[0.9375rem] data-active:font-semibold [&_svg]:size-5"
+        className="relative h-11 gap-3 rounded-lg px-3 text-[0.9375rem] font-medium data-active:font-semibold [&_svg]:size-5"
         render={
           // A whole app is current on any of its pages, so match the path prefix.
           <Link to={app.href} activeOptions={{ exact: false, includeSearch: false }} onClick={() => setOpenMobile(false)} />

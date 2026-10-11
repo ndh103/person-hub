@@ -88,7 +88,7 @@ export function TaskCheck({ task }: { task: TaskItem }) {
       aria-pressed={done}
       aria-label={`Mark “${task.title}” done`}
       disabled={busy}
-      className="size-11 shrink-0 rounded-full aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+      className="size-11 shrink-0 rounded-full aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
       onClick={() => void setDone(!done)}
     >
       {done ? <CheckIcon /> : <CircleIcon className="text-muted-foreground" />}
