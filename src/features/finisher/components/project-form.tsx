@@ -13,6 +13,7 @@ import { finisherApi } from "../api";
 import type { LocalDate } from "../domain/dates";
 import { LIMITS, parseNewProject, parseProjectInput } from "../domain/validation";
 import { fieldErrorMessage } from "../messages";
+import { DatePicker } from "./date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { EMPTY_SLOT, SlotFields, slotPayload, type SlotValues } from "./slot-fields";
 import { useMutation } from "./use-mutation";
@@ -112,13 +113,15 @@ export function ProjectForm({
         </FormField>
         <FormField name="targetDate" label="Target date" optional errors={fieldErrors}>
           {(props) => (
-            <Input
-              {...props}
-              type="date"
-              className="h-11 sm:w-56"
+            <DatePicker
+              control={props}
+              label="Target date"
+              today={today}
               min={today}
               value={values.targetDate}
-              onChange={(event) => set("targetDate", event.target.value)}
+              onChange={(date) => set("targetDate", date)}
+              clearable
+              className="h-11 w-full justify-start px-3 text-base font-normal sm:w-56 sm:text-sm"
             />
           )}
         </FormField>

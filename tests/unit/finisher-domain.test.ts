@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   formatDays,
+  formatDate,
+  formatWeekdayDate,
   formatRelativeDate,
   isOverdue,
   isValidTimeZone,
   localDateOf,
+  startOfNextWeek,
   startOfWeek,
   zonedNow,
   zonedToUtc,
@@ -62,10 +65,31 @@ describe("local dates and timezones (business rules)", () => {
 
   it("formats relative dates and days", () => {
     expect(formatRelativeDate("2026-10-12", "2026-10-11")).toBe("Tomorrow");
-    expect(formatRelativeDate("2026-10-07", "2026-10-11")).toBe("Wed 7 Oct");
+    expect(formatRelativeDate("2026-10-07", "2026-10-11")).toBe("7 Oct 2026");
     expect(formatRelativeDate("2027-01-03", "2026-10-11")).toBe("3 Jan 2027");
+    expect(formatDate("2026-10-12")).toBe("12 Oct 2026");
+    expect(formatDate("2027-01-03")).toBe("3 Jan 2027");
     expect(formatDays([5, 1, 3])).toBe("Mon · Wed · Fri");
     expect(formatDays([1, 2, 3, 4, 5, 6, 7])).toBe("Every day");
+  });
+});
+
+describe("Next week due-date shortcut (FIN-034)", () => {
+  it("is the Monday of the following week, whatever today's weekday", () => {
+    expect(startOfNextWeek(MON)).toBe("2026-10-12");
+    expect(startOfNextWeek("2026-10-07")).toBe("2026-10-12");
+    // On a Sunday, next week starts tomorrow.
+    expect(startOfNextWeek("2026-10-11")).toBe("2026-10-12");
+  });
+
+  it("captions the shortcut buttons as \"Monday 12 Oct\"", () => {
+    expect(formatWeekdayDate("2026-10-12")).toBe("Monday 12 Oct");
+    expect(formatWeekdayDate("2026-10-14")).toBe("Wednesday 14 Oct");
+  });
+
+  it("crosses month and year ends", () => {
+    expect(startOfNextWeek("2026-10-30")).toBe("2026-11-02");
+    expect(startOfNextWeek("2026-12-28")).toBe("2027-01-04");
   });
 });
 

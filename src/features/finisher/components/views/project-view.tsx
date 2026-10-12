@@ -4,9 +4,8 @@ import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   addDays,
-  formatFullDate,
+  formatDate,
   formatRelativeDate,
-  formatShortDate,
   isoWeekday,
   weekdayShort,
 } from "../../domain/dates";
@@ -49,7 +48,7 @@ function Strip({ project }: { project: ProjectDetail }) {
                     <div className="flex h-14 flex-col items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground">
                       <span aria-hidden="true">{dayLabel}</span>
                       <span aria-hidden="true">–</span>
-                      <span className="sr-only">{formatFullDate(cell.date)}: no session</span>
+                      <span className="sr-only">{formatDate(cell.date)}: no session</span>
                     </div>
                   ) : (
                     <StripCell
@@ -58,7 +57,7 @@ function Strip({ project }: { project: ProjectDetail }) {
                       state={cell.state}
                       activity={row.activity}
                       dayLabel={dayLabel}
-                      fullDate={formatFullDate(cell.date)}
+                      fullDate={formatDate(cell.date)}
                       disabled={!cell.markable}
                     />
                   )}
@@ -81,10 +80,10 @@ function Weeks({ project }: { project: ProjectDetail }) {
       {project.weeks.map((week, index) => (
         <li key={week.weekStart} className="flex flex-col gap-0.5 p-3 sm:p-4">
           <p className="text-sm font-medium">
-            {index === 0 ? "This week" : `Week of ${formatShortDate(week.weekStart)}`}
+            {index === 0 ? "This week" : `Week of ${formatDate(week.weekStart)}`}
             <span className="sr-only">
               {" "}
-              ({formatFullDate(week.weekStart)} to {formatFullDate(addDays(week.weekStart, 6))})
+              ({formatDate(week.weekStart)} to {formatDate(addDays(week.weekStart, 6))})
             </span>
           </p>
           <p className="text-sm">{formatWeekRate(week, "")}</p>
@@ -127,13 +126,13 @@ export function ProjectView({ id }: { id: string }) {
               <>
                 <dt className="text-muted-foreground">Target date</dt>
                 <dd>
-                  <time dateTime={project.targetDate}>{formatFullDate(project.targetDate)}</time>
+                  <time dateTime={project.targetDate}>{formatDate(project.targetDate)}</time>
                 </dd>
               </>
             ) : null}
             <dt className="text-muted-foreground">Started</dt>
             <dd>
-              <time dateTime={project.startedOn}>{formatFullDate(project.startedOn)}</time>
+              <time dateTime={project.startedOn}>{formatDate(project.startedOn)}</time>
             </dd>
             {project.status === "parked" && project.revisitDate ? (
               <>
@@ -148,7 +147,7 @@ export function ProjectView({ id }: { id: string }) {
               <>
                 <dt className="text-muted-foreground">Closed</dt>
                 <dd>
-                  <time dateTime={project.closedOn}>{formatFullDate(project.closedOn)}</time>
+                  <time dateTime={project.closedOn}>{formatDate(project.closedOn)}</time>
                 </dd>
               </>
             ) : null}

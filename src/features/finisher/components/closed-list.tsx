@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { finisherApi } from "../api";
-import { formatFullDate, formatRelativeDate, type LocalDate } from "../domain/dates";
+import { formatDate, formatRelativeDate, type LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
 import type { ClosedEntry, ClosedOutcome, ClosedPage, ClosedTabData, ClosedType } from "../types";
 import { RowList } from "./list-parts";
@@ -26,7 +26,7 @@ function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
       <p className="text-sm text-muted-foreground">
         {entry.kind === "task" ? "Task" : "Project"} · closed{" "}
         <time dateTime={entry.closedAt}>{formatRelativeDate(entry.closedOn, today).replace(/^(Today|Yesterday)$/, (w) => w.toLowerCase())}</time>
-        <span className="sr-only"> ({formatFullDate(entry.closedOn)})</span>
+        {formatRelativeDate(entry.closedOn, today) !== formatDate(entry.closedOn) ? <span className="sr-only"> ({formatDate(entry.closedOn)})</span> : null}
         {entry.durationDays !== null ? ` · ${entry.durationDays} ${entry.durationDays === 1 ? "day" : "days"} from start to close` : ""}
         {entry.sessions ? ` · ${entry.sessions.done} of ${entry.sessions.scheduled} sessions done` : ""}
       </p>

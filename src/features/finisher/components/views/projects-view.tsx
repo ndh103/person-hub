@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@/components/link";
 import { Badge } from "@/components/ui/badge";
-import { formatFullDate, formatRelativeDate } from "../../domain/dates";
+import { formatDate, formatRelativeDate } from "../../domain/dates";
 import { formatWeekDetails, formatWeekRate } from "../../domain/schedule";
 import { finisherQueries } from "../../api";
 import type { ProjectCard } from "../../types";
@@ -23,7 +23,7 @@ function ProjectRow({ project, today }: { project: ProjectCard; today: string })
             {project.revisitDate <= today ? <Badge variant="secondary">Due for revisit</Badge> : null}
             <span>
               Revisit <time dateTime={project.revisitDate}>{formatRelativeDate(project.revisitDate, today)}</time>
-              <span className="sr-only"> ({formatFullDate(project.revisitDate)})</span>
+              {formatRelativeDate(project.revisitDate, today) !== formatDate(project.revisitDate) ? <span className="sr-only"> ({formatDate(project.revisitDate)})</span> : null}
             </span>
           </span>
         ) : (

@@ -1,0 +1,65 @@
+/*
+ * Finisher — custom styles that Tailwind utilities do not express cleanly.
+ * Colors come only from ../_foundation/theme.css variables.
+ * Shell styles (sidebar, drawer, nav-link, focus ring, icon) are reused from ../app-shell/styles.css.
+ */
+
+/* Task form dialog (maps to shadcn/ui Dialog). Native <dialog> gives Escape and inert background. */
+.task-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  overflow-y: auto;
+}
+.task-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.task-dialog[open] { animation: dialog-in 160ms ease-out; }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
+
+/* Native date/time inputs: keep the picker icon visible in dark mode. */
+.dark input[type="date"], .dark input[type="time"] { color-scheme: dark; }
+
+/* Due-date shortcut chip (FIN-034): a plain button, two lines — label and the date it will set ("Monday 12 Oct"). */
+.due-shortcut {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 2.75rem; /* 44px touch target on phone */
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.15;
+  text-align: left;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+.due-shortcut:hover { background: var(--accent); color: var(--accent-foreground); }
+.due-shortcut:active { transform: translateY(1px); }
+.due-shortcut .due-shortcut-date { color: var(--muted-foreground); }
+.due-shortcut:hover .due-shortcut-date { color: var(--accent-foreground); }
+@media (min-width: 640px) {
+  .due-shortcut { min-height: 2.5rem; } /* laptop: pointer, 40px is enough */
+}
+/* Below 360px the shortcuts stack: label left, date right, on one line. */
+@media (max-width: 359.98px) {
+  .due-shortcut { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.5rem; }
+}
+
+/* Brief highlight on the date field after a shortcut fills it, so the change is visible. */
+.field-flash { animation: field-flash 700ms ease-out; }
+@keyframes field-flash {
+  0% { background: var(--accent); }
+  100% { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-flash { animation: none; }
+  .task-dialog[open] { animation: none; }
+}

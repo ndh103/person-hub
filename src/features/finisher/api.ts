@@ -22,7 +22,7 @@ export type ApiResult<T> =
 /** Same name the Worker reads (src/features/finisher/server/context.ts). */
 const TIME_ZONE_HEADER = "X-Time-Zone";
 
-function browserTimeZone(): string | null {
+export function browserTimeZone(): string | null {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
   } catch {

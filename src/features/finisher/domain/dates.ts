@@ -60,6 +60,11 @@ export function startOfWeek(date: LocalDate): LocalDate {
   return addDays(date, 1 - isoWeekday(date));
 }
 
+/** Monday of the following week: the "Next week" due-date shortcut (FIN-034, decision 11). */
+export function startOfNextWeek(date: LocalDate): LocalDate {
+  return addDays(startOfWeek(date), 7);
+}
+
 export function* eachDate(from: LocalDate, to: LocalDate): Generator<LocalDate> {
   for (let date = from; date <= to; date = addDays(date, 1)) yield date;
 }
@@ -141,46 +146,29 @@ export function weekdayLong(day: number): string {
 // browsers (for example "Wed, 7 Oct" vs "Wed 7 Oct"), which would break
 // hydration of client components that render dates.
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MONTH_LONG = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
-function parts(date: LocalDate) {
-  return { year: Number(date.slice(0, 4)), month: Number(date.slice(5, 7)) - 1, day: Number(date.slice(8, 10)) };
+/** The one display format for dates in the app: "12 Oct 2026". */
+export function formatDate(date: LocalDate): string {
+  const year = Number(date.slice(0, 4));
+  const month = Number(date.slice(5, 7)) - 1;
+  const day = Number(date.slice(8, 10));
+  return `${day} ${MONTH_SHORT[month]} ${year}`;
 }
 
-/** "Friday, 9 October 2026" */
-export function formatFullDate(date: LocalDate): string {
-  const { year, month, day } = parts(date);
-  return `${weekdayLong(isoWeekday(date))}, ${day} ${MONTH_LONG[month]} ${year}`;
+/** "Monday 12 Oct": the caption on the due-date shortcut buttons (FIN-034). */
+export function formatWeekdayDate(date: LocalDate): string {
+  const month = Number(date.slice(5, 7)) - 1;
+  const day = Number(date.slice(8, 10));
+  return `${weekdayLong(isoWeekday(date))} ${day} ${MONTH_SHORT[month]}`;
 }
 
-/** "Mon 12 Oct" style label without relative words. */
-export function formatShortDate(date: LocalDate): string {
-  const { month, day } = parts(date);
-  return `${weekdayShort(isoWeekday(date))} ${day} ${MONTH_SHORT[month]}`;
-}
-
-/** Relative wording: "Today", "Tomorrow", "Yesterday", "Mon 12 Oct", or "12 Oct 2027" in another year. */
+/** Relative wording: "Today", "Tomorrow", "Yesterday", otherwise "12 Oct 2026". */
 export function formatRelativeDate(date: LocalDate, today: LocalDate): string {
   const delta = diffDays(today, date);
   if (delta === 0) return "Today";
   if (delta === 1) return "Tomorrow";
   if (delta === -1) return "Yesterday";
-  if (date.slice(0, 4) === today.slice(0, 4)) return formatShortDate(date);
-  const { year, month, day } = parts(date);
-  return `${day} ${MONTH_SHORT[month]} ${year}`;
+  return formatDate(date);
 }
 
 /** "Mon · Wed · Fri", or "Every day". */

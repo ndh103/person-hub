@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@/components/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatFullDate } from "../../domain/dates";
+import { formatDate } from "../../domain/dates";
 import { finisherQueries } from "../../api";
 import type { TaskStatus } from "../../types";
 import { NotFoundState } from "../list-parts";
@@ -48,7 +48,7 @@ export function TaskView({ id }: { id: string }) {
         <dd>
           {task.dueDate ? (
             <time dateTime={task.dueDate}>
-              {formatFullDate(task.dueDate)}
+              {formatDate(task.dueDate)}
               {task.dueTime ? ` at ${task.dueTime}` : ""}
             </time>
           ) : (
@@ -67,13 +67,13 @@ export function TaskView({ id }: { id: string }) {
         </dd>
         <dt className="text-muted-foreground">Created</dt>
         <dd>
-          <time dateTime={task.createdOn}>{formatFullDate(task.createdOn)}</time>
+          <time dateTime={task.createdOn}>{formatDate(task.createdOn)}</time>
         </dd>
         {task.closedOn ? (
           <>
             <dt className="text-muted-foreground">{task.status === "done" ? "Done" : "Closed"}</dt>
             <dd>
-              <time dateTime={task.closedOn}>{formatFullDate(task.closedOn)}</time>
+              <time dateTime={task.closedOn}>{formatDate(task.closedOn)}</time>
             </dd>
           </>
         ) : null}

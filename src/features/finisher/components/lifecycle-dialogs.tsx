@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
@@ -19,6 +18,7 @@ import { FormAlert } from "@/features/auth/components/form-alert";
 import { finisherApi } from "../api";
 import { addDays, type LocalDate } from "../domain/dates";
 import { LIMITS, parseProjectAction } from "../domain/validation";
+import { DatePicker } from "./date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { useMutation } from "./use-mutation";
 
@@ -81,14 +81,14 @@ export function ParkDialog({ open, onOpenChange, kind, id, title, today, current
             {formError ? <FormAlert tone="error">{formError}</FormAlert> : null}
             <FormField name="revisitDate" label="Revisit on" errors={fieldErrors} description="From tomorrow up to a year ahead.">
               {(props) => (
-                <Input
-                  {...props}
-                  type="date"
-                  className="h-11"
+                <DatePicker
+                  control={props}
+                  label="Revisit on"
+                  today={today}
                   min={addDays(today, 1)}
                   max={addDays(today, LIMITS.parkMaxDays)}
                   value={date}
-                  onChange={(event) => setDate(event.target.value)}
+                  onChange={setDate}
                 />
               )}
             </FormField>

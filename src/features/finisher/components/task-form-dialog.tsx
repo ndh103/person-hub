@@ -8,12 +8,28 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import { FormAlert } from "@/features/auth/components/form-alert";
-import { finisherApi } from "../api";
+import { browserTimeZone, finisherApi } from "../api";
 import { parseTaskInput, LIMITS } from "../domain/validation";
-import type { LocalDate } from "../domain/dates";
+import {
+  DEFAULT_TIME_ZONE,
+  formatDate,
+  formatWeekdayDate,
+  startOfNextWeek,
+  zonedNow,
+  type LocalDate,
+} from "../domain/dates";
 import type { ProjectOption, TaskDetail } from "../types";
+import { DatePicker } from "./date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { useMutation } from "./use-mutation";
+
+type DueShortcut = "today" | "nextWeek";
+
+const SHORTCUT_LABELS: Record<DueShortcut, string> = { today: "Today", nextWeek: "Next week" };
+
+function shortcutDate(kind: DueShortcut, today: LocalDate): LocalDate {
+  return kind === "today" ? today : startOfNextWeek(today);
+}
 
 type Values = { title: string; notes: string; dueDate: string; dueTime: string; projectId: string };
 
@@ -46,6 +62,7 @@ export function TaskFormDialog({
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<Values>(() => initialValues(task, defaultProjectId));
   const { run, pending, fieldErrors, setFieldErrors, formError, reset } = useMutation();
+  const [announcement, setAnnouncement] = useState("");
   const editing = Boolean(task);
 
   // A linked project that has since closed stays selectable while editing (assumption A4).
@@ -58,7 +75,26 @@ export function TaskFormDialog({
     setValues((current) => ({ ...current, [key]: value }));
   }
 
+  /**
+   * FIN-034: fill the due date in one tap. "Today" is read when the button is
+   * pressed, so a dialog left open past midnight uses the new date. Only the
+   * due date changes; nothing is submitted.
+   */
+  function applyShortcut(kind: DueShortcut) {
+    const current = zonedNow(browserTimeZone() ?? DEFAULT_TIME_ZONE).date;
+    const date = shortcutDate(kind, current);
+    set("dueDate", date);
+    setFieldErrors((errors) => {
+      const next = { ...errors };
+      delete next.dueDate;
+      if (next.dueTime === "needs_date") delete next.dueTime;
+      return next;
+    });
+    setAnnouncement(`Due date set to ${formatDate(date)}.`);
+  }
+
   function handleOpenChange(next: boolean) {
+    setAnnouncement("");
     if (!next) {
       reset();
       if (!editing) setValues(initialValues(undefined, defaultProjectId));
@@ -115,30 +151,50 @@ export function TaskFormDialog({
                 <Textarea {...props} value={values.notes} rows={3} onChange={(event) => set("notes", event.target.value)} />
               )}
             </FormField>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <FormField name="dueDate" label="Due date" optional errors={fieldErrors}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    type="date"
-                    className="h-11"
+            <FormField name="dueDate" label="Due date" optional errors={fieldErrors}>
+              {(props) => (
+                <>
+                  <DatePicker
+                    control={props}
+                    label="Due date"
                     value={values.dueDate}
-                    onChange={(event) => set("dueDate", event.target.value)}
+                    onChange={(date) => set("dueDate", date)}
+                    today={today}
+                    clearable
                   />
-                )}
-              </FormField>
-              <FormField name="dueTime" label="Due time" optional errors={fieldErrors} description="Needs a due date.">
-                {(props) => (
-                  <Input
-                    {...props}
-                    type="time"
-                    className="h-11"
-                    value={values.dueTime}
-                    onChange={(event) => set("dueTime", event.target.value)}
-                  />
-                )}
-              </FormField>
-            </div>
+                  {/* Stacked below 360px so "Wednesday 14 Oct" never overflows a narrow phone. */}
+                  <div role="group" aria-label="Due date shortcuts" className="grid gap-2 min-[360px]:grid-cols-2">
+                    {(Object.keys(SHORTCUT_LABELS) as DueShortcut[]).map((kind) => {
+                      const date = shortcutDate(kind, today);
+                      return (
+                        <Button
+                          key={kind}
+                          type="button"
+                          variant="outline"
+                          className="h-auto min-h-11 justify-between gap-2 px-3 py-1 text-left leading-tight min-[360px]:flex-col min-[360px]:items-start min-[360px]:justify-center min-[360px]:gap-0 sm:min-h-10"
+                          aria-label={`Set due date to ${SHORTCUT_LABELS[kind].toLowerCase()}, ${formatWeekdayDate(date)}`}
+                          onClick={() => applyShortcut(kind)}
+                        >
+                          <span>{SHORTCUT_LABELS[kind]}</span>
+                          <span className="text-xs font-normal text-muted-foreground">{formatWeekdayDate(date)}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </FormField>
+            <FormField name="dueTime" label="Due time" optional errors={fieldErrors} description="Needs a due date.">
+              {(props) => (
+                <Input
+                  {...props}
+                  type="time"
+                  className="h-11"
+                  value={values.dueTime}
+                  onChange={(event) => set("dueTime", event.target.value)}
+                />
+              )}
+            </FormField>
             <FormField name="projectId" label="Project" optional errors={fieldErrors}>
               {(props) => (
                 <NativeSelect
@@ -158,6 +214,9 @@ export function TaskFormDialog({
               )}
             </FormField>
           </FieldGroup>
+          <p role="status" aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" className="h-11" onClick={() => handleOpenChange(false)}>
               Cancel

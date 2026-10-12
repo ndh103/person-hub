@@ -15,14 +15,14 @@ import {
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { finisherApi } from "../api";
-import { formatFullDate, formatRelativeDate, type LocalDate } from "../domain/dates";
+import { formatDate, formatRelativeDate, type LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
 import type { ProjectOption, TaskDetail, TaskItem } from "../types";
 import { DeleteDialog, LetGoDialog, ParkDialog } from "./lifecycle-dialogs";
 import { TaskFormDialog } from "./task-form-dialog";
 import { useFinisherRefresh } from "./use-refresh";
 
-/** Due wording, e.g. "Overdue · due Wed 7 Oct" or "Due today · 17:00"; full date for assistive tech. */
+/** Due wording, e.g. "Overdue · due 7 Oct 2026" or "Due today · 17:00"; full date for assistive tech. */
 export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
   if (task.status === "parked" && task.revisitDate) {
     const due = task.revisitDate <= today;
@@ -31,7 +31,7 @@ export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
         {due ? <Badge variant="secondary">Due for revisit</Badge> : null}
         <span>
           Revisit <time dateTime={task.revisitDate}>{formatRelativeDate(task.revisitDate, today)}</time>
-          <span className="sr-only"> ({formatFullDate(task.revisitDate)})</span>
+          {formatRelativeDate(task.revisitDate, today) !== formatDate(task.revisitDate) ? <span className="sr-only"> ({formatDate(task.revisitDate)})</span> : null}
         </span>
       </span>
     );
@@ -45,7 +45,7 @@ export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
         {label === "Today" || label === "Tomorrow" || label === "Yesterday" ? label.toLowerCase() : label}
         {task.dueTime ? ` ${task.dueTime}` : ""}
       </time>
-      <span className="sr-only"> ({formatFullDate(task.dueDate)})</span>
+      {formatRelativeDate(task.dueDate, today) !== formatDate(task.dueDate) ? <span className="sr-only"> ({formatDate(task.dueDate)})</span> : null}
     </span>
   );
 }

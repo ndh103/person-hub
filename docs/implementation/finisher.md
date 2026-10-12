@@ -13,6 +13,72 @@
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
 
+## Change 2026-10-12: FIN-034 due-date shortcuts
+
+Inputs: [requirements/finisher.md](../../requirements/finisher.md) v3 (FIN-034, decision 11, assumption A9) and the [task form design](../../output/designs/finisher/design-notes.md).
+
+- **Changes:**
+  - `task-form-dialog.tsx` adds **Today** and **Next week** buttons under the Due date input, in both the Add and Edit dialogs (A9). Each button shows the date it will set, for example "19 Oct 2026".
+  - Its accessible name includes the full date ("Set due date to next week, Monday 19 October 2026").
+  - A tap sets only `dueDate`, does not submit, and clears a `dueDate` error and a `dueTime` "needs a date" error. A polite status announces the new date.
+- **"Today"** is read from the browser's timezone when the button is pressed, which covers the midnight rule. The captions use the page's `today`.
+- **Domain:** `startOfNextWeek()` in `domain/dates.ts`, the Monday after `startOfWeek()`. `browserTimeZone()` in `api.ts` is now exported.
+- **Unchanged:** no API, schema, RLS or validation change. The server sees an ordinary due date.
+- **Deviations from the design reference:**
+  - The buttons use the existing `Button variant="outline"`, which has a `muted` hover, instead of the reference's `accent` hover, to stay consistent with other outline buttons.
+  - The 700ms field highlight after a tap was not built. The field's new value and the live announcement provide the feedback.
+- **Checks (2026-10-12):**
+  - `npm run lint`: 0 errors, 5 earlier fast-refresh warnings in other files.
+  - `npm run typecheck`: passes.
+  - `npm test`: 132 passed, including new `startOfNextWeek` cases for Monday, Wednesday, Sunday, month end and year end.
+  - `vite build`: passes (an existing chunk-size warning).
+  - Not done: no browser run of the dialog and no component test (React Testing Library is not installed).
+- **Tester:**
+  - Tap each shortcut with a typed date and with a time set.
+  - On a Sunday, Next week should be tomorrow.
+  - Submit the form and check the saved due date.
+  - Check the layout at 320 px (two buttons side by side, at least 44 px tall).
+  - Check keyboard order: date → Today → Next week → time.
+  - Check the screen-reader announcement.
+
+## Change 2026-10-12: one date display format
+
+- **Format.** All Finisher dates now display as "12 Oct 2026", through `formatDate()` in `domain/dates.ts`. This applies to visible text and screen-reader text (decision 12). It replaces `formatFullDate` ("Friday, 9 October 2026") and `formatShortDate` ("Mon 12 Oct").
+- **Relative words.** `formatRelativeDate` still says Today, Tomorrow or Yesterday, and otherwise falls back to `formatDate`. The screen-reader date suffix is now added only when the visible text is one of those relative words.
+- **Unchanged:**
+  - The 7-day session strip keeps its compact "Mon 12" cell labels; each cell's screen-reader text uses `formatDate`.
+  - Slot weekday chips are unchanged.
+  - Native `<input type="date">` fields still show the browser's locale format.
+- **Checks:**
+  - lint: 0 errors.
+  - typecheck: passes.
+  - `npm test`: 132 passed.
+  - build: passes.
+  - No browser run.
+
+## Change 2026-10-12: date fields and shortcut captions (requirements v3.1)
+
+- **Date fields.** A new `components/date-picker.tsx` uses shadcn `Popover` + `Calendar` (react-day-picker). It replaces `<input type="date">` in:
+  - the task form (Due date, clearable);
+  - the project form (Target date, clearable, from today);
+  - the Park dialog (Revisit on, from tomorrow up to 365 days).
+
+  The trigger shows "12 Oct 2026" or "Pick a date", weeks start on Monday, and out-of-range days are disabled. The trigger's accessible name includes its value ("Due date: 12 Oct 2026"). Day cells are 40px, so the calendar fits a 320px screen.
+- **Shortcut captions.** The captions and accessible names use the new `formatWeekdayDate()` ("Monday 12 Oct"). The announcement after a tap still uses `formatDate()`.
+- **Layout.** Due date and Due time are now stacked. Below 360px the two shortcuts stack too, each on one line.
+- **Dependencies.** `npx shadcn add calendar popover` added `react-day-picker` and `date-fns`. The CLI also overwrote `ui/button.tsx`, which was **restored** to keep the foundation's `primary-hover` and link colours.
+- **Checks:**
+  - lint: 0 errors.
+  - typecheck: passes.
+  - `npm test`: 133 passed.
+  - build: passes, with the existing chunk-size warning; the main chunk is about 1.09 MB.
+  - **No browser run:** the popover inside the dialog, focus return, keyboard navigation in the calendar, and 320px fit are untested.
+- **Tester:**
+  - Open each of the three date fields and pick a date with the mouse and with the keyboard (arrows, Enter, Escape).
+  - Check that out-of-range days are disabled.
+  - Use Clear date on Due date and Target date.
+  - With a screen reader, check that the field announces its value.
+
 ## Handoff gaps
 
 - **No Finisher design (`output/designs/finisher/`).** Layouts follow the app-shell reference (its Finisher Today preview, tokens, 44px targets, card lists) and the layout rules in FIN-018. Replace or adjust them when the Designer delivers the Finisher reference.

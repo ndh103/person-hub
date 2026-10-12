@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@/components/link";
-import { formatDuration, formatFullDate } from "../../domain/dates";
+import { formatDuration, formatDate } from "../../domain/dates";
 import { finisherQueries } from "../../api";
 import type { SessionItem } from "../../types";
 import { AddTaskButton } from "../add-task-button";
@@ -41,7 +41,7 @@ export function TodayView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
-          Today · <time dateTime={now.date}>{formatFullDate(now.date)}</time>
+          Today · <time dateTime={now.date}>{formatDate(now.date)}</time>
         </p>
         <p className="text-sm text-muted-foreground" role="status">
           {data.sessionsDone} of {data.sessionsTotal} {data.sessionsTotal === 1 ? "session" : "sessions"} done today ·{" "}

@@ -4,9 +4,9 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 2 (2026-10-10). This replaces version 1 (2026-10-09); see Change notes.
-- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") and 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), plus answers to clarifying questions.
-- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design (`output/designs/finisher/`), architecture (`docs/architecture/finisher.md`), and test report: not yet created.
+- Version: 3.1 (2026-10-12). Adds FIN-034 (due-date shortcuts) and the date display rule to version 2 (2026-10-10); see Change notes.
+- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), and 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), plus answers to clarifying questions.
+- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts](../output/designs/finisher/design-notes.md) (other screens not yet designed). Architecture (`docs/architecture/finisher.md`) and test report: not yet created.
 
 ## Goal and target user
 
@@ -23,7 +23,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 ### In scope
 
-- Tasks: create, edit, due date with optional time, optional link to a project, mark done, park, let go, reopen, delete.
+- Tasks: create, edit, due date with optional time (with Today and Next week shortcuts), optional link to a project, mark done, park, let go, reopen, delete.
 - Projects: create, edit, a goal and a "Done when", optional target date, weekly slots, finish, park, let go, reopen, delete.
 - Sessions: generated from slots for each local date; marked Done or Skipped for today and the previous 7 days.
 - Weekly follow-through rate for each project.
@@ -129,6 +129,20 @@ The Today tab shows, in this order:
 - When "Add task" is used from a project's detail page, the project is preselected.
 - Invalid input (missing title, a value over its limit, a due time without a date, or a project that is not the user's own Active or Parked project) shows an error next to the field. The form keeps the entered values, and nothing is created.
 - A server failure shows a general error and keeps the values for a retry. The submit control is disabled while a request is pending, which prevents accidental duplicates.
+
+### FIN-034 Due-date shortcuts in the task form (Must)
+
+Below the **Due date** field in the Add task dialog, two shortcut buttons, **Today** and **Next week**, set the due date in one tap, so the user does not have to open the date picker.
+
+- **Today** sets the due date to today's local date (business rules, assumption A1).
+- **Next week** sets the due date to the Monday of next week, the first day of the following Monday-to-Sunday week (confirmed decision 11; week start per assumption A2). For example, on Monday 12 October 2026 or on Sunday 18 October 2026 it sets Monday 19 October 2026.
+- Each button shows, under its label, the date it will set, in the format "Monday 12 Oct" (weekday, day, short month; decision 13).
+- Given the Add task dialog is open, when the user taps Today or Next week, then the Due date field shows that date at once, as "12 Oct 2026". Nothing is submitted, and focus stays on the button.
+- A shortcut replaces any due date already in the field. It does not change the due time, the title, or any other field. The user can still change or clear the date with the date field.
+- "Today" is worked out when the button is tapped, not when the dialog opened, so a dialog left open past midnight uses the new date.
+- A date set by a shortcut is an ordinary due date. It is saved only when the form is submitted, with the same server validation as FIN-019; the server does not need to know that a shortcut was used.
+- The shortcuts also appear in the Edit task dialog (FIN-020) for Open and Parked tasks, because it is the same form (assumption A9).
+- Accessibility: the shortcuts are real buttons that come after the date field in tab order. Their accessible names include the resulting date as shown on the button, for example "Set due date to today, Monday 12 Oct". After a tap, the new value is announced politely ("Due date set to 12 Oct 2026"). On phones each button is at least 44px tall, and there is no horizontal overflow at 320px (the buttons may stack on very narrow screens).
 
 ### FIN-020 View and edit a task (Must)
 
@@ -253,6 +267,7 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 - **Timezone:** session dates, task due dates, "today", overdue checks, the marking window, weeks, and revisit dates use the user's timezone (assumption A1). Created, done, and closed times are stored as UTC instants. A due date, revisit date, target date, or session date is a date-only value, not a timestamp. A due time is a local wall-clock time together with its due date.
 - **Overdue:** a task with a date but no time is overdue once that local date has ended. A task with a date and time is overdue once that local date and time has passed.
 - **Recurrence:** slots repeat weekly only, on the selected days. There are no exception dates (skipping a single date is done by marking it Skipped).
+- **Date display:** every date shown in the app uses the format "12 Oct 2026" (day, short month, year), including screen-reader text and the value shown in date fields such as Due date, Target date, and Revisit on (confirmed decision 12). The value must not depend on the browser's language. The only exception is the caption on the FIN-034 shortcut buttons, which uses "Monday 12 Oct" (decision 13). Relative words "Today", "Tomorrow", and "Yesterday" may replace a date where a requirement allows relative wording. Picking a date opens a calendar whose weeks start on Monday (A2); optional date fields offer a way to clear the date.
 - **No automation:** nothing changes status, marks a session, or sends a notification without a user action.
 
 ## Confirmed decisions
@@ -273,6 +288,12 @@ From the user, 2026-10-10:
 9. Finisher opens on the Today view.
 10. Let go and Park are kept from v1. The active limit, the timer, Finish → Event, the Waiting room, next step, and staleness are dropped.
 
+From the user, 2026-10-12:
+
+11. The "Next week" due-date shortcut sets the Monday of next week, not today + 7 days.
+12. Dates are displayed as "12 Oct 2026", including the value in date fields (Due date, Target date, Revisit on).
+13. The Today and Next week shortcut buttons caption their date as "Monday 12 Oct".
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -282,6 +303,7 @@ From the user, 2026-10-10:
 - A5. Deleting a project keeps its tasks and removes their project link.
 - A6. Closed-tab stats are counts only, with no percentage success rate.
 - A7. All text limits, the 20-slot cap, the 5–480 minute duration range, and the page sizes are proposed defaults.
+- A9. The due-date shortcuts appear in both the Add task and the Edit task dialogs. The request named only Add task.
 
 ## Open questions
 
@@ -292,6 +314,8 @@ From the user, 2026-10-10:
 
 ## Change notes
 
+- **2026-10-12, v3.** Added FIN-034: Today and Next week shortcut buttons below the Due date field in the task form. Added assumption A9 and confirmed decision 11 ("Next week" = Monday of next week). No other requirement changes; FIN-019 validation applies unchanged. Also added the date display rule (business rules, decisions 12 and 13). **v3.1:** date fields now display "12 Oct 2026" instead of the browser's format, and the shortcut captions use "Monday 12 Oct". Affects the task form, the project form (Target date), and the Park dialog (Revisit on).
+  - **Affects:** the Finisher design (task form dialog), `src/features/finisher/components/task-form-dialog.tsx`, and the task-form tests. No API, schema, or RLS change is expected.
 - **2026-10-10, v2.** Finisher was redefined around Tasks, Projects, slots, and sessions, and it replaces Habit Tracker.
   - **Kept and reworded:** FIN-001 (navigation, now with tabs and Today), FIN-012 (Let go, now for tasks and projects), FIN-013 (Park, now for tasks and projects), FIN-016 (Delete), FIN-017 (permissions, extended to slots and sessions), FIN-018 (responsive layout and accessibility).
   - **Retired:** FIN-002 (create item), FIN-003 (edit item), FIN-004 (start and soft limit), FIN-005 (limit setting), FIN-006 (next step), FIN-007 (manual touch), FIN-008 (starter timer), FIN-009 (staleness), FIN-010 (finish item), FIN-011 (Finish → Event), FIN-014 (reopen item), FIN-015 (finished shelf).
