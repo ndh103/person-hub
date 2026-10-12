@@ -10,7 +10,7 @@
 
 ## Preview
 
-Open `index.html` in a browser from this folder. It needs a network connection for Google Fonts (Inter) and the pinned Tailwind browser runtime `@tailwindcss/browser@4.1.11`, the same as the app-shell reference. That runtime is for the prototype only. The page also loads `../_foundation/theme.css` and `../app-shell/styles.css`, which provides the shell, drawer, focus ring, and icon styles.
+Open `index.html` in a browser from this folder. It needs a network connection for Google Fonts (Space Grotesk and JetBrains Mono, per the 2026-10-12 foundation update) and the pinned Tailwind browser runtime `@tailwindcss/browser@4.1.11`, the same as the app-shell reference. That runtime is for the prototype only. The page also loads `../_foundation/theme.css` and `../app-shell/styles.css`, which provides the shell, drawer, focus ring, and icon styles.
 
 - **Add task** (top right) opens the dialog. `index.html#add` opens it straight away.
 - **Edit** on the sample task opens the Edit task version.

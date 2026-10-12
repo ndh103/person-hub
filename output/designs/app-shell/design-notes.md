@@ -13,7 +13,7 @@
 Open `output/designs/app-shell/index.html` directly in a browser (no server needed). Needs network access for:
 
 - the pinned Tailwind v4 browser runtime `@tailwindcss/browser@4.1.11` from jsDelivr (prototype only, never copy into the app)
-- Inter from Google Fonts (falls back to system sans offline)
+- Space Grotesk and JetBrains Mono from Google Fonts (fall back to system sans and mono offline). Fonts changed on 2026-10-12; see the foundation "Typography" section. Page titles are now bold, and list meta, the date line, the summary line, the "Apps" label, and the "Sample data" tag use mono.
 
 Routes are hash URLs standing in for App Router paths: `#/home`, `#/finisher`, `#/events`; any other `#/x` shows "App not found". Resize below 1024px to see the drawer. On Finisher and Events, open "Prototype controls" at the bottom of the page to switch Ready / Loading / Empty / Error. The sidebar footer toggles light/dark.
 

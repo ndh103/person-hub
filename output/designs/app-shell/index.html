@@ -7,11 +7,11 @@
   <!--
     Design reference: app shell + post-login landing (feature slug: app-shell). Status: draft.
     Not production code. All data shown is synthetic fixture data. See design-notes.md.
-    External runtime dependencies: Google Fonts (Inter) and the pinned Tailwind browser runtime.
+    External runtime dependencies: Google Fonts (Space Grotesk, JetBrains Mono) and the pinned Tailwind browser runtime.
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../_foundation/theme.css" />
   <link rel="stylesheet" href="styles.css" />
   <script>
@@ -116,7 +116,7 @@
             </a>
           </li>
         </ul>
-        <p class="mt-8 mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
+        <p class="mt-8 mb-2 px-3 font-mono text-xs font-medium uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
         <ul class="space-y-1" aria-labelledby="apps-heading">
           <li>
             <a href="#/finisher" data-route="finisher" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
@@ -165,7 +165,7 @@
 
         <!-- ============ HOME (default landing after sign-in) ============ -->
         <section data-view="home" aria-labelledby="home-title">
-          <h1 id="home-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <h1 id="home-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Welcome back</h1>
           <p class="mt-1 text-sm text-muted-foreground">Choose an app to continue.</p>
 
           <ul class="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Apps">
@@ -206,8 +206,8 @@
         <section data-view="finisher" aria-labelledby="finisher-title" hidden>
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 id="finisher-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Finisher</h1>
-              <p class="mt-1 text-sm text-muted-foreground">Today · <time datetime="2026-10-09">Friday, 9 October 2026</time></p>
+              <h1 id="finisher-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Finisher</h1>
+              <p class="mt-1 font-mono text-[0.8125rem] text-muted-foreground">Today · <time datetime="2026-10-09">Friday, 9 October 2026</time></p>
             </div>
             <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover">
               <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
@@ -229,27 +229,27 @@
             <!-- Ready -->
             <div data-state="ready" class="space-y-6">
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <p class="inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data</p>
-                <p class="text-sm text-muted-foreground">1 of 3 sessions done today · 1 overdue task</p>
+                <p class="inline-block rounded-full bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">Sample data</p>
+                <p class="font-mono text-[0.8125rem] text-muted-foreground">1 of 3 sessions done today · 1 overdue task</p>
               </div>
 
               <div>
                 <h2 class="mb-2 text-sm font-semibold">Sessions today</h2>
                 <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
                   <li class="flex items-center gap-4 p-4">
-                    <div class="min-w-0 flex-1"><p class="font-medium">Watch ABK program</p><p class="text-sm text-muted-foreground">Teach my daughter English · 30 min · 19:00</p></div>
+                    <div class="min-w-0 flex-1"><p class="font-medium">Watch ABK program</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Teach my daughter English · 30 min · 19:00</p></div>
                     <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Done</span><span class="sr-only"> — Watch ABK program</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
-                    <div class="min-w-0 flex-1"><p class="font-medium">Learn together</p><p class="text-sm text-muted-foreground">Teach my daughter English · 30 min · 19:30</p></div>
+                    <div class="min-w-0 flex-1"><p class="font-medium">Learn together</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Teach my daughter English · 30 min · 19:30</p></div>
                     <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Learn together</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
-                    <div class="min-w-0 flex-1"><p class="font-medium">Practice guitar chords</p><p class="text-sm text-muted-foreground">Play three songs on guitar · 20 min</p></div>
+                    <div class="min-w-0 flex-1"><p class="font-medium">Practice guitar chords</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Play three songs on guitar · 20 min</p></div>
                     <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Practice guitar chords</span>
                     </button>
@@ -261,13 +261,13 @@
                 <h2 class="mb-2 text-sm font-semibold">Tasks</h2>
                 <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
                   <li class="flex items-center gap-4 p-4">
-                    <div class="min-w-0 flex-1"><p class="font-medium">Get new passport photos</p><p class="text-sm text-destructive">Overdue · due <time datetime="2026-10-07">Wed 7 Oct</time></p></div>
+                    <div class="min-w-0 flex-1"><p class="font-medium">Get new passport photos</p><p class="mt-0.5 font-mono text-[0.8125rem] text-destructive">Overdue · due <time datetime="2026-10-07">Wed 7 Oct</time></p></div>
                     <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Get new passport photos</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
-                    <div class="min-w-0 flex-1"><p class="font-medium">Prepare paperwork and submit the school form</p><p class="text-sm text-muted-foreground">Due today · <time datetime="2026-10-09T17:00">17:00</time></p></div>
+                    <div class="min-w-0 flex-1"><p class="font-medium">Prepare paperwork and submit the school form</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Due today · <time datetime="2026-10-09T17:00">17:00</time></p></div>
                     <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Prepare paperwork and submit the school form</span>
                     </button>
@@ -323,7 +323,7 @@
         <section data-view="events" aria-labelledby="events-title" hidden>
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 id="events-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">Events</h1>
+              <h1 id="events-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Events</h1>
               <p class="mt-1 text-sm text-muted-foreground">Moments you have recorded, newest first.</p>
             </div>
             <button type="button" data-placeholder-action="New event" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover">
@@ -335,7 +335,7 @@
           <div class="mt-6">
             <!-- Ready -->
             <div data-state="ready">
-              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Sample data</p>
+              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">Sample data</p>
               <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
                 <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
                   <time datetime="2026-09-28" class="w-28 shrink-0 text-sm text-muted-foreground">28 Sep 2026</time>
@@ -396,7 +396,7 @@
 
         <!-- ============ Unknown app route ============ -->
         <section data-view="not-found" aria-labelledby="nf-title" hidden>
-          <h1 id="nf-title" tabindex="-1" class="text-2xl font-semibold tracking-tight">App not found</h1>
+          <h1 id="nf-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">App not found</h1>
           <p class="mt-1 text-sm text-muted-foreground">This app does not exist or is no longer available.</p>
           <a href="#/home" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">Go to Home</a>
         </section>

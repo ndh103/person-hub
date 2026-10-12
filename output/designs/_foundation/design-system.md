@@ -1,7 +1,7 @@
 # Personal Hub design system (foundation)
 
 - Status: draft
-- Date: 2026-10-08; revised 2026-10-11 (bright orange with white text)
+- Date: 2026-10-08; revised 2026-10-11 (bright orange with white text) and 2026-10-12 (fonts: Space Grotesk + JetBrains Mono)
 - Source: first designer request (app shell landing page). The visual direction is not yet user-approved.
 - Tokens: [theme.css](theme.css), the single source of truth for colors, fonts and radius.
 - First consumer: [app-shell design](../app-shell/design-notes.md)
@@ -19,7 +19,9 @@ Python is not installed on this machine, so `search.py --design-system` could no
 | `colors.csv` #16 Productivity Tool | Teal primary (#0D9488) + orange accent | Teal initially adopted, then replaced on 2026-10-08 by the user's request for a light, playful, Claude-inspired orange. |
 | `colors.csv` #94 Habit Tracker | Streak amber + habit green on warm cream | Warm cream neutrals echo the adopted direction; amber/green rejected as hub-wide (too module-specific). |
 | `colors.csv` #11 Portfolio/Personal | Monochrome neutrals + one accent | Adopted principle: one accent on neutrals. |
-| `typography.csv` #5 Minimal Swiss | Inter only, weight-based hierarchy, for dashboards/apps | Adopted. |
+| `typography.csv` #5 Minimal Swiss | Inter only, weight-based hierarchy, for dashboards/apps | Adopted 2026-10-08; replaced 2026-10-12 by the user's reference (Space Grotesk + JetBrains Mono). |
+| `typography.csv` "Tech Startup" (2026-10-12 search) | Space Grotesk headings + DM Sans body | Partly adopted: Space Grotesk kept. DM Sans was not used, because the user wanted the reference's set; Space Grotesk also serves as body text. |
+| `typography.csv` "Developer Mono" (2026-10-12 search) | JetBrains Mono + IBM Plex Sans | JetBrains Mono adopted, for accents only. |
 | `products.csv` Analytics/Financial dashboards | Data-dense dashboards | Rejected: dashboards are not confirmed scope. |
 
 Run `python .claude/skills/ui-ux-pro-max/scripts/search.py "personal life log tasks projects tracker" --design-system -p "Personal Hub"` when Python is available to confirm or revise this direction (do not use `--persist`).
@@ -69,17 +71,32 @@ All text pairs meet AA (4.5:1) except white on the orange primary, sidebar and h
 
 ## Typography
 
-Inter (Google Fonts, weights 400/500/600/700) with a system sans fallback. In production prefer `next/font` to self-host it.
+Revised 2026-10-12 at the user's request, from a reference design they liked: a bold grotesque for headings and a monospace for text. The reference's exact fonts are not named, so these are the closest free matches by eye (an assumption): letterforms such as the straight-tailed `y`, the flagged `1`, and the tight bold headline match **Space Grotesk**, and the narrow mono with a curled `l` matches **JetBrains Mono**. Both are free (SIL OFL) and on Google Fonts.
 
-| Role | Size / line-height | Weight |
+The user chose "headings + mono accents" rather than all-mono body text: monospace is wider, so phone layouts, long task titles, and forms would get tighter.
+
+| Font | Variable | Use |
 | --- | --- | --- |
-| Page title (h1) | 1.5rem / 2rem (`text-2xl`) | 600 |
-| Section title (h2) | 1.125rem / 1.75rem (`text-lg`) | 600 |
-| Body | 0.875–1rem (`text-sm`/`text-base`) | 400 |
-| Labels, nav items | 0.875rem (`text-sm`) | 500 |
-| Meta / helper | 0.75–0.875rem, `text-muted-foreground` | 400 |
+| Space Grotesk (variable, 300–700) | `--font-sans`, `--font-heading` | Headings, body text, nav, buttons, form fields and their values, big numbers |
+| JetBrains Mono (variable, 400–700) | `--font-mono` (`font-mono`) | Small read-only meta: eyebrow labels, dates and times in lists, counts and rates, durations, the "Sample data" tag |
 
-Body text on phones is at least 16px for form inputs (prevents iOS zoom).
+| Role | Font | Size / line-height | Weight / tracking |
+| --- | --- | --- | --- |
+| Page title (h1) | Space Grotesk | 1.5rem / 2rem (`text-2xl`); 1.875rem at `lg` | 700, `tracking-tight` |
+| Section title (h2) | Space Grotesk | 1.125rem / 1.75rem (`text-lg`) | 600 |
+| Big number (rates, stats) | Space Grotesk | `text-2xl`–`text-4xl` | 700, `tabular-nums` |
+| Body | Space Grotesk | 0.875–1rem (`text-sm`/`text-base`) | 400 |
+| Labels, nav items, buttons | Space Grotesk | 0.875rem (`text-sm`) | 500 (buttons 600) |
+| Eyebrow label | JetBrains Mono | 0.75rem (`text-xs`), uppercase | 500, `tracking-[0.12em]`, `text-accent-foreground` |
+| Meta / helper in lists | JetBrains Mono | 0.75–0.8125rem | 400, `text-muted-foreground` |
+| Helper text under form fields | Space Grotesk | 0.875rem | 400, `text-muted-foreground` |
+
+Rules:
+
+- **Mono is for short, read-only meta only.** Never use it for paragraphs, titles, form inputs, or buttons. Inside controls (including the date-field value and the FIN-034 shortcut captions) keep Space Grotesk, so the layouts sized for it still fit at 320px.
+- **Orange text.** The reference sets eyebrows and highlights in bright orange on ivory. Here `#F46530` on ivory is 2.95:1, which fails for small text. Orange-tinted text uses `--accent-foreground` (rust, 7.77:1 on card). Bright orange stays for fills, such as the primary button and sidebar, as before.
+- **Font size on phones.** Form inputs are at least 16px on phones (prevents iOS zoom).
+- **Loading.** Design references load both fonts from Google Fonts. Production should self-host them with `@fontsource-variable/space-grotesk` and `@fontsource-variable/jetbrains-mono`, replacing `@fontsource-variable/inter`, and keep the system fallbacks.
 
 ## Spacing, radius, elevation
 
