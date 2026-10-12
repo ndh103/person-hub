@@ -14,7 +14,7 @@ function SessionRow({ session }: { session: SessionItem }) {
     <li className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
       <div className="min-w-0 flex-1">
         <p className="font-medium break-words">{session.activity}</p>
-        <p className="text-sm break-words text-muted-foreground">
+        <p className="font-mono text-[0.8125rem] break-words text-muted-foreground">
           <Link to="/finisher/projects/$id" params={{ id: session.projectId }} className="underline-offset-4 hover:underline">
             {session.projectTitle}
           </Link>
@@ -40,10 +40,10 @@ export function TodayView() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">
+        <p className="font-mono text-[0.8125rem] text-muted-foreground">
           Today · <time dateTime={now.date}>{formatDate(now.date)}</time>
         </p>
-        <p className="text-sm text-muted-foreground" role="status">
+        <p className="font-mono text-[0.8125rem] text-muted-foreground" role="status">
           {data.sessionsDone} of {data.sessionsTotal} {data.sessionsTotal === 1 ? "session" : "sessions"} done today ·{" "}
           {overdueCount} overdue {overdueCount === 1 ? "task" : "tasks"}
         </p>

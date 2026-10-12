@@ -79,6 +79,29 @@ Inputs: [requirements/finisher.md](../../requirements/finisher.md) v3 (FIN-034, 
   - Use Clear date on Due date and Target date.
   - With a screen reader, check that the field announces its value.
 
+## Change 2026-10-12: foundation fonts (Space Grotesk + JetBrains Mono)
+
+Input: [foundation typography](../../output/designs/_foundation/design-system.md#typography), revised 2026-10-12.
+
+- **Fonts.** `@fontsource-variable/inter` was replaced by `@fontsource-variable/space-grotesk` and `@fontsource-variable/jetbrains-mono`.
+  - Both are imported in `src/main.tsx` and self-hosted, so CSP `font-src 'self'` is unchanged.
+  - `globals.css` maps `--font-sans` and `--font-heading` to Space Grotesk and `--font-mono` to JetBrains Mono, keeping the system fallbacks.
+- **Page titles.** `text-2xl font-bold tracking-tight lg:text-3xl` (was `font-semibold`) on the app pages, Finisher pages, and the task and project views. The auth card titles are unchanged.
+- **Mono accents.** These use `font-mono text-[0.8125rem]`, for short read-only meta only:
+  - the sidebar "Apps" label;
+  - the Today date line and summary line;
+  - session meta (project · duration · time) and task meta (due, revisit, project);
+  - the Projects tab rate details and revisit line;
+  - the Closed list meta line.
+
+  Form fields, buttons (including the FIN-034 shortcut captions), date-field values, and paragraphs stay in Space Grotesk, as the foundation rule requires.
+- **Checks:**
+  - lint: 0 errors.
+  - typecheck: passes.
+  - `npm test`: 133 passed.
+  - build: passes and emits the Space Grotesk and JetBrains Mono `woff2` subsets.
+  - **No browser run:** text wrapping at 320 px with the wider fonts (Space Grotesk, and mono meta lines) is unchecked.
+
 ## Handoff gaps
 
 - **No Finisher design (`output/designs/finisher/`).** Layouts follow the app-shell reference (its Finisher Today preview, tokens, 44px targets, card lists) and the layout rules in FIN-018. Replace or adjust them when the Designer delivers the Finisher reference.

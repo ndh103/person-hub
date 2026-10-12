@@ -19,7 +19,7 @@ function ProjectRow({ project, today }: { project: ProjectCard; today: string })
       >
         <span className="font-medium break-words">{project.title}</span>
         {parked && project.revisitDate ? (
-          <span className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="flex flex-wrap items-center gap-2 font-mono text-[0.8125rem] text-muted-foreground">
             {project.revisitDate <= today ? <Badge variant="secondary">Due for revisit</Badge> : null}
             <span>
               Revisit <time dateTime={project.revisitDate}>{formatRelativeDate(project.revisitDate, today)}</time>
@@ -29,7 +29,7 @@ function ProjectRow({ project, today }: { project: ProjectCard; today: string })
         ) : (
           <>
             <span className="text-sm">{formatWeekRate(project.week)}</span>
-            <span className="text-sm text-muted-foreground">
+            <span className="font-mono text-[0.8125rem] text-muted-foreground">
               {[
                 formatWeekDetails(project.week),
                 project.todaySessions.total

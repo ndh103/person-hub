@@ -21,7 +21,7 @@ export function EditProjectPage({ id }: { id: string }) {
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
         Back to project
       </Link>
-      <h1 id="edit-project-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none">
+      <h1 id="edit-project-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
         Edit project
       </h1>
       {editable ? (

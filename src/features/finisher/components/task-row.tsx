@@ -245,7 +245,7 @@ export function TaskRow({
         >
           {task.title}
         </Link>
-        <p className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
+        <p className="flex flex-wrap gap-x-2 font-mono text-[0.8125rem] text-muted-foreground">
           <TaskDue task={task} today={today} />
           {showProject && task.projectTitle && task.projectId ? (
             <span className="min-w-0 break-words">

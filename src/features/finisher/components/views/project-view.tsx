@@ -113,7 +113,7 @@ export function ProjectView({ id }: { id: string }) {
         </Link>
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 id="project-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight break-words outline-none">
+            <h1 id="project-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl break-words outline-none">
               {project.title}
             </h1>
             <Badge variant={open ? "secondary" : "outline"}>{STATUS_LABEL[project.status]}</Badge>

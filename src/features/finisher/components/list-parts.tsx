@@ -64,7 +64,7 @@ export function NewProjectLink({ variant = "outline" }: { variant?: "default" | 
 export function NotFoundState({ kind }: { kind: "task" | "project" }) {
   return (
     <section aria-labelledby="not-found-title" className="flex flex-col items-start gap-3">
-      <h1 id="not-found-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none">
+      <h1 id="not-found-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
         {kind === "task" ? "Task not found" : "Project not found"}
       </h1>
       <p className="text-sm text-muted-foreground">It may have been deleted, or the link may be wrong.</p>

@@ -92,7 +92,7 @@ function NavLinks({ activeId }: { activeId: string | null }) {
       <SidebarGroup className="mt-4">
         <SidebarGroupLabel
           id="apps-heading"
-          className="text-xs font-semibold tracking-[0.12em] text-sidebar-foreground uppercase"
+          className="font-mono text-xs font-medium tracking-[0.12em] text-sidebar-foreground uppercase"
         >
           Apps
         </SidebarGroupLabel>

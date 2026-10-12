@@ -11,7 +11,7 @@ export function FinisherTabsLayout() {
     <section aria-labelledby="finisher-title" className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 id="finisher-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none">
+          <h1 id="finisher-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
             Finisher
           </h1>
           <p className="text-sm text-muted-foreground">Follow through on your tasks and projects.</p>

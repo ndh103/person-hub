@@ -7,7 +7,7 @@ export function HomePage() {
   return (
     <section aria-labelledby="home-title" className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 id="home-title" tabIndex={-1} className="text-2xl font-semibold tracking-tight outline-none">
+        <h1 id="home-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
           Welcome back
         </h1>
         <p className="text-sm text-muted-foreground">Choose an app to continue.</p>

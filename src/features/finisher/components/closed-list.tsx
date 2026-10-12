@@ -23,7 +23,7 @@ function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
         </Link>
         <Badge variant={entry.outcome === "let_go" ? "outline" : "secondary"}>{OUTCOME_LABEL[entry.outcome]}</Badge>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="font-mono text-[0.8125rem] text-muted-foreground">
         {entry.kind === "task" ? "Task" : "Project"} · closed{" "}
         <time dateTime={entry.closedAt}>{formatRelativeDate(entry.closedOn, today).replace(/^(Today|Yesterday)$/, (w) => w.toLowerCase())}</time>
         {formatRelativeDate(entry.closedOn, today) !== formatDate(entry.closedOn) ? <span className="sr-only"> ({formatDate(entry.closedOn)})</span> : null}
