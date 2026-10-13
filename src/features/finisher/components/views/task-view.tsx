@@ -29,7 +29,7 @@ export function TaskView({ id }: { id: string }) {
         {task.status !== "let_go" ? <TaskCheck task={task} /> : null}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 id="task-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl break-words outline-none">
+            <h1 id="task-title" tabIndex={-1} className="font-heading text-3xl font-medium lg:text-4xl break-words outline-none">
               {task.title}
             </h1>
             <Badge variant={task.status === "open" ? "secondary" : "outline"}>{STATUS_LABEL[task.status]}</Badge>

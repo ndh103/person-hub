@@ -42,7 +42,7 @@ export function AppSidebar({ account }: { account: string | null }) {
               PH
             </span>
             <span className="min-w-0 leading-tight">
-              <span className="block text-base font-semibold">Personal Hub</span>
+              <span className="block font-heading text-lg font-medium">Personal Hub</span>
               <span className="block truncate text-sm">{account}</span>
             </span>
           </Link>

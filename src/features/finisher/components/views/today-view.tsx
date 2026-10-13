@@ -78,7 +78,7 @@ export function TodayView() {
                 ))}
               </RowList>
             ) : (
-              <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+              <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
                 {data.sessionsTotal ? "All of today’s sessions are marked." : "No sessions scheduled today."}
               </p>
             )}
@@ -102,7 +102,7 @@ export function TodayView() {
                   ))}
                 </RowList>
               ) : (
-                <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No tasks due today.</p>
+                <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No tasks due today.</p>
               )}
             </ListSection>
           </div>

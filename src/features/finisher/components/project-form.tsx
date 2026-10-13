@@ -144,7 +144,7 @@ export function ProjectForm({
               key={index}
               role="group"
               aria-labelledby={`slot-${index}-title`}
-              className="flex flex-col gap-4 rounded-xl border bg-card p-4"
+              className="flex flex-col gap-4 rounded-2xl border bg-card p-4"
             >
               <div className="flex items-center justify-between gap-2">
                 <h3 id={`slot-${index}-title`} className="text-sm font-semibold">

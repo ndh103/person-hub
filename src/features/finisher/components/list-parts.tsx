@@ -9,7 +9,7 @@ export function ListSection({ title, id, children }: { title: string; id?: strin
   const headingId = id ? `${id}-title` : undefined;
   return (
     <section aria-labelledby={headingId} id={id} className="flex scroll-mt-4 flex-col gap-2">
-      <h2 id={headingId} className="text-sm font-semibold">
+      <h2 id={headingId} className="font-heading text-xl font-medium">
         {title}
       </h2>
       {children}
@@ -19,7 +19,7 @@ export function ListSection({ title, id, children }: { title: string; id?: strin
 
 export function RowList({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
-    <ul aria-label={label} className="divide-y overflow-hidden rounded-xl border bg-card text-card-foreground">
+    <ul aria-label={label} className="divide-y overflow-hidden rounded-2xl border bg-card text-card-foreground">
       {children}
     </ul>
   );
@@ -40,7 +40,7 @@ export function EmptyState({
         <EmptyMedia variant="icon" className="size-12 rounded-full bg-accent text-accent-foreground">
           <FlagIcon />
         </EmptyMedia>
-        <EmptyTitle className="text-lg font-semibold">{title}</EmptyTitle>
+        <EmptyTitle className="text-xl">{title}</EmptyTitle>
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       {children ? <EmptyContent className="flex-row flex-wrap justify-center">{children}</EmptyContent> : null}
@@ -64,7 +64,7 @@ export function NewProjectLink({ variant = "outline" }: { variant?: "default" | 
 export function NotFoundState({ kind }: { kind: "task" | "project" }) {
   return (
     <section aria-labelledby="not-found-title" className="flex flex-col items-start gap-3">
-      <h1 id="not-found-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
+      <h1 id="not-found-title" tabIndex={-1} className="font-heading text-3xl font-medium lg:text-4xl outline-none">
         {kind === "task" ? "Task not found" : "Project not found"}
       </h1>
       <p className="text-sm text-muted-foreground">It may have been deleted, or the link may be wrong.</p>
@@ -83,7 +83,7 @@ export function ListSkeleton({ label, rows = 3 }: { label: string; rows?: number
         {label}
       </p>
       <Skeleton className="h-4 w-56" />
-      <div aria-hidden="true" className="divide-y rounded-xl border bg-card">
+      <div aria-hidden="true" className="divide-y rounded-2xl border bg-card">
         {Array.from({ length: rows }, (_, index) => (
           <div key={index} className="flex items-center gap-4 p-4">
             <div className="flex flex-1 flex-col gap-2">

@@ -7,7 +7,7 @@ export function CompletingSignInPage() {
     <Card aria-busy="true">
       <CardHeader>
         <CardTitle>
-          <h1 className="flex items-center gap-2 text-xl font-semibold">
+          <h1 className="flex items-center gap-2 font-heading text-2xl font-medium">
             <Spinner aria-hidden="true" />
             Signing you in…
           </h1>

@@ -19,7 +19,7 @@ export function AppTopBar() {
       >
         <MenuIcon />
       </Button>
-      <p className="truncate text-base font-semibold">
+      <p className="truncate font-heading text-lg font-medium">
         <CurrentAppName />
       </p>
     </header>

@@ -7,7 +7,7 @@ export function AuthLinkErrorPage() {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h1 className="text-xl font-semibold">This link is invalid or has expired</h1>
+          <h1 className="font-heading text-2xl font-medium">This link is invalid or has expired</h1>
         </CardTitle>
         <CardDescription>
           Email links work once and expire after a while. Request a new email, or ask the hub owner to send a new

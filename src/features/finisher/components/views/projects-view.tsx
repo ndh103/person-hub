@@ -74,7 +74,7 @@ export function ProjectsView() {
           </RowList>
         </ListSection>
       ) : (
-        <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No active projects.</p>
+        <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No active projects.</p>
       )}
       {data.parked.length ? (
         <CollapsibleSection

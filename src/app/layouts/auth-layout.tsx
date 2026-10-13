@@ -12,7 +12,7 @@ export function AuthLayout() {
           >
             PH
           </span>
-          <span className="text-lg font-semibold">Personal Hub</span>
+          <span className="font-heading text-xl font-medium">Personal Hub</span>
         </div>
         <Outlet />
       </div>

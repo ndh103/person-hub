@@ -33,7 +33,7 @@ export function AppLayout({ account }: { account: string | null }) {
             className="min-w-0 bg-sidebar outline-none lg:bg-transparent lg:p-5 lg:pl-0 lg:peer-data-[variant=inset]:m-0 lg:peer-data-[variant=inset]:rounded-none lg:peer-data-[variant=inset]:shadow-none"
           >
             <AppTopBar />
-            <div className="flex-1 rounded-t-2xl bg-background text-foreground lg:rounded-2xl lg:shadow-lg lg:ring-1 lg:ring-sidebar-border">
+            <div className="flex-1 rounded-t-2xl bg-background text-foreground lg:rounded-2xl lg:shadow-elev-raised lg:ring-1 lg:ring-sidebar-border">
               <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14">
                 <Outlet />
               </div>

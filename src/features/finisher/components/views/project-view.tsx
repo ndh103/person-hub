@@ -29,7 +29,7 @@ const STATUS_LABEL: Record<ProjectStatus, string> = {
 function Strip({ project }: { project: ProjectDetail }) {
   const today = project.now.date;
   if (project.strip.length === 0) {
-    return <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No sessions in the last 7 days.</p>;
+    return <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No sessions in the last 7 days.</p>;
   }
   return (
     <div className="flex flex-col gap-4">
@@ -113,7 +113,7 @@ export function ProjectView({ id }: { id: string }) {
         </Link>
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 id="project-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl break-words outline-none">
+            <h1 id="project-title" tabIndex={-1} className="font-heading text-3xl font-medium lg:text-4xl break-words outline-none">
               {project.title}
             </h1>
             <Badge variant={open ? "secondary" : "outline"}>{STATUS_LABEL[project.status]}</Badge>
@@ -194,7 +194,7 @@ export function ProjectView({ id }: { id: string }) {
                   ))}
                 </RowList>
               ) : (
-                <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No open tasks for this project.</p>
+                <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No open tasks for this project.</p>
               )}
               {open ? (
                 <div>

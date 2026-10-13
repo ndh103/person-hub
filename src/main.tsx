@@ -1,4 +1,6 @@
-import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/inter";
+// Optical-size axis (plus weight), so large headings use the display cut.
+import "@fontsource-variable/source-serif-4/opsz.css";
 import "@fontsource-variable/jetbrains-mono";
 import "./app/globals.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

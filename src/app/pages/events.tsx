@@ -6,7 +6,7 @@ export function EventsPage() {
   return (
     <section aria-labelledby="events-title" className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 id="events-title" tabIndex={-1} className="text-2xl font-bold tracking-tight lg:text-3xl outline-none">
+        <h1 id="events-title" tabIndex={-1} className="font-heading text-3xl font-medium lg:text-4xl outline-none">
           Events
         </h1>
         <p className="text-sm text-muted-foreground">Moments you record in your life.</p>

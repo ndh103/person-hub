@@ -102,6 +102,32 @@ Input: [foundation typography](../../output/designs/_foundation/design-system.md
   - build: passes and emits the Space Grotesk and JetBrains Mono `woff2` subsets.
   - **No browser run:** text wrapping at 320 px with the wider fonts (Space Grotesk, and mono meta lines) is unchecked.
 
+## Change 2026-10-13: Claude design system and reference orange
+
+Inputs: [foundation](../../output/designs/_foundation/design-system.md) and [theme.css](../../output/designs/_foundation/theme.css), revised 2026-10-13; [app-shell design notes](../../output/designs/app-shell/design-notes.md#change-2026-10-13-claude-design-system-and-reference-orange). This change is shell-wide; it is recorded here because it restyles the Finisher pages.
+
+- **Tokens.** `src/app/globals.css` now mirrors the new `theme.css`:
+  - primary and light sidebar orange `#D4724F` with white text; hover and active pill `#C96442`;
+  - parchment page `#F5F4ED`, ivory cards `#FAF9F5`; dark `#141413` / `#30302E`;
+  - focus ring terracotta, not the Claude system's blue (which fails 3:1);
+  - `--radius` `0.5rem`. The `@theme` radius scale now follows the foundation (4 / 6 / 8 / 12 / 16 px for `sm` to `2xl`), replacing shadcn's multipliers;
+  - new `--elev-ring` and `--elev-raised` (utilities `shadow-elev-ring`, `shadow-elev-raised`) and the `ease-standard` easing;
+  - body line height 1.6.
+- **Fonts.** `@fontsource-variable/space-grotesk` was replaced by `@fontsource-variable/inter` (body and UI) and `@fontsource-variable/source-serif-4` (`opsz.css`, for headings). JetBrains Mono is unchanged. All are self-hosted, so CSP `font-src 'self'` is unchanged.
+  - `--font-heading` maps to Source Serif 4. The shadcn titles that already used `font-heading font-medium` (Dialog, AlertDialog, Card, Sheet, Empty) became serif with no other change.
+- **Headings.** Page titles: `font-heading text-3xl font-medium lg:text-4xl`. Auth card titles: `font-heading text-2xl font-medium`. Section headings (`ListSection`, `CollapsibleSection`): `font-heading text-xl font-medium`; the collapsible count stays small sans. Dialog titles: `text-xl`. The brand name and phone top-bar title are serif. Serif is never bold.
+- **Shapes.** Dialogs and cards are `rounded-2xl`. Inputs, textareas and native selects are `rounded-xl`. Row lists, slot cards, dashed placeholders and Home app cards are `rounded-2xl` with a border and no drop shadow. The laptop content card uses `shadow-elev-raised`. The outline button is ivory (`bg-card`) with `shadow-elev-ring` and an accent hover.
+- **Finisher tabs** (`finisher-tabs.tsx`) are now underline tabs: muted text; the current tab gets foreground text, medium weight and a 2px foreground underline. The row scrolls inside itself if it ever overflows.
+  - **Not implemented: the tab count pills** shown in the design reference. The designer flagged that what each count means needs a BA decision, and counts would need data from the API.
+- **Home** gets the mono "Personal Hub · Home" eyebrow (rust, `text-accent-foreground`).
+- **Checks:**
+  - lint: exit 0. The `react-refresh/only-export-components` warnings in untouched files are unchanged, and lint also exits 0 on the previous commit.
+  - typecheck: passes.
+  - `npm test`: 6 files, 133 passed.
+  - build: passes and emits the Inter and Source Serif 4 `woff2` subsets.
+  - Browser: headless Edge screenshot of the production build (`vite preview`) at `/sign-in`, 1280 px. It shows the orange frame, serif title and brand, Inter body text, 12px fields, an ivory card and the orange button with white text.
+  - **Not checked in a browser:** the signed-in pages (sidebar, Today, Tasks, Projects, dialogs), the phone width, and dark mode, because they need a signed-in session. The app's security headers also block iframe rendering, which was used to emulate phone width. Next manual check: sign in, then compare the sidebar, Finisher tabs, lists and the task dialog at 320 px, 390 px and 1280 px, in light and dark, against `output/designs/app-shell/` and `output/designs/finisher/`.
+
 ## Handoff gaps
 
 - **No Finisher design (`output/designs/finisher/`).** Layouts follow the app-shell reference (its Finisher Today preview, tokens, 44px targets, card lists) and the layout rules in FIN-018. Replace or adjust them when the Designer delivers the Finisher reference.

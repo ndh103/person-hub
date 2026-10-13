@@ -7,7 +7,7 @@ export function SignInPage({ search }: { search: SignInSearch }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h1 className="text-xl font-semibold">Sign in</h1>
+          <h1 className="font-heading text-2xl font-medium">Sign in</h1>
         </CardTitle>
         <CardDescription>Access is by invitation only.</CardDescription>
       </CardHeader>

@@ -7,7 +7,7 @@ export function ForgotPasswordPage() {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h1 className="text-xl font-semibold">Forgot password</h1>
+          <h1 className="font-heading text-2xl font-medium">Forgot password</h1>
         </CardTitle>
         <CardDescription>Enter your email and we’ll send you a link to set a new password.</CardDescription>
       </CardHeader>

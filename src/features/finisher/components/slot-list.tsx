@@ -175,7 +175,7 @@ export function SlotList({ projectId, slots, editable }: { projectId: string; sl
           ))}
         </RowList>
       ) : (
-        <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
           No weekly slots{editable ? ". Add one to schedule regular sessions." : "."}
         </p>
       )}

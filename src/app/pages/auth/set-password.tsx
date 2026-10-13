@@ -10,7 +10,7 @@ export function SetPasswordPage({ email }: { email: string | null }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h1 className="text-xl font-semibold">Set your password</h1>
+          <h1 className="font-heading text-2xl font-medium">Set your password</h1>
         </CardTitle>
         <CardDescription>You’ll use it with your email to sign in.</CardDescription>
       </CardHeader>
