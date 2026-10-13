@@ -25,7 +25,7 @@ export type EventsPage = {
 
 export type EventsListRequest = { q?: string; year?: number; cursor?: string };
 
-/** Error codes returned by /api/events/*. */
+/** Error codes returned by /api/journal/*. */
 export type EventsApiErrorCode =
   | "invalid_request"
   | "invalid_origin"

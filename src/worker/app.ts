@@ -19,7 +19,9 @@ export function createApp() {
     .use(secureHeaders({ crossOriginResourcePolicy: "same-origin" }))
     .use(guardWrites)
     .route("/finisher", finisher)
-    .route("/events", events)
+    // Events lives under /api/journal: content blockers (EasyPrivacy-style lists)
+    // block "/api/events" as analytics, which broke the page on some phones.
+    .route("/journal", events)
     .notFound((c) => apiError(c, "not_found", 404))
     .onError((error, c) => {
       if (error instanceof FinisherError) return apiError(c, error.code, error.status, error.fields);

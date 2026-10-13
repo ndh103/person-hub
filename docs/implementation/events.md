@@ -19,13 +19,13 @@ At the user's request, the "Your life log" eyebrow above the title was removed. 
 | --- | --- |
 | EVT-001 navigation | The existing nav entry; route `/events` in `src/app/router.tsx` with `validateSearch` for `q` and `year` |
 | EVT-002 list, order, paging, states | `components/events-view.tsx`, `server/queries.ts`, SQL `events_page` (keyset, 50 per page) |
-| EVT-003 create | `components/event-form-dialog.tsx`, `POST /api/events` |
+| EVT-003 create | `components/event-form-dialog.tsx`, `POST /api/journal` |
 | EVT-004 view | `components/event-row.tsx` (expandable row; the link opens in a new tab only if it is http(s)) |
-| EVT-005 edit | Same dialog, `PATCH /api/events/:id` (404 if the event is gone) |
-| EVT-006 delete | `components/delete-event-dialog.tsx`, `DELETE /api/events/:id` (idempotent) |
+| EVT-005 edit | Same dialog, `PATCH /api/journal/:id` (404 if the event is gone) |
+| EVT-006 delete | `components/delete-event-dialog.tsx`, `DELETE /api/journal/:id` (idempotent) |
 | EVT-007 ownership, privacy | Migration grants, RLS and constraints; `requireUser`; search sent in a POST body |
 | EVT-008 layout, accessibility | Labelled fields, errors linked to fields, focus management after save, delete and Load more, 44px targets |
-| EVT-009 search and year | `POST /api/events/query`, SQL `events_search`/`events_counts`/`events_years`, URL `?q=&year=` |
+| EVT-009 search and year | `POST /api/journal/query`, SQL `events_search`/`events_counts`/`events_years`, URL `?q=&year=` |
 
 ### Files
 
@@ -96,6 +96,6 @@ The database tests run the real migration in PGlite (Postgres 18) as `authentica
 5. While searching "pho", add an event that doesn't match. The toast should offer Clear filters.
 6. Edit an event and clear its time and link. Delete it with Cancel, then confirm it; check where focus goes. Edit an event that was deleted in another tab: you should see "This event no longer exists".
 7. Load more with more than 50 events, including across the search group boundary.
-8. In the browser's network panel, confirm that search text appears only in the POST body of `/api/events/query`, never in an `/api` URL, and that responses are `private, no-store`.
+8. In the browser's network panel, confirm that search text appears only in the POST body of `/api/journal/query`, never in an `/api` URL, and that responses are `private, no-store`.
 9. Check that notes containing HTML are shown as text, and check 320px width, keyboard-only use and a screen reader.
 10. Use a second account to confirm that it can't see the first account's events: through the API, and through direct PostgREST calls with its own token.

@@ -3,7 +3,7 @@ import { apiFetch, type ApiMethod } from "@/lib/api";
 import type { EventInput } from "./domain/validation";
 import type { EventItem, EventsApiErrorCode, EventsApiResult, EventsPage } from "./types";
 
-/** Calls a same-origin /api/events endpoint with JSON. Never throws. */
+/** Calls a same-origin /api/journal endpoint with JSON. Never throws. */
 export async function eventsApi<T>(method: ApiMethod, path: string, body?: Record<string, unknown>): Promise<EventsApiResult<T>> {
   return (await apiFetch<T, EventsApiErrorCode>(method, path, body)) as EventsApiResult<T>;
 }
@@ -32,7 +32,7 @@ export const eventsQueries = {
       queryKey: ["events", "list", { q: q ?? "", year: year ?? null }],
       initialPageParam: undefined as string | undefined,
       queryFn: async ({ pageParam }) => {
-        const result = await eventsApi<EventsPage>("POST", "/api/events/query", {
+        const result = await eventsApi<EventsPage>("POST", "/api/journal/query", {
           ...(q ? { q } : {}),
           ...(year ? { year } : {}),
           ...(pageParam ? { cursor: pageParam } : {}),
@@ -46,7 +46,7 @@ export const eventsQueries = {
     queryOptions({
       queryKey: ["events", "years"],
       queryFn: async () => {
-        const result = await eventsApi<{ years: number[] }>("GET", "/api/events/years");
+        const result = await eventsApi<{ years: number[] }>("GET", "/api/journal/years");
         if (!result.ok) throw new EventsLoadError(result.error);
         return result.data.years;
       },
@@ -54,13 +54,13 @@ export const eventsQueries = {
 };
 
 export function createEvent(input: EventInput) {
-  return eventsApi<{ item: EventItem }>("POST", "/api/events", input);
+  return eventsApi<{ item: EventItem }>("POST", "/api/journal", input);
 }
 
 export function updateEvent(id: string, input: EventInput) {
-  return eventsApi<{ item: EventItem }>("PATCH", `/api/events/${encodeURIComponent(id)}`, input);
+  return eventsApi<{ item: EventItem }>("PATCH", `/api/journal/${encodeURIComponent(id)}`, input);
 }
 
 export function deleteEvent(id: string) {
-  return eventsApi<{ ok: true }>("DELETE", `/api/events/${encodeURIComponent(id)}`);
+  return eventsApi<{ ok: true }>("DELETE", `/api/journal/${encodeURIComponent(id)}`);
 }

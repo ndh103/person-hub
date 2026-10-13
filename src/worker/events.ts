@@ -40,7 +40,7 @@ async function body(c: Context): Promise<Record<string, unknown>> {
 }
 
 /**
- * /api/events. Every route runs after requireUser, so each handler has a
+ * /api/journal. Every route runs after requireUser, so each handler has a
  * verified caller and a Supabase client bound to their token; RLS scopes
  * every read and write to that caller (ADR-0004).
  */

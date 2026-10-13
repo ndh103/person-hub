@@ -22,7 +22,7 @@
 EventsPage (SPA, /events?q=&year=)
   │  TanStack Query: useInfiniteQuery(["events","list",{q,year}]), useQuery(["events","years"])
   ▼
-src/features/events/api.ts ── apiFetch (Bearer token) ──► /api/events/* (Hono, src/worker/events.ts)
+src/features/events/api.ts ── apiFetch (Bearer token) ──► /api/journal/* (Hono, src/worker/events.ts)
                                                             │ requireUser → getClaims(token)
                                                             │ Zod: params, body (allowlist)
                                                             ▼
@@ -39,7 +39,7 @@ src/features/events/api.ts ── apiFetch (Bearer token) ──► /api/events/
 | Path | Responsibility |
 | --- | --- |
 | `supabase/migrations/<timestamp>_events.sql` | Table, constraints, trigger, grants, RLS, search functions ([Appendix A](#appendix-a-draft-migration)) |
-| `src/worker/events.ts` | Hono routes under `/events`, `requireUser`, Zod parsing, response shaping. Mounted in `src/worker/app.ts` with `.route("/events", events)`. |
+| `src/worker/events.ts` | Hono routes under `/journal`, `requireUser`, Zod parsing, response shaping. Mounted in `src/worker/app.ts` with `.route("/journal", events)`. |
 | `src/features/events/server/queries.ts` | `listEvents`, `listYears`: RPC calls and row → view-model mapping. Server-only. |
 | `src/features/events/server/mutations.ts` | `createEvent`, `updateEvent`, `deleteEvent`. Server-only. |
 | `src/features/events/server/errors.ts` | `EventsError` (safe code, status, field errors) and `fromDbError` |
@@ -55,7 +55,7 @@ The moves are mechanical; keep Finisher tests green. If the Developer prefers to
 
 ## API contract
 
-All routes are under `/api/events` and run `requireUser` (Bearer token, verified with `getClaims`, non-anonymous). Responses carry `Cache-Control: private, no-store` and the existing security headers (ADR-0003). Errors are `{ error, fields? }` with safe codes; database text is never forwarded. Writes pass the existing `guardWrites` checks (foreign `Origin` → 403, non-JSON body → 415). No CORS headers are sent. The `X-Time-Zone` header is not needed: the server never computes "today" for Events.
+All routes are under `/api/journal` (not `/api/events`: ad and tracking blockers match that path as analytics and silently block it, seen on a phone browser 2026-10-13) and run `requireUser` (Bearer token, verified with `getClaims`, non-anonymous). Responses carry `Cache-Control: private, no-store` and the existing security headers (ADR-0003). Errors are `{ error, fields? }` with safe codes; database text is never forwarded. Writes pass the existing `guardWrites` checks (foreign `Origin` → 403, non-JSON body → 415). No CORS headers are sent. The `X-Time-Zone` header is not needed: the server never computes "today" for Events.
 
 ### `EventItem` (response view model)
 
@@ -75,7 +75,7 @@ type EventItem = {
 
 `user_id` and `search_folded` are never returned.
 
-### `POST /api/events/query`: list and search (EVT-002, EVT-009)
+### `POST /api/journal/query`: list and search (EVT-002, EVT-009)
 
 The list is read with a **POST with a JSON body**, not `GET ?q=`. Workers Logs is enabled (`wrangler.jsonc` `observability`), and invocation logs record request URLs, so search text in a query string would end up in Cloudflare logs (EVT-007). This is a read: it changes nothing and is safe to retry.
 
@@ -98,11 +98,11 @@ Response `200`:
 - **Counts.** `rpc("events_counts", { p_q, p_year })` is called on the first page only. Without `q`, `exact` is the total and `accent` is 0. The SPA shows "N events" or "N events found · X exact, Y more without accents".
 - **Group headings.** The SPA starts a new group heading when `match` changes from `exact` to `accent` between consecutive items (including across pages).
 
-### `GET /api/events/years` (EVT-009)
+### `GET /api/journal/years` (EVT-009)
 
 `200 { years: number[] }`, descending, from `rpc("events_years")`. It contains no personal text.
 
-### `POST /api/events`: create (EVT-003)
+### `POST /api/journal`: create (EVT-003)
 
 Body (strict allowlist): `{ title: string; date: string; time?: string | null; link?: string | null; notes?: string | null }`.
 
@@ -116,7 +116,7 @@ Body (strict allowlist): `{ title: string; date: string; time?: string | null; l
 - `400 invalid_request` for a malformed body, unknown keys, or a body over the existing 32 KB limit.
 - **Duplicates.** POST is not idempotent. Double submission is prevented in the SPA (the button is disabled while pending, EVT-003). A retried request after a lost response can create a duplicate, which the user can delete. That's acceptable for a manual log, so no idempotency keys are needed.
 
-### `PATCH /api/events/:id`: edit (EVT-005)
+### `PATCH /api/journal/:id`: edit (EVT-005)
 
 - `:id` must be a UUID, otherwise 404 (same as Finisher's `idParam`).
 - **Body:** any non-empty subset of the create fields, as a strict allowlist. `title` and `date` can't be null. `time`, `link` and `notes` accept `null` or `""` to clear.
@@ -126,7 +126,7 @@ Body (strict allowlist): `{ title: string; date: string; time?: string | null; l
   - `422` and `400` as for create.
 - `updated_at` is set by the trigger. Concurrent edits are last-write-wins, which is acceptable for a single-owner log; no version column.
 
-### `DELETE /api/events/:id` (EVT-006)
+### `DELETE /api/journal/:id` (EVT-006)
 
 - `200 { ok: true }` whether or not a row was deleted: "already gone" counts as success. That reveals nothing about other users' rows, because the answer is the same for every ID.
 - A non-UUID ID gives 404.
@@ -273,10 +273,10 @@ Session revocation follows the existing behaviour (auth architecture R3): a revo
 ## Alternatives considered
 
 - **Definer-function writes (ADR-0002 style):** rejected in ADR-0004.
-- **`GET /api/events?q=`:** the natural REST shape, but it puts search text into Workers Logs. Rejected in favour of `POST /api/events/query`.
+- **`GET /api/journal?q=`:** the natural REST shape, but it puts search text into Workers Logs. Rejected in favour of `POST /api/journal/query`.
 - **PostgREST `ilike` filters plus `unaccent`:** this would need `%`/`_` escaping and two queries merged for grouping. `unaccent` is not immutable, so it can't feed a generated column without a wrapper, and its rules must be checked for Vietnamese stacked marks. `normalize(NFD)` plus stripping combining marks covers Vietnamese completely and was verified.
 - **A `pg_trgm` index now:** unnecessary at personal scale (TD-EVT-1).
-- **A separate detail route `GET /api/events/:id`:** not needed, because the design shows details inline from the list data. Add it if a shareable event URL is ever required.
+- **A separate detail route `GET /api/journal/:id`:** not needed, because the design shows details inline from the list data. Add it if a shareable event URL is ever required.
 
 ## Appendix A: draft migration
 
