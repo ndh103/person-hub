@@ -19,7 +19,7 @@ import {
   type LocalDate,
 } from "../domain/dates";
 import type { ProjectOption, TaskDetail } from "../types";
-import { DatePicker } from "./date-picker";
+import { DatePicker } from "@/components/forms/date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { useMutation } from "./use-mutation";
 

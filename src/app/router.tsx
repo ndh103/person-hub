@@ -8,9 +8,10 @@ import {
   useMatches,
   type ParsedLocation,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { z } from "zod";
 import { finishGoogleSignIn, confirmEmailLink } from "@/features/auth/api";
+import type { EventsFilter } from "@/features/events/api";
 import { finisherQueries } from "@/features/finisher/api";
 import { FinisherRouteError } from "@/features/finisher/components/finisher-error";
 import { ListSkeleton } from "@/features/finisher/components/list-parts";
@@ -235,11 +236,26 @@ const homeRoute = createRoute({
   component: HomePage,
 });
 
+// Events (EVT-001). Search text and year stay in the page URL (EVT-009); the
+// API receives them in a POST body, never in its own URL (EVT-007).
 const eventsRoute = createRoute({
   getParentRoute: () => appLayout,
   path: "events",
   staticData: { title: "Events" },
-  component: EventsPage,
+  validateSearch: z.object({
+    q: optionalText(100),
+    year: z.coerce.number().int().min(1900).max(2100).optional().catch(undefined),
+  }),
+  component: function Events() {
+    const search = eventsRoute.useSearch();
+    const navigate = eventsRoute.useNavigate();
+    const onFilterChange = useCallback(
+      (next: EventsFilter, options?: { replace?: boolean }) =>
+        void navigate({ search: { q: next.q || undefined, year: next.year }, replace: options?.replace }),
+      [navigate],
+    );
+    return <EventsPage filter={search} onFilterChange={onFilterChange} />;
+  },
 });
 
 // Finisher (FIN-001). Each page preloads its data in the loader and renders

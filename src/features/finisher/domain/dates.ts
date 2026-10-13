@@ -3,25 +3,20 @@
  * the user's timezone, never a UTC timestamp (CLAUDE.md, business rules).
  * Arithmetic runs on UTC midnights so it is free of DST shifts.
  */
-export type LocalDate = string;
+import { formatDate, isLocalDate, MONTH_SHORT, type LocalDate } from "@/lib/dates";
+
+// Shared with other features (src/lib/dates.ts).
+export { formatDate, isLocalDate, type LocalDate };
+
 /** Local wall-clock time "HH:MM". */
 export type LocalTime = string;
 
 export type LocalNow = { date: LocalDate; time: LocalTime };
 
-const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const DAY_MS = 86_400_000;
 
 export const DEFAULT_TIME_ZONE = "UTC";
-
-export function isLocalDate(value: unknown): value is LocalDate {
-  if (typeof value !== "string") return false;
-  const match = DATE_RE.exec(value);
-  if (!match) return false;
-  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
-  return date.toISOString().slice(0, 10) === value;
-}
 
 export function isLocalTime(value: unknown): value is LocalTime {
   return typeof value === "string" && TIME_RE.test(value);
@@ -140,19 +135,6 @@ export function weekdayShort(day: number): string {
 
 export function weekdayLong(day: number): string {
   return WEEKDAY_LONG[day - 1] ?? "";
-}
-
-// Built by hand rather than with Intl: ICU output differs between Node and
-// browsers (for example "Wed, 7 Oct" vs "Wed 7 Oct"), which would break
-// hydration of client components that render dates.
-const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-/** The one display format for dates in the app: "12 Oct 2026". */
-export function formatDate(date: LocalDate): string {
-  const year = Number(date.slice(0, 4));
-  const month = Number(date.slice(5, 7)) - 1;
-  const day = Number(date.slice(8, 10));
-  return `${day} ${MONTH_SHORT[month]} ${year}`;
 }
 
 /** "Monday 12 Oct": the caption on the due-date shortcut buttons (FIN-034). */

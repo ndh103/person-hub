@@ -121,11 +121,12 @@ Deploys go through GitHub Actions ([.github/workflows/ci-deploy.yml](../../.gith
 - **`check`** runs on every pull request and push: `npm ci`, lint, typecheck, test and a build.
 - **`deploy`** runs only for pushes to `main` (or a manual run on `main`), after `check` passes, in the `production` environment, one at a time.
   1. It checks that the settings below exist, and refuses a "publishable" key that looks like a secret key.
-  2. It builds the SPA with `VITE_SUPABASE_*` from the environment variables.
-  3. It runs `wrangler deploy --var SUPABASE_URL:… --var SUPABASE_PUBLISHABLE_KEY:…`.
+  2. It applies pending database migrations with `supabase db push --db-url` (added 2026-10-13; see "Database migrations" below).
+  3. It builds the SPA with `VITE_SUPABASE_*` from the environment variables.
+  4. It runs `wrangler deploy --var SUPABASE_URL:… --var SUPABASE_PUBLISHABLE_KEY:…`.
 
   This keeps one copy of the two browser-safe Supabase values, used for both the SPA build and the Worker.
-- **Hardening:** actions pinned to commit SHAs (`actions/checkout` v7.0.1, `actions/setup-node` v7.0.0), `contents: read` permissions, `persist-credentials: false`, and no `${{ }}` expressions inside shell scripts. Wrangler comes from the lockfile rather than a third-party deploy action.
+- **Hardening:** actions pinned to commit SHAs (`actions/checkout` v7.0.1, `actions/setup-node` v7.0.0), `contents: read` permissions, `persist-credentials: false`, and no `${{ }}` expressions inside shell scripts. Wrangler and the Supabase CLI (`supabase` 2.120.0, exact) come from the lockfile rather than third-party actions.
 
 ### One-time setup
 
@@ -143,13 +144,23 @@ Deploys go through GitHub Actions ([.github/workflows/ci-deploy.yml](../../.gith
    | Variable | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
    | Variable | `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (never the secret key) |
    | Variable | `SITE_URL` (optional) | The live URL, shown as a link on each deploy |
+   | Secret | `SUPABASE_DB_URL` | Supabase → **Connect** → **Session pooler** connection string, with the database password filled in. Not the Direct connection: GitHub runners have no IPv6. |
 
 4. **Supabase and Google.** Add the live origin (`https://person-hub.<account-subdomain>.workers.dev` or your custom domain) to the Supabase Site URL and redirect URLs, and to the Google OAuth JavaScript origins.
+
+### Database migrations
+
+- **How the pipeline decides what to run.** `supabase db push` compares the files in `supabase/migrations/` with the rows in the database table `supabase_migrations.schema_migrations` and runs only the missing ones, oldest first, each in a transaction. The deploy log shows the `--dry-run` list first.
+- **Only the pipeline applies migrations.** A file run by hand (for example in the SQL Editor) is not recorded, and the next deploy would try to run it again and fail. If you ever must run one by hand, record it straight away: `npx supabase migration repair --status applied <timestamp> --db-url "<session pooler URL>"`.
+- **Write additive migrations.** Migrations run before the Worker deploy, so if the deploy then fails, the previous Worker runs on the new schema. Rename or drop in two releases. Review destructive migrations by hand first: the free plan has no point-in-time restore.
+- **Never edit an applied migration.** The CLI tracks the timestamp only, so changes would never run. Add a new file with `npx supabase migration new <name>`.
+- **One-time setup (2026-10-13).** `20261011120000_finisher.sql` was applied by hand before the pipeline existed. Record it once with `migration repair --status applied 20261011120000` before the first pipeline run; the pipeline then applies `20261013120000_events.sql`.
+- Check the state at any time: `npx supabase migration list --db-url "<session pooler URL>"`.
 
 ### Manual deploy and rollback
 
 - `npm run deploy` from a machine logged in with `npx wrangler login` builds with `.env.local` and deploys with `--keep-vars`, so the Worker keeps the variables the last CI deploy set. Without that flag, Wrangler would delete them.
-- Rollback: `npx wrangler rollback`, or revert the commit on `main`.
+- Rollback: `npx wrangler rollback`, or revert the commit on `main`. Neither undoes a migration: write a new migration for that.
 
 ## Debt and follow-ups
 

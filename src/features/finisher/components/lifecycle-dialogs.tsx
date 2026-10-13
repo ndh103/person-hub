@@ -18,7 +18,7 @@ import { FormAlert } from "@/features/auth/components/form-alert";
 import { finisherApi } from "../api";
 import { addDays, type LocalDate } from "../domain/dates";
 import { LIMITS, parseProjectAction } from "../domain/validation";
-import { DatePicker } from "./date-picker";
+import { DatePicker } from "@/components/forms/date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { useMutation } from "./use-mutation";
 

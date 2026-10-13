@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
+import { EventsError } from "@/features/events/server/errors";
 import { FinisherError } from "@/features/finisher/server/errors";
 import type { Bindings } from "./env";
+import { events } from "./events";
 import { finisher } from "./finisher";
 import { apiError, guardWrites, noStore } from "./http";
 
@@ -17,9 +19,11 @@ export function createApp() {
     .use(secureHeaders({ crossOriginResourcePolicy: "same-origin" }))
     .use(guardWrites)
     .route("/finisher", finisher)
+    .route("/events", events)
     .notFound((c) => apiError(c, "not_found", 404))
     .onError((error, c) => {
       if (error instanceof FinisherError) return apiError(c, error.code, error.status, error.fields);
+      if (error instanceof EventsError) return apiError(c, error.code, error.status, error.fields);
       // Log the error type only: messages may echo personal content.
       console.error("api: unexpected error", error instanceof Error ? error.name : "unknown");
       return apiError(c, "unavailable", 503);

@@ -13,7 +13,7 @@ import { finisherApi } from "../api";
 import type { LocalDate } from "../domain/dates";
 import { LIMITS, parseNewProject, parseProjectInput } from "../domain/validation";
 import { fieldErrorMessage } from "../messages";
-import { DatePicker } from "./date-picker";
+import { DatePicker } from "@/components/forms/date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { EMPTY_SLOT, SlotFields, slotPayload, type SlotValues } from "./slot-fields";
 import { useMutation } from "./use-mutation";

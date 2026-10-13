@@ -3,7 +3,7 @@ import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatDate, type LocalDate } from "../domain/dates";
+import { formatDate, MONTH_SHORT, type LocalDate } from "@/lib/dates";
 import type { ControlProps } from "./form-field";
 
 // The calendar works on JS Dates at local midnight; the app keeps "YYYY-MM-DD".
@@ -17,9 +17,11 @@ function toLocalDate(date: Date): LocalDate {
 }
 
 /**
- * A date field that shows its value as "12 Oct 2026" (decision 12), in place
- * of the native date input whose format follows the browser locale. Weeks
- * start on Monday (assumption A2). Optional fields get a "Clear date" action.
+ * A date field that shows its value as "12 Oct 2026", in place of the native
+ * date input whose format follows the browser locale. Weeks start on Monday.
+ * Optional fields get a "Clear date" action. With `yearDropdown`, the caption
+ * has month and year selects so a wide range (such as 1900–2100) is quick to
+ * reach; it requires `min` and `max`.
  */
 export function DatePicker({
   control,
@@ -30,6 +32,7 @@ export function DatePicker({
   min,
   max,
   clearable = false,
+  yearDropdown = false,
   className,
 }: {
   control: ControlProps;
@@ -40,6 +43,7 @@ export function DatePicker({
   min?: LocalDate;
   max?: LocalDate;
   clearable?: boolean;
+  yearDropdown?: boolean;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,6 +52,7 @@ export function DatePicker({
     ...(min ? [{ before: toDate(min) }] : []),
     ...(max ? [{ after: toDate(max) }] : []),
   ];
+  const dropdown = yearDropdown && min && max;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,6 +79,15 @@ export function DatePicker({
           selected={selected}
           defaultMonth={selected ?? toDate(min && min > today ? min : today)}
           disabled={disabled}
+          {...(dropdown
+            ? {
+                captionLayout: "dropdown" as const,
+                startMonth: toDate(min),
+                endMonth: toDate(max),
+                // Fixed month names, independent of the browser language (date display rule).
+                formatters: { formatMonthDropdown: (date: Date) => MONTH_SHORT[date.getMonth()] },
+              }
+            : {})}
           onSelect={(date) => {
             if (date) onChange(toLocalDate(date));
             setOpen(false);
