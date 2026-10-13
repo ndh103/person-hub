@@ -1,0 +1,46 @@
+/*
+ * Events — custom styles that Tailwind utilities do not express cleanly.
+ * Colors come only from ../_foundation/theme.css variables.
+ * Shell styles (sidebar, drawer, nav-link, focus ring, icon) are reused from ../app-shell/styles.css.
+ */
+
+/* Dialogs (map to shadcn/ui Dialog and AlertDialog). Native <dialog> gives Escape and an inert background. */
+.ev-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2); /* 16px */
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  overflow-y: auto;
+}
+.ev-dialog.ev-dialog-sm { width: min(26rem, calc(100vw - 2rem)); }
+.ev-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.ev-dialog[open] { animation: ev-dialog-in 160ms ease-out; }
+@keyframes ev-dialog-in { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
+
+/* Native date input stands in for the production calendar popover; keep its icon visible in dark mode. */
+.dark input[type="date"] { color-scheme: dark; }
+
+/* Event row disclosure (EVT-002, EVT-004): the chevron turns when the row is open. */
+.ev-chevron { transition: transform var(--motion-fast) var(--ease-standard); }
+[aria-expanded="true"] .ev-chevron { transform: rotate(180deg); }
+
+/* Notes keep their line breaks and wrap long words (URLs, model numbers) instead of overflowing at 320px. */
+.ev-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ev-break { overflow-wrap: anywhere; }
+
+/* Skeleton rows (loading state). */
+.ev-skeleton { background: var(--muted); border-radius: var(--radius); animation: ev-pulse 1.4s ease-in-out infinite; }
+@keyframes ev-pulse { 50% { opacity: 0.55; } }
+
+/* Search field: hide the browser's own clear "x"; the design has a labelled clear button. */
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-dialog[open], .ev-skeleton { animation: none; }
+  .ev-chevron { transition: none; }
+}

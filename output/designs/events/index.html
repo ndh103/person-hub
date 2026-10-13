@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Events · Personal Hub</title>
+  <!--
+    Design reference: Events (feature slug: events; EVT-001 to EVT-009). Status: draft.
+    Not production code. All data shown is synthetic fixture data. See design-notes.md.
+    External runtime dependencies: Google Fonts (Source Serif 4, Inter, JetBrains Mono) and the pinned Tailwind browser runtime.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../_foundation/theme.css" />
+  <link rel="stylesheet" href="../app-shell/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Apply the stored or system theme before first paint (prototype convenience).
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("ph-theme"); } catch (e) {}
+      var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <!-- Prototype only: pinned Tailwind v4 browser runtime. Never ship this in the app. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+  <style type="text/tailwindcss">
+    /* Mirrors shadcn/ui globals.css: map foundation variables to Tailwind colour utilities. */
+    @custom-variant dark (&:where(.dark, .dark *));
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --color-card: var(--card);
+      --color-card-foreground: var(--card-foreground);
+      --color-popover: var(--popover);
+      --color-popover-foreground: var(--popover-foreground);
+      --color-primary: var(--primary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-primary-hover: var(--primary-hover);
+      --color-secondary: var(--secondary);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-muted: var(--muted);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-accent: var(--accent);
+      --color-accent-foreground: var(--accent-foreground);
+      --color-destructive: var(--destructive);
+      --color-destructive-foreground: var(--destructive-foreground);
+      --color-border: var(--border);
+      --color-input: var(--input);
+      --color-ring: var(--ring);
+      --color-sidebar: var(--sidebar);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar-primary: var(--sidebar-primary);
+      --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+      --color-sidebar-border: var(--sidebar-border);
+      --color-sidebar-ring: var(--sidebar-ring);
+      --font-heading: var(--font-heading);
+      --radius-sm: calc(var(--radius) - 4px);
+      --radius-md: calc(var(--radius) - 2px);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) + 4px);
+    }
+    /* Prototype-control buttons only (not product UI). */
+    .proto-btn { @apply inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 hover:bg-accent hover:text-accent-foreground; }
+  </style>
+</head>
+<body class="min-h-dvh bg-background text-foreground antialiased">
+
+  <!-- Icon sprite (Lucide paths, ISC licence). Production: lucide-react. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+    <symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  </svg>
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
+
+  <div class="min-h-dvh bg-sidebar lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+
+    <div id="drawer-backdrop" class="drawer-backdrop lg:hidden" hidden></div>
+
+    <!-- ===================== Sidebar (same as app-shell reference; Events current, EVT-001) ===================== -->
+    <aside id="sidebar" class="sidebar on-sidebar flex flex-col bg-sidebar text-sidebar-foreground" aria-labelledby="brand-name">
+      <div class="flex items-start justify-between gap-2 px-5 pt-6 pb-2 lg:pt-8">
+        <a href="#" class="flex min-h-11 min-w-0 items-center gap-3 rounded-md">
+          <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground" aria-hidden="true">PH</span>
+          <span class="min-w-0 leading-tight">
+            <span id="brand-name" class="block font-heading text-lg font-medium">Personal Hub</span>
+            <span class="block truncate text-sm">you@example.com</span>
+          </span>
+        </a>
+        <button type="button" id="drawer-close" class="grid size-11 shrink-0 place-items-center rounded-md hover:bg-sidebar-accent lg:hidden" aria-label="Close navigation">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <nav aria-label="Apps" class="flex-1 overflow-y-auto px-3 pt-8 pb-4 lg:pt-14">
+        <ul class="space-y-1">
+          <li>
+            <a href="../app-shell/index.html#/home" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-home"/></svg> Home
+            </a>
+          </li>
+        </ul>
+        <p class="mt-8 mb-2 px-3 font-mono text-xs font-medium uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
+        <ul class="space-y-1" aria-labelledby="apps-heading">
+          <li>
+            <a href="../finisher/index.html" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-flag"/></svg> Finisher
+            </a>
+          </li>
+          <li>
+            <a href="#" aria-current="page" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg> Events
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="space-y-3 px-5 pb-6 lg:pb-8">
+        <div role="group" aria-label="Theme" class="grid grid-cols-2 gap-1 rounded-xl border border-sidebar-border p-1">
+          <button type="button" data-theme-choice="light" aria-pressed="true" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-sun"/></svg> Light
+          </button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-moon"/></svg> Dark
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================== Content column ===================== -->
+    <div id="content-column" class="flex min-h-dvh min-w-0 flex-col lg:py-5 lg:pr-5">
+      <header class="on-sidebar sticky top-0 z-30 flex h-14 items-center gap-2 bg-sidebar px-2 text-sidebar-foreground lg:hidden">
+        <button type="button" id="drawer-open" class="grid size-11 place-items-center rounded-md hover:bg-sidebar-accent" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <p class="truncate font-heading text-lg font-medium">Events</p>
+      </header>
+
+      <main id="main" tabindex="-1" class="content-card flex-1 rounded-t-2xl bg-background lg:rounded-2xl">
+       <div class="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14">
+
+        <!-- Page header (EVT-001, EVT-002: "Add event" always visible) -->
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div class="min-w-0">
+            <p class="eyebrow">Your life log</p>
+            <h1 id="page-title" tabindex="-1" class="mt-1 font-heading text-3xl font-medium lg:text-4xl">Events</h1>
+          </div>
+          <button type="button" id="add-event" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> Add event
+          </button>
+        </div>
+
+        <!-- Search and year filter (EVT-009). Stacked on phones, one row from 640px. -->
+        <form id="filters" role="search" class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem]" novalidate>
+          <div>
+            <label for="q" class="text-sm font-medium">Search events</label>
+            <div class="relative mt-1.5">
+              <svg class="icon pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true"><use href="#i-search"/></svg>
+              <input id="q" name="q" type="search" maxlength="100" autocomplete="off" enterkeyhint="search" placeholder="Title or notes" aria-describedby="q-hint" class="h-11 w-full rounded-xl border border-input bg-card pl-9 pr-11 text-base sm:text-sm" />
+              <button type="button" id="q-clear" class="absolute right-0 top-0 grid size-11 place-items-center rounded-xl text-muted-foreground hover:text-foreground" aria-label="Clear search" hidden>
+                <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+              </button>
+            </div>
+            <p id="q-hint" class="sr-only">Results update as you type. Exact matches come first, then matches that ignore Vietnamese accent marks.</p>
+          </div>
+          <div>
+            <label for="year" class="text-sm font-medium">Year</label>
+            <select id="year" name="year" class="mt-1.5 h-11 w-full rounded-xl border border-input bg-card px-3 text-base sm:text-sm">
+              <option value="">All years</option>
+            </select>
+          </div>
+        </form>
+
+        <!-- Result summary; also the polite announcement for list changes (EVT-009). -->
+        <div class="mt-4 flex min-h-8 flex-wrap items-center justify-between gap-2">
+          <p id="summary" class="font-mono text-[0.8125rem] text-muted-foreground" role="status" aria-live="polite"></p>
+          <button type="button" id="summary-clear" class="inline-flex min-h-8 items-center rounded-md px-2 text-sm font-medium text-accent-foreground underline-offset-4 hover:underline" hidden>Clear search and filters</button>
+        </div>
+
+        <!-- List region: populated from fixtures by the script below (textContent only). -->
+        <div id="list-region" class="mt-2"></div>
+
+        <div class="mt-6 flex justify-center">
+          <button type="button" id="load-more" class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-60" hidden>
+            <svg id="load-more-spinner" class="icon size-4 animate-spin" aria-hidden="true" hidden><use href="#i-loader"/></svg>
+            <span>Load more</span>
+          </button>
+        </div>
+
+        <!-- ============ Prototype-only controls (not product UI) ============ -->
+        <details class="mt-12 rounded-lg border border-dashed border-border p-4 text-sm">
+          <summary class="cursor-pointer font-medium text-muted-foreground">Prototype controls (not part of the product)</summary>
+          <p class="mt-2 text-muted-foreground">Today is fixed at 13 Oct 2026. The page size is 5 here (50 in production) so "Load more" is visible.</p>
+          <div class="mt-3 grid gap-4">
+            <fieldset>
+              <legend class="text-muted-foreground">List state</legend>
+              <div class="mt-1 flex flex-wrap gap-2">
+                <button type="button" data-proto-state="ready" class="proto-btn">With events</button>
+                <button type="button" data-proto-state="loading" class="proto-btn">Loading</button>
+                <button type="button" data-proto-state="empty" class="proto-btn">Empty (no events)</button>
+                <button type="button" data-proto-state="error" class="proto-btn">Load error</button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="text-muted-foreground">Try a search</legend>
+              <div class="mt-1 flex flex-wrap gap-2">
+                <button type="button" data-proto-q="phở" class="proto-btn">phở (both groups)</button>
+                <button type="button" data-proto-q="pho" class="proto-btn">pho</button>
+                <button type="button" data-proto-q="gia dinh" class="proto-btn">gia dinh (accents only)</button>
+                <button type="button" data-proto-q="tv001" class="proto-btn">tv001 (in notes)</button>
+                <button type="button" data-proto-q="tv002" data-proto-year="2025" class="proto-btn">tv002 in 2025 (no match)</button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="text-muted-foreground">Form and dialogs</legend>
+              <div class="mt-1 flex flex-wrap gap-2">
+                <button type="button" data-proto-form="invalid" class="proto-btn">Add · validation errors</button>
+                <button type="button" data-proto-form="server-error" class="proto-btn">Add · server error</button>
+                <label class="proto-btn inline-flex items-center gap-2"><input type="checkbox" id="proto-delete-fail" /> Next delete fails</label>
+              </div>
+            </fieldset>
+          </div>
+        </details>
+       </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================== Event form dialog (EVT-003 add, EVT-005 edit) ===================== -->
+  <dialog id="event-dialog" class="ev-dialog" aria-labelledby="ef-title-h" aria-describedby="ef-desc">
+    <form id="event-form" novalidate class="p-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="ef-title-h" class="font-heading text-2xl font-medium">Add event</h2>
+          <p id="ef-desc" class="mt-1 text-sm text-muted-foreground">Something that happened, or is planned.</p>
+        </div>
+        <button type="button" data-ef-cancel class="-mt-2 -mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground" aria-label="Close">
+          <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+
+      <div id="ef-alert" role="alert" class="mt-5 flex gap-3 rounded-lg border border-destructive/40 p-3 text-sm" hidden>
+        <svg class="icon mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
+        <p><span class="font-medium text-destructive">Couldn’t save the event.</span> <span class="text-muted-foreground">Check your connection and try again. Your entries are kept.</span></p>
+      </div>
+
+      <div class="mt-5 space-y-5">
+        <div>
+          <label for="ef-title" class="text-sm font-medium">Event</label>
+          <input id="ef-title" name="title" autocomplete="off" maxlength="120" placeholder="Bought a TV" aria-describedby="ef-title-err" class="mt-1.5 h-11 w-full rounded-xl border border-input bg-card px-3 text-base aria-invalid:border-destructive sm:text-sm" />
+          <p id="ef-title-err" class="mt-1.5 text-sm text-destructive" hidden></p>
+        </div>
+
+        <div class="grid gap-5 min-[400px]:grid-cols-[minmax(0,1fr)_8.5rem]">
+          <div>
+            <label for="ef-date-btn" class="text-sm font-medium">Date</label>
+            <!-- Shows "13 Oct 2026". Production: Popover + Calendar (weeks start Monday, 1900–2100). Native picker stands in here. -->
+            <div class="relative mt-1.5">
+              <button type="button" id="ef-date-btn" aria-describedby="ef-date-err" class="flex h-11 w-full items-center gap-2 rounded-xl border border-input bg-card px-3 text-left text-base hover:bg-accent hover:text-accent-foreground aria-invalid:border-destructive sm:text-sm">
+                <svg class="icon size-4 text-muted-foreground" aria-hidden="true"><use href="#i-calendar"/></svg>
+                <span id="ef-date-text"></span>
+              </button>
+              <input id="ef-date" name="date" type="date" min="1900-01-01" max="2100-12-31" tabindex="-1" aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-0" />
+            </div>
+            <p id="ef-date-err" class="mt-1.5 text-sm text-destructive" hidden></p>
+          </div>
+          <div>
+            <label for="ef-time" class="text-sm font-medium">Time <span class="font-normal text-muted-foreground">(optional)</span></label>
+            <div class="relative mt-1.5">
+              <input id="ef-time" name="time" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-describedby="ef-time-hint ef-time-err" class="h-11 w-full rounded-xl border border-input bg-card px-3 pr-11 font-mono text-base aria-invalid:border-destructive sm:text-sm" />
+              <button type="button" id="ef-time-clear" class="absolute right-0 top-0 grid size-11 place-items-center rounded-xl text-muted-foreground hover:text-foreground" aria-label="Clear time" hidden>
+                <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+              </button>
+            </div>
+            <p id="ef-time-hint" class="mt-1.5 text-xs text-muted-foreground">24-hour, e.g. 07:45</p>
+            <p id="ef-time-err" class="mt-1 text-sm text-destructive" hidden></p>
+          </div>
+        </div>
+
+        <div>
+          <label for="ef-link" class="text-sm font-medium">Link <span class="font-normal text-muted-foreground">(optional)</span></label>
+          <input id="ef-link" name="link" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="shop.example.com/tv001" aria-describedby="ef-link-hint ef-link-err" class="mt-1.5 h-11 w-full rounded-xl border border-input bg-card px-3 text-base aria-invalid:border-destructive sm:text-sm" />
+          <p id="ef-link-hint" class="mt-1.5 text-xs text-muted-foreground">A web address. https:// is added if you leave it out.</p>
+          <p id="ef-link-err" class="mt-1 text-sm text-destructive" hidden></p>
+        </div>
+
+        <div>
+          <div class="flex items-baseline justify-between gap-2">
+            <label for="ef-notes" class="text-sm font-medium">Notes <span class="font-normal text-muted-foreground">(optional)</span></label>
+            <span id="ef-notes-count" class="font-mono text-xs text-muted-foreground" aria-hidden="true">0 / 2000</span>
+          </div>
+          <textarea id="ef-notes" name="notes" rows="4" placeholder="Model number, price, who was there…" aria-describedby="ef-notes-err" class="mt-1.5 w-full rounded-xl border border-input bg-card px-3 py-2 text-base aria-invalid:border-destructive sm:text-sm"></textarea>
+          <p id="ef-notes-err" class="mt-1.5 text-sm text-destructive" hidden></p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" data-ef-cancel class="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground">Cancel</button>
+        <button type="submit" id="ef-submit" class="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-60">
+          <svg id="ef-spinner" class="icon size-4 animate-spin" aria-hidden="true" hidden><use href="#i-loader"/></svg>
+          <span id="ef-submit-label">Add event</span>
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===================== Discard unsaved input (EVT-003 cancel, A5) ===================== -->
+  <dialog id="discard-dialog" class="ev-dialog ev-dialog-sm" role="alertdialog" aria-labelledby="dd-title" aria-describedby="dd-desc">
+    <div class="p-6">
+      <h2 id="dd-title" class="font-heading text-2xl font-medium">Discard this event?</h2>
+      <p id="dd-desc" class="mt-2 text-sm text-muted-foreground">What you typed will not be saved.</p>
+      <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" id="dd-keep" class="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground">Keep editing</button>
+        <button type="button" id="dd-discard" class="inline-flex h-11 items-center justify-center rounded-lg bg-destructive px-4 text-sm font-semibold text-destructive-foreground hover:opacity-90">Discard</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ===================== Delete confirmation (EVT-006) ===================== -->
+  <dialog id="delete-dialog" class="ev-dialog ev-dialog-sm" role="alertdialog" aria-labelledby="del-title" aria-describedby="del-desc">
+    <div class="p-6">
+      <h2 id="del-title" class="font-heading text-2xl font-medium ev-break"></h2>
+      <p id="del-desc" class="mt-2 text-sm text-muted-foreground">This permanently deletes the event. It can’t be undone.</p>
+      <div id="del-alert" role="alert" class="mt-4 flex gap-3 rounded-lg border border-destructive/40 p-3 text-sm" hidden>
+        <svg class="icon mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
+        <p><span class="font-medium text-destructive">Couldn’t delete the event.</span> <span class="text-muted-foreground">It is still in your list. Try again.</span></p>
+      </div>
+      <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button type="button" id="del-cancel" class="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground">Cancel</button>
+        <button type="button" id="del-confirm" class="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-destructive px-4 text-sm font-semibold text-destructive-foreground hover:opacity-90 disabled:pointer-events-none disabled:opacity-60">
+          <svg id="del-spinner" class="icon size-4 animate-spin" aria-hidden="true" hidden><use href="#i-loader"/></svg>
+          Delete event
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4" role="status" aria-live="polite" id="toast-region"></div>
+
+  <script>
+  (function () {
+    // ======================= Fixtures (synthetic) =======================
+    var TODAY = "2026-10-13"; // production: the browser's local date (business rules)
+    var PAGE_SIZE = 5;        // production: 50 (EVT-002)
+    var nextId = 100;
+    var events = [
+      { id: 1,  title: "Flight to Hanoi", date: "2026-12-20", time: "07:45", link: "", notes: "Booking ref in the email.\nWindow seat.", created: "2026-10-01T09:00:00Z" },
+      { id: 2,  title: "Dentist check-up", date: "2026-11-04", time: "", link: "", notes: "", created: "2026-10-02T09:00:00Z" },
+      { id: 3,  title: "Bought a TV", date: "2026-10-13", time: "", link: "https://shop.example.com/tv001", notes: "Model plasma 2026 tv001\nPrice: 12.990.000 ₫", created: "2026-10-13T10:00:00Z" },
+      { id: 4,  title: "Ăn phở với gia đình", date: "2026-10-13", time: "12:30", link: "", notes: "Phở bò, near the market.", created: "2026-10-13T08:00:00Z" },
+      { id: 5,  title: "Pho cooking class", date: "2026-09-27", time: "18:00", link: "https://class.example.org/pho", notes: "Bring an apron.", created: "2026-09-27T20:00:00Z" },
+      { id: 6,  title: "Renewed passport", date: "2026-06-02", time: "", link: "", notes: "Valid until June 2036.", created: "2026-06-02T12:00:00Z" },
+      { id: 7,  title: "Changed the car tyres", date: "2026-03-15", time: "", link: "", notes: "Four winter tyres, 2.400.000 ₫ in total.", created: "2026-03-15T12:00:00Z" },
+      { id: 8,  title: "Moved into the new flat", date: "2025-08-01", time: "", link: "", notes: "Third floor.\nKeys: two sets.", created: "2025-08-02T12:00:00Z" },
+      { id: 9,  title: "Đi Đà Lạt cùng bạn bè", date: "2025-04-30", time: "", link: "", notes: "Ở 3 đêm.", created: "2025-05-03T12:00:00Z" },
+      { id: 10, title: "Started guitar lessons", date: "2025-01-10", time: "19:00", link: "", notes: "", created: "2025-01-10T21:00:00Z" },
+      { id: 11, title: "Adopted Miso the cat", date: "2024-05-18", time: "", link: "https://shelter.example.net/miso", notes: "", created: "2024-05-18T12:00:00Z" },
+      { id: 12, title: "Graduated", date: "2019-06-28", time: "", link: "", notes: "<b>Notes are plain text</b>: markup like this is shown literally.", created: "2024-01-01T12:00:00Z" }
+    ];
+
+    // ======================= Helpers =======================
+    function parse(iso) { var p = iso.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); }
+    // Fixed month names, like the app's formatDate: Intl "en-GB" prints "Sept", which breaks the "13 Oct 2026" rule.
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function fmtDate(iso) { var p = iso.split("-").map(Number); return p[2] + " " + MONTHS[p[1] - 1] + " " + p[0]; } // "13 Oct 2026"
+    function fmtStamp(isoInstant) { return fmtDate(isoInstant.slice(0, 10)); }
+    function isUpcoming(e) { return e.date > TODAY; }
+
+    // EVT-002 ordering: date desc; timed before untimed, latest time first; then newest created.
+    function compare(a, b) {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      if (!!a.time !== !!b.time) return a.time ? -1 : 1;
+      if (a.time !== b.time) return a.time < b.time ? 1 : -1;
+      return a.created < b.created ? 1 : a.created > b.created ? -1 : 0;
+    }
+
+    // EVT-009 / A13: exact = case-insensitive contains (NFC); folded = accents removed, đ → d.
+    function exactKey(s) { return s.normalize("NFC").toLocaleLowerCase("vi"); }
+    function foldKey(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase(); }
+    function matchGroup(e, q) {
+      var hay = e.title + "\n" + e.notes;
+      if (exactKey(hay).indexOf(exactKey(q)) !== -1) return 1;
+      if (foldKey(hay).indexOf(foldKey(q)) !== -1) return 2;
+      return 0;
+    }
+
+    function el(tag, className, text) {
+      var n = document.createElement(tag);
+      if (className) n.className = className;
+      if (text != null) n.textContent = text; // never innerHTML with event content (XSS rule, EVT-004)
+      return n;
+    }
+    function icon(name, cls) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "icon " + (cls || "size-4"));
+      svg.setAttribute("aria-hidden", "true");
+      var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", "#i-" + name);
+      svg.appendChild(use);
+      return svg;
+    }
+    function shortLink(url) {
+      try { var u = new URL(url); var s = u.host + (u.pathname === "/" ? "" : u.pathname); return s.length > 48 ? s.slice(0, 47) + "…" : s; }
+      catch (e) { return url; }
+    }
+
+    // ======================= State =======================
+    var state = "ready";        // ready | loading | empty | error
+    var query = "", year = "";
+    var shown = PAGE_SIZE;
+    var expanded = {};          // id -> true
+
+    var listRegion = document.getElementById("list-region");
+    var summary = document.getElementById("summary");
+    var summaryClear = document.getElementById("summary-clear");
+    var loadMore = document.getElementById("load-more");
+    var qInput = document.getElementById("q");
+    var qClear = document.getElementById("q-clear");
+    var yearSelect = document.getElementById("year");
+
+    function syncYears() {
+      var years = {};
+      events.forEach(function (e) { years[e.date.slice(0, 4)] = true; });
+      if (year) years[year] = true; // keep the selected year even after its last event is deleted
+      while (yearSelect.options.length > 1) yearSelect.remove(1);
+      Object.keys(years).sort().reverse().forEach(function (y) { yearSelect.add(new Option(y, y)); });
+      yearSelect.value = year;
+    }
+
+    function results() {
+      var q = query.trim();
+      return events
+        .filter(function (e) { return !year || e.date.slice(0, 4) === year; })
+        .map(function (e) { return { e: e, g: q ? matchGroup(e, q) : 1 }; })
+        .filter(function (r) { return r.g > 0; })
+        .sort(function (a, b) { return a.g - b.g || compare(a.e, b.e); });
+    }
+
+    function syncUrl() {
+      var params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      if (year) params.set("year", year);
+      var s = params.toString();
+      try { history.replaceState(null, "", location.pathname + (s ? "?" + s : "")); } catch (e) { /* file:// may refuse */ }
+    }
+
+    // ======================= Rendering =======================
+    function render() {
+      listRegion.textContent = "";
+      listRegion.removeAttribute("aria-busy");
+      loadMore.hidden = true;
+      summaryClear.hidden = true;
+      qClear.hidden = !qInput.value;
+
+      if (state === "loading") return renderLoading();
+      if (state === "error") return renderError();
+      if (state === "empty" || events.length === 0) return renderEmpty();
+
+      var rows = results();
+      var q = query.trim();
+      var filtered = !!(q || year);
+      if (rows.length === 0) return renderNoMatch(q);
+
+      var exact = rows.filter(function (r) { return r.g === 1; }).length;
+      if (q) {
+        summary.textContent = rows.length + (rows.length === 1 ? " event found" : " events found") +
+          (rows.length > exact ? " · " + exact + " exact, " + (rows.length - exact) + " more without accents" : "");
+      } else {
+        summary.textContent = rows.length + (rows.length === 1 ? " event" : " events") + (year ? " in " + year : "");
+      }
+      summaryClear.hidden = !filtered;
+
+      var visible = rows.slice(0, shown);
+      if (q) {
+        // Two groups (decision 8): exact first, then a labelled accent-insensitive group. No year headings.
+        var g1 = visible.filter(function (r) { return r.g === 1; });
+        var g2 = visible.filter(function (r) { return r.g === 2; });
+        if (g1.length) listRegion.appendChild(section("Exact matches", null, g1));
+        if (g2.length) listRegion.appendChild(section("Also matching without accents", "Ignoring Vietnamese accent marks, so “" + q + "” also finds these.", g2));
+      } else {
+        // Year headings (a presentation choice the requirement allows).
+        var byYear = [];
+        visible.forEach(function (r) {
+          var y = r.e.date.slice(0, 4);
+          if (!byYear.length || byYear[byYear.length - 1].y !== y) byYear.push({ y: y, rows: [] });
+          byYear[byYear.length - 1].rows.push(r);
+        });
+        byYear.forEach(function (grp) { listRegion.appendChild(section(grp.y, null, grp.rows)); });
+      }
+      loadMore.hidden = rows.length <= shown;
+    }
+
+    function section(heading, description, rows) {
+      var s = el("section", "mt-6 first:mt-0");
+      var h = el("h2", "mb-3 font-heading text-xl font-medium", heading);
+      s.appendChild(h);
+      if (description) s.appendChild(el("p", "-mt-2 mb-3 text-sm text-muted-foreground", description));
+      var ul = el("ul", "divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground");
+      rows.forEach(function (r) { ul.appendChild(row(r.e)); });
+      s.appendChild(ul);
+      return s;
+    }
+
+    function row(e) {
+      var li = el("li");
+      li.dataset.id = e.id;
+      var open = !!expanded[e.id];
+      var panelId = "ev-panel-" + e.id;
+
+      // Disclosure button: the whole summary row (EVT-004 view = expanded item).
+      var btn = el("button", "flex w-full items-start gap-3 p-4 text-left hover:bg-accent/50");
+      btn.type = "button";
+      btn.setAttribute("aria-expanded", String(open));
+      btn.setAttribute("aria-controls", panelId);
+      btn.dataset.rowToggle = e.id;
+
+      var body = el("span", "min-w-0 flex-1");
+      var title = el("span", "block font-medium ev-break", e.title);
+      var meta = el("span", "mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.8125rem] text-muted-foreground");
+      var time = el("time", null, fmtDate(e.date) + (e.time ? " · " + e.time : ""));
+      time.setAttribute("datetime", e.date + (e.time ? "T" + e.time : ""));
+      meta.appendChild(time);
+      if (e.link) {
+        var l = el("span", "inline-flex items-center");
+        l.appendChild(icon("link", "size-3.5"));
+        l.appendChild(el("span", "sr-only", "Has a link"));
+        meta.appendChild(l);
+      }
+      if (isUpcoming(e)) meta.appendChild(el("span", "rounded-full border border-primary/60 bg-card px-2 py-px text-xs text-accent-foreground", "Upcoming"));
+      body.appendChild(title);
+      body.appendChild(meta);
+      if (e.notes && !open) body.appendChild(el("span", "mt-1 block truncate text-sm text-muted-foreground", e.notes.split("\n")[0]));
+      btn.appendChild(body);
+      btn.appendChild(icon("chevron-down", "ev-chevron mt-1 size-4 shrink-0 text-muted-foreground"));
+      li.appendChild(btn);
+
+      // Expanded details: full notes, link, dates, actions.
+      var panel = el("div", "px-4 pb-4");
+      panel.id = panelId;
+      panel.hidden = !open;
+      if (e.notes) panel.appendChild(el("p", "ev-notes text-sm", e.notes));
+      if (e.link) {
+        var a = el("a", "mt-3 inline-flex max-w-full items-center gap-1.5 text-sm font-medium text-accent-foreground underline underline-offset-4");
+        a.href = e.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.appendChild(el("span", "ev-break", shortLink(e.link)));
+        a.appendChild(icon("external", "size-3.5 shrink-0"));
+        a.appendChild(el("span", "sr-only", " (opens in a new tab)"));
+        panel.appendChild(el("div")).appendChild(a);
+      }
+      if (!e.notes && !e.link) panel.appendChild(el("p", "text-sm text-muted-foreground", "No notes or link."));
+      panel.appendChild(el("p", "mt-3 font-mono text-xs text-muted-foreground", "Added " + fmtStamp(e.created) + (e.updated ? " · Updated " + fmtStamp(e.updated) : "")));
+      var actions = el("div", "mt-4 flex flex-wrap gap-2");
+      var edit = el("button", "inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground");
+      edit.type = "button"; edit.dataset.edit = e.id;
+      edit.appendChild(icon("pencil")); edit.appendChild(el("span", null, "Edit")); edit.appendChild(el("span", "sr-only", " " + e.title));
+      var del = el("button", "inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-destructive shadow-[var(--elev-ring)] hover:bg-accent");
+      del.type = "button"; del.dataset.del = e.id;
+      del.appendChild(icon("trash")); del.appendChild(el("span", null, "Delete")); del.appendChild(el("span", "sr-only", " " + e.title));
+      actions.appendChild(edit); actions.appendChild(del);
+      panel.appendChild(actions);
+      li.appendChild(panel);
+      return li;
+    }
+
+    function renderLoading() {
+      summary.textContent = "Loading events…";
+      listRegion.setAttribute("aria-busy", "true");
+      var ul = el("ul", "divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card");
+      ul.setAttribute("aria-hidden", "true");
+      for (var i = 0; i < 4; i++) {
+        var li = el("li", "p-4");
+        li.appendChild(el("div", "ev-skeleton h-4 w-2/3"));
+        li.appendChild(el("div", "ev-skeleton mt-2 h-3 w-28"));
+        ul.appendChild(li);
+      }
+      listRegion.appendChild(ul);
+    }
+
+    function renderError() {
+      summary.textContent = "";
+      var box = el("div", "flex flex-col items-start gap-3 rounded-2xl border border-destructive/40 bg-card p-6");
+      box.setAttribute("role", "alert");
+      var h = el("p", "flex items-center gap-2 font-medium text-destructive");
+      h.appendChild(icon("alert")); h.appendChild(el("span", null, "Couldn’t load your events."));
+      box.appendChild(h);
+      box.appendChild(el("p", "text-sm text-muted-foreground", "Check your connection and try again." + (query.trim() ? " Your search is kept." : "")));
+      var retry = el("button", "inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground");
+      retry.type = "button";
+      retry.appendChild(icon("refresh")); retry.appendChild(el("span", null, "Retry"));
+      retry.addEventListener("click", function () { setState("loading"); setTimeout(function () { setState("ready"); }, 700); });
+      box.appendChild(retry);
+      listRegion.appendChild(box);
+    }
+
+    function renderEmpty() {
+      summary.textContent = "";
+      var box = el("div", "flex flex-col items-center gap-3 rounded-2xl border border-border bg-card px-6 py-12 text-center");
+      var badge = el("span", "grid size-12 place-items-center rounded-full bg-accent text-accent-foreground");
+      badge.appendChild(icon("calendar", "size-5"));
+      box.appendChild(badge);
+      box.appendChild(el("h2", "font-heading text-xl font-medium", "No events yet"));
+      box.appendChild(el("p", "max-w-sm text-sm text-muted-foreground", "Record something that happened, like buying a new TV, or something you have planned."));
+      var add = el("button", "mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover");
+      add.type = "button";
+      add.appendChild(icon("plus")); add.appendChild(el("span", null, "Add event"));
+      add.addEventListener("click", function () { openForm(null, add); });
+      box.appendChild(add);
+      listRegion.appendChild(box);
+    }
+
+    function renderNoMatch(q) {
+      summary.textContent = "0 events found";
+      var box = el("div", "flex flex-col items-center gap-3 rounded-2xl border border-border bg-card px-6 py-10 text-center");
+      var msg = "No events match " + (q ? "“" + q + "”" : "") + (q && year ? " " : "") + (year ? "in " + year : "") + ".";
+      box.appendChild(el("p", "font-medium ev-break", msg));
+      box.appendChild(el("p", "text-sm text-muted-foreground", "Search looks in titles and notes."));
+      var clear = el("button", "mt-1 inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground", "Clear search and filters");
+      clear.type = "button";
+      clear.addEventListener("click", clearFilters);
+      box.appendChild(clear);
+      listRegion.appendChild(box);
+    }
+
+    function setState(s) { state = s; render(); }
+
+    // ======================= List interactions =======================
+    listRegion.addEventListener("click", function (ev) {
+      var t = ev.target.closest("button");
+      if (!t) return;
+      if (t.dataset.rowToggle) {
+        var id = Number(t.dataset.rowToggle);
+        expanded[id] = !expanded[id];
+        render();
+        var again = listRegion.querySelector('[data-row-toggle="' + id + '"]');
+        if (again) again.focus();
+      } else if (t.dataset.edit) {
+        openForm(find(Number(t.dataset.edit)), t);
+      } else if (t.dataset.del) {
+        openDelete(find(Number(t.dataset.del)), t);
+      }
+    });
+    function find(id) { return events.filter(function (e) { return e.id === id; })[0]; }
+
+    loadMore.addEventListener("click", function () {
+      var spinner = document.getElementById("load-more-spinner");
+      loadMore.disabled = true; spinner.hidden = false;
+      setTimeout(function () {
+        loadMore.disabled = false; spinner.hidden = true;
+        var before = shown; shown += PAGE_SIZE; render();
+        // Move focus to the first newly loaded row so keyboard users continue where they were.
+        var rows = listRegion.querySelectorAll("[data-row-toggle]");
+        if (rows[before]) rows[before].focus();
+      }, 500);
+    });
+
+    // ======================= Search and filter (EVT-009) =======================
+    var debounce;
+    qInput.addEventListener("input", function () {
+      qClear.hidden = !qInput.value;
+      clearTimeout(debounce);
+      debounce = setTimeout(function () { query = qInput.value; shown = PAGE_SIZE; syncUrl(); render(); }, 250);
+    });
+    document.getElementById("filters").addEventListener("submit", function (e) { e.preventDefault(); clearTimeout(debounce); query = qInput.value; shown = PAGE_SIZE; syncUrl(); render(); });
+    qClear.addEventListener("click", function () { qInput.value = ""; query = ""; shown = PAGE_SIZE; syncUrl(); render(); qInput.focus(); });
+    yearSelect.addEventListener("change", function () { year = yearSelect.value; shown = PAGE_SIZE; syncUrl(); render(); });
+    function clearFilters() {
+      qInput.value = ""; query = ""; year = ""; yearSelect.value = ""; shown = PAGE_SIZE; syncUrl(); render(); qInput.focus();
+    }
+    summaryClear.addEventListener("click", clearFilters);
+
+    // ======================= Form dialog (EVT-003, EVT-005) =======================
+    var dialog = document.getElementById("event-dialog");
+    var form = document.getElementById("event-form");
+    var f = {
+      title: document.getElementById("ef-title"),
+      date: document.getElementById("ef-date"),
+      dateBtn: document.getElementById("ef-date-btn"),
+      time: document.getElementById("ef-time"),
+      link: document.getElementById("ef-link"),
+      notes: document.getElementById("ef-notes")
+    };
+    var efAlert = document.getElementById("ef-alert");
+    var submitBtn = document.getElementById("ef-submit");
+    var timeClear = document.getElementById("ef-time-clear");
+    var notesCount = document.getElementById("ef-notes-count");
+    var editing = null, opener = null, initial = "", failNext = false;
+
+    function snapshot() { return [f.title.value, f.date.value, f.time.value, f.link.value, f.notes.value].join("\u0000"); }
+    function syncDate() {
+      var t = document.getElementById("ef-date-text");
+      if (f.date.value) { t.textContent = fmtDate(f.date.value); t.className = ""; }
+      else { t.textContent = "Pick a date"; t.className = "text-muted-foreground"; }
+      f.dateBtn.setAttribute("aria-label", "Date: " + (f.date.value ? fmtDate(f.date.value) : "not set"));
+    }
+    function syncNotesCount() {
+      var n = f.notes.value.length;
+      notesCount.textContent = n + " / 2000";
+      notesCount.className = "font-mono text-xs " + (n > 2000 ? "text-destructive" : "text-muted-foreground");
+    }
+    function setError(input, message) {
+      var key = input === f.dateBtn ? "ef-date" : input.id;
+      var err = document.getElementById(key + "-err");
+      if (message) { input.setAttribute("aria-invalid", "true"); err.textContent = message; err.hidden = false; }
+      else { input.removeAttribute("aria-invalid"); err.textContent = ""; err.hidden = true; }
+    }
+    function clearErrors() { [f.title, f.dateBtn, f.time, f.link, f.notes].forEach(function (i) { setError(i, ""); }); efAlert.hidden = true; }
+
+    function openForm(e, from) {
+      editing = e; opener = from;
+      form.reset(); clearErrors();
+      document.getElementById("ef-title-h").textContent = e ? "Edit event" : "Add event";
+      document.getElementById("ef-submit-label").textContent = e ? "Save changes" : "Add event";
+      f.title.value = e ? e.title : "";
+      f.date.value = e ? e.date : TODAY;
+      f.time.value = e ? e.time : "";
+      f.link.value = e ? e.link : "";
+      f.notes.value = e ? e.notes : "";
+      timeClear.hidden = !f.time.value;
+      syncDate(); syncNotesCount();
+      initial = snapshot();
+      dialog.showModal();
+      f.title.focus();
+    }
+
+    // Cancel: confirm only when something was typed (A5).
+    function requestClose() {
+      if (snapshot() !== initial) document.getElementById("discard-dialog").showModal();
+      else dialog.close();
+    }
+    dialog.addEventListener("cancel", function (e) { e.preventDefault(); requestClose(); }); // Escape
+    dialog.addEventListener("click", function (e) { if (e.target === dialog) requestClose(); });
+    dialog.querySelectorAll("[data-ef-cancel]").forEach(function (b) { b.addEventListener("click", requestClose); });
+    dialog.addEventListener("close", function () { if (opener && document.contains(opener)) opener.focus(); else document.getElementById("page-title").focus(); });
+    document.getElementById("dd-keep").addEventListener("click", function () { document.getElementById("discard-dialog").close(); f.title.focus(); });
+    document.getElementById("dd-discard").addEventListener("click", function () { document.getElementById("discard-dialog").close(); dialog.close(); });
+
+    f.dateBtn.addEventListener("click", function () {
+      try { f.date.showPicker(); } catch (e) { toast("Prototype: production opens a calendar popover here."); }
+    });
+    f.date.addEventListener("change", function () { syncDate(); setError(f.dateBtn, ""); });
+    f.time.addEventListener("input", function () { timeClear.hidden = !f.time.value; });
+    // Lenient entry: "7:45" becomes "07:45" on blur. "7:5" stays invalid.
+    f.time.addEventListener("blur", function () { if (/^\d:[0-5]\d$/.test(f.time.value.trim())) f.time.value = "0" + f.time.value.trim(); });
+    timeClear.addEventListener("click", function () { f.time.value = ""; timeClear.hidden = true; setError(f.time, ""); f.time.focus(); });
+    f.notes.addEventListener("input", syncNotesCount);
+
+    // Same rules as the server (requirements: Fields and validation).
+    function normalizeLink(v) {
+      v = v.trim();
+      if (!v) return "";
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = "https://" + v; // A4
+      return v;
+    }
+    function validLink(v) {
+      if (v.length > 2048) return false;
+      try { var u = new URL(v); return (u.protocol === "http:" || u.protocol === "https:") && !!u.hostname; } catch (e) { return false; }
+    }
+    function validate() {
+      clearErrors();
+      var first = null;
+      function fail(input, msg, focusTarget) { setError(input, msg); first = first || focusTarget || input; }
+      var title = f.title.value.trim();
+      if (!title) fail(f.title, "Enter what happened.");
+      else if (title.length > 120) fail(f.title, "Keep it to 120 characters or fewer.");
+      if (!f.date.value) fail(f.dateBtn, "Pick a date.");
+      else if (f.date.value < "1900-01-01" || f.date.value > "2100-12-31") fail(f.dateBtn, "Pick a date between 1900 and 2100.");
+      var t = f.time.value.trim();
+      if (t && !/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) fail(f.time, "Use 24-hour time, like 07:45, or clear it.");
+      var link = normalizeLink(f.link.value);
+      if (link && !validLink(link)) fail(f.link, "Enter a web address starting with http:// or https://, or leave it empty.");
+      if (f.notes.value.trim().length > 2000) fail(f.notes, "Notes can be up to 2000 characters.");
+      if (first) first.focus();
+      return !first;
+    }
+
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      if (submitBtn.disabled || !validate()) return;
+      submitBtn.disabled = true;
+      document.getElementById("ef-spinner").hidden = false;
+      setTimeout(function () {
+        submitBtn.disabled = false;
+        document.getElementById("ef-spinner").hidden = true;
+        if (failNext) { failNext = false; efAlert.hidden = false; f.title.focus(); return; }
+        var values = {
+          title: f.title.value.trim(), date: f.date.value, time: f.time.value.trim(),
+          link: normalizeLink(f.link.value), notes: f.notes.value.trim()
+        };
+        var saved;
+        if (editing) { Object.assign(editing, values, { updated: new Date().toISOString() }); saved = editing; }
+        else { saved = Object.assign({ id: nextId++, created: new Date().toISOString() }, values); events.push(saved); }
+        state = "ready";
+        expanded[saved.id] = true;
+        opener = null;
+        dialog.close();
+        syncYears();
+        // Show the saved event even if it lands past the loaded page.
+        var idx = results().map(function (r) { return r.e; }).indexOf(saved);
+        if (idx >= shown) shown = Math.ceil((idx + 1) / PAGE_SIZE) * PAGE_SIZE;
+        render();
+        var verb = editing ? "Event updated" : "Event added";
+        if (idx === -1) toast(verb + ". It is hidden by the current search or filter.", "Clear filters", clearFilters);
+        else {
+          toast(verb + ".");
+          var btn = listRegion.querySelector('[data-row-toggle="' + saved.id + '"]');
+          if (btn) { btn.scrollIntoView({ block: "center" }); btn.focus(); }
+        }
+      }, 800);
+    });
+
+    // ======================= Delete (EVT-006) =======================
+    var delDialog = document.getElementById("delete-dialog");
+    var delTarget = null, delOpener = null;
+    function openDelete(e, from) {
+      delTarget = e; delOpener = from;
+      document.getElementById("del-title").textContent = "Delete “" + e.title + "”?";
+      document.getElementById("del-alert").hidden = true;
+      delDialog.showModal();
+      document.getElementById("del-cancel").focus(); // safe default for a destructive action
+    }
+    document.getElementById("del-cancel").addEventListener("click", function () { delDialog.close(); });
+    delDialog.addEventListener("close", function () { if (delOpener && document.contains(delOpener)) delOpener.focus(); });
+    document.getElementById("del-confirm").addEventListener("click", function () {
+      var btn = this, spinner = document.getElementById("del-spinner");
+      btn.disabled = true; spinner.hidden = false;
+      setTimeout(function () {
+        btn.disabled = false; spinner.hidden = true;
+        var failBox = document.getElementById("proto-delete-fail");
+        if (failBox.checked) { failBox.checked = false; document.getElementById("del-alert").hidden = false; return; }
+        // Focus moves to the next event's row, or the page heading.
+        var toggles = Array.prototype.slice.call(listRegion.querySelectorAll("[data-row-toggle]"));
+        var pos = toggles.map(function (t) { return Number(t.dataset.rowToggle); }).indexOf(delTarget.id);
+        var nextId2 = toggles[pos + 1] ? toggles[pos + 1].dataset.rowToggle : toggles[pos - 1] ? toggles[pos - 1].dataset.rowToggle : null;
+        events = events.filter(function (e) { return e !== delTarget; });
+        delOpener = null;
+        delDialog.close();
+        syncYears(); render();
+        var next = nextId2 && listRegion.querySelector('[data-row-toggle="' + nextId2 + '"]');
+        (next || document.getElementById("page-title")).focus();
+        toast("Event deleted.");
+      }, 700);
+    });
+
+    // ======================= Toast =======================
+    var toastTimer;
+    function toast(message, actionLabel, action) {
+      var region = document.getElementById("toast-region");
+      region.textContent = "";
+      var box = el("div", "pointer-events-auto flex max-w-md items-center gap-3 rounded-lg border border-border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg");
+      box.appendChild(el("span", null, message));
+      if (actionLabel) {
+        var b = el("button", "shrink-0 rounded-md px-2 py-1 font-medium text-accent-foreground underline underline-offset-4", actionLabel);
+        b.type = "button";
+        b.addEventListener("click", function () { region.textContent = ""; action(); });
+        box.appendChild(b);
+      }
+      region.appendChild(box);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { region.textContent = ""; }, actionLabel ? 8000 : 4000);
+    }
+
+    // ======================= Prototype controls =======================
+    document.querySelectorAll("[data-proto-state]").forEach(function (b) {
+      b.addEventListener("click", function () { setState(b.dataset.protoState); });
+    });
+    document.querySelectorAll("[data-proto-q]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        state = "ready";
+        qInput.value = b.dataset.protoQ; query = qInput.value;
+        year = b.dataset.protoYear || ""; syncYears(); yearSelect.value = year;
+        shown = PAGE_SIZE; syncUrl(); render();
+      });
+    });
+    document.querySelectorAll("[data-proto-form]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        openForm(null, b);
+        if (b.dataset.protoForm === "invalid") {
+          f.title.value = ""; f.time.value = "7:5"; f.link.value = "javascript:alert(1)"; timeClear.hidden = false;
+          validate();
+        } else {
+          f.title.value = "Bought a TV"; f.link.value = "shop.example.com/tv001"; f.notes.value = "Model plasma 2026 tv001"; syncNotesCount();
+          failNext = true;
+        }
+      });
+    });
+    document.getElementById("add-event").addEventListener("click", function () { openForm(null, this); });
+
+    // ======================= Drawer (same behaviour as app-shell) =======================
+    var sidebar = document.getElementById("sidebar");
+    var backdrop = document.getElementById("drawer-backdrop");
+    var openBtn = document.getElementById("drawer-open");
+    var closeBtn = document.getElementById("drawer-close");
+    var contentColumn = document.getElementById("content-column");
+    var desktop = window.matchMedia("(min-width: 1024px)");
+    function isDrawerOpen() { return sidebar.getAttribute("data-open") === "true"; }
+    function focusables() {
+      return Array.prototype.filter.call(sidebar.querySelectorAll('a[href], button:not([disabled])'), function (n) { return n.offsetParent !== null; });
+    }
+    function openDrawer() {
+      sidebar.setAttribute("data-open", "true"); sidebar.setAttribute("role", "dialog"); sidebar.setAttribute("aria-modal", "true");
+      backdrop.hidden = false; contentColumn.inert = true; openBtn.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden"; closeBtn.focus();
+    }
+    function closeDrawer(returnFocus) {
+      sidebar.removeAttribute("data-open"); sidebar.removeAttribute("role"); sidebar.removeAttribute("aria-modal");
+      backdrop.hidden = true; contentColumn.inert = false; openBtn.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = ""; if (returnFocus) openBtn.focus();
+    }
+    openBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", function () { closeDrawer(true); });
+    backdrop.addEventListener("click", function () { closeDrawer(true); });
+    document.addEventListener("keydown", function (e) {
+      if (!isDrawerOpen()) return;
+      if (e.key === "Escape") { e.preventDefault(); closeDrawer(true); return; }
+      if (e.key === "Tab") {
+        var items = focusables(); if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    desktop.addEventListener("change", function (e) { if (e.matches && isDrawerOpen()) closeDrawer(false); });
+
+    // ======================= Theme =======================
+    var themeButtons = document.querySelectorAll("[data-theme-choice]");
+    function syncThemeButtons() {
+      var dark = document.documentElement.classList.contains("dark");
+      themeButtons.forEach(function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-theme-choice") === "dark") === dark)); });
+    }
+    themeButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dark = b.getAttribute("data-theme-choice") === "dark";
+        document.documentElement.classList.toggle("dark", dark);
+        try { localStorage.setItem("ph-theme", dark ? "dark" : "light"); } catch (e) {}
+        syncThemeButtons();
+      });
+    });
+    syncThemeButtons();
+
+    // ======================= Start =======================
+    // Restore search and year from the URL (EVT-009); index.html?q=pho&year=2026 also works.
+    var params = new URLSearchParams(location.search);
+    query = (params.get("q") || "").slice(0, 100); qInput.value = query;
+    year = /^\d{4}$/.test(params.get("year") || "") ? params.get("year") : "";
+    syncYears(); yearSelect.value = year;
+    render();
+    if (location.hash === "#add") openForm(null, document.getElementById("add-event"));
+  })();
+  </script>
+</body>
+</html>

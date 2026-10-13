@@ -7,7 +7,7 @@ Status: draft. Source: the user's initial project request. This brief records in
 - A website usable in phone and laptop browsers.
 - Multiple separate apps accessible from a sidebar menu.
 - Finisher is the first app in the navigation: short Tasks and longer Projects with weekly timetable slots whose sessions are checked off (see [requirements/finisher.md](../requirements/finisher.md)).
-- Events records life events, for example buying a new TV. It is second in the navigation and will be brainstormed later.
+- Events records life events, for example buying a new TV. It is second in the navigation (see [requirements/events.md](../requirements/events.md)).
 - Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities.
 - A React single-page app and a Hono API on one Cloudflare Worker, same origin ([ADR-0003](architecture/decisions/ADR-0003-spa-and-worker-api.md), 2026-10-11; this replaced the original Next.js plan).
 - Supabase provides the database and built-in authentication.
@@ -28,7 +28,7 @@ Status: draft. Source: the user's initial project request. This brief records in
 Ask only questions relevant to the feature being specified; do not block all work on this entire list.
 
 - Access model: answered 2026-10-10. Invitation-only accounts (public sign-up disabled), signing in with email + password, magic link / email code, or Google. See [requirements/auth.md](../requirements/auth.md) and [docs/architecture/auth.md](architecture/auth.md).
-- Events: required fields, date versus exact time, editing/deletion, tags/search, and any attachments?
+- Events: answered 2026-10-13. Title, date (future allowed), optional time, link, and notes; create/edit/delete; latest first; search by text and filter by year. See [requirements/events.md](../requirements/events.md).
 - Finisher: see the open questions in [requirements/finisher.md](../requirements/finisher.md).
 - Timezone: account timezone, travel behavior, and when a local day begins/ends for Finisher sessions and due dates?
 - Data lifecycle: deletion behavior, retention, export, and recovery expectations?
