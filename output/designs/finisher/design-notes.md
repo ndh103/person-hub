@@ -2,7 +2,7 @@
 
 - Feature slug: `finisher`
 - Status: `draft` for the task form only. Other Finisher screens (Today, Tasks, Projects, Closed, project detail, and the Finish, Let go, Park, and Delete dialogs) are not designed here yet.
-- Date: 2026-10-12 (revised the same day: date-field display "12 Oct 2026", shortcut captions "Monday 12 Oct", stacked Due date / Due time)
+- Date: 2026-10-12 (revised the same day: date-field display "12 Oct 2026", shortcut captions "Monday 12 Oct", stacked Due date / Due time); restyled 2026-10-13 to the Claude design system (see the [app-shell notes](../app-shell/design-notes.md#change-2026-10-13-claude-design-system-and-reference-orange))
 - Scope of this version: the Add and Edit task dialog, with the **Today** and **Next week** due-date shortcuts.
 - Requirements: [requirements/finisher.md](../../../requirements/finisher.md) v3, mainly FIN-034, plus FIN-019 (create), FIN-020 (edit), and FIN-018 (layout and accessibility). Confirmed decision 11 ("Next week" means the Monday of next week). Assumption A9 (the shortcuts also appear in Edit).
 - Inputs: [foundation](../_foundation/design-system.md), [app shell](../app-shell/design-notes.md), and the current implementation in `src/features/finisher/components/task-form-dialog.tsx`.
@@ -10,7 +10,7 @@
 
 ## Preview
 
-Open `index.html` in a browser from this folder. It needs a network connection for Google Fonts (Space Grotesk and JetBrains Mono, per the 2026-10-12 foundation update) and the pinned Tailwind browser runtime `@tailwindcss/browser@4.1.11`, the same as the app-shell reference. That runtime is for the prototype only. The page also loads `../_foundation/theme.css` and `../app-shell/styles.css`, which provides the shell, drawer, focus ring, and icon styles.
+Open `index.html` in a browser from this folder. It needs a network connection for Google Fonts (Source Serif 4, Inter and JetBrains Mono, per the 2026-10-13 foundation update) and the pinned Tailwind browser runtime `@tailwindcss/browser@4.1.11`, the same as the app-shell reference. That runtime is for the prototype only. The page also loads `../_foundation/theme.css` and `../app-shell/styles.css`, which provides the shell, drawer, focus ring, and icon styles.
 
 - **Add task** (top right) opens the dialog. `index.html#add` opens it straight away.
 - **Edit** on the sample task opens the Edit task version.
@@ -55,11 +55,12 @@ The shortcuts reuse the outline-button look:
 | Part | Tokens |
 | --- | --- |
 | Border | `--input` (3.55:1 on card, which passes as a non-text control boundary) |
-| Background | `--background` |
+| Background | `--card` |
+| Radius | `--radius` (8px), the same as buttons |
 | Hover | `--accent` / `--accent-foreground` |
 | Focus | Shared `--ring` outline |
 
-The shortcuts are not filled orange. That keeps the dialog's single primary action, **Add task**, visually dominant, and it avoids white-on-orange small text, which only reaches 3.11:1. No foundation tokens were changed or added. The `.due-shortcut` and `.field-flash` classes in `styles.css` use only foundation variables.
+The shortcuts are not filled orange. That keeps the dialog's single primary action, **Add task**, visually dominant, and it avoids white-on-orange small text, which only reaches 3.32:1. No foundation tokens were changed or added. The `.due-shortcut` and `.field-flash` classes in `styles.css` use only foundation variables.
 
 ### Responsive behaviour
 
@@ -120,6 +121,10 @@ The search returned nothing specific to date shortcuts, so the placement and the
 - Width estimates for 320px were made by hand.
 
 **Not done:** no browser preview at phone or laptop width. Playwright is not installed in this repo, and no browser tool was available. Before handoff, open the page at 320px, 390px, and 1280px, in light and dark mode, to check overflow, the dialog's scrolling, and keyboard order (title → notes → date → Today → Next week → time → project → Cancel → Add task).
+
+Re-check 2026-10-13 (Claude design system restyle), headless Edge screenshots (scratch, not committed):
+
+- The Add task dialog at 1280 and in a 375px iframe, light theme. It has a serif title, 12px fields on ivory, the orange focus ring on Title, an outline Cancel and an orange Add task, and no horizontal overflow at 375. This partly resolves the "Not done" item above. Dark mode, keyboard order and the error states were not re-run.
 
 ## Static-prototype limitations
 

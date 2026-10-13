@@ -4,7 +4,10 @@
  */
 
 html { -webkit-text-size-adjust: 100%; }
-body { font-family: var(--font-sans); touch-action: manipulation; }
+body { font-family: var(--font-sans); line-height: 1.6; touch-action: manipulation; }
+
+/* Serif headings are weight 500, never bold (Claude system). */
+h1, h2, h3 { line-height: 1.2; }
 
 /* One consistent, visible focus indicator for every interactive control. */
 :focus-visible {
@@ -34,12 +37,12 @@ body { font-family: var(--font-sans); touch-action: manipulation; }
   width: min(18rem, 85vw);
   transform: translateX(-100%);
   visibility: hidden; /* removes closed drawer from tab order and accessibility tree */
-  transition: transform 200ms ease-out, visibility 0s linear 200ms;
+  transition: transform var(--motion-base) var(--ease-standard), visibility 0s linear var(--motion-base);
 }
 .sidebar[data-open="true"] {
   transform: none;
   visibility: visible;
-  transition: transform 200ms ease-out;
+  transition: transform var(--motion-base) var(--ease-standard);
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.3);
 }
 @media (min-width: 1024px) {
@@ -94,12 +97,55 @@ body { font-family: var(--font-sans); touch-action: manipulation; }
 /* Floating content card on the frame (laptop). */
 @media (min-width: 1024px) {
   .content-card {
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
+    box-shadow: var(--elev-raised);
     outline: 1px solid var(--sidebar-border);
     outline-offset: -1px;
   }
   .content-card:focus { outline: 1px solid var(--sidebar-border); }
 }
+
+/* Eyebrow label above a page title: small mono caps in rust (never the bright orange: 2.9:1 on parchment). */
+.eyebrow {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-foreground);
+}
+
+/* Section tabs (Finisher Today / Tasks / Projects / Closed): underline style with count pills.
+   Active = foreground text + medium weight + 2px foreground underline, so it does not rely on colour. */
+.section-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  color: var(--muted-foreground);
+  transition: color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
+}
+.section-tab:hover { color: var(--foreground); }
+.section-tab[aria-current="page"] {
+  color: var(--foreground);
+  font-weight: 500;
+  border-bottom-color: var(--foreground);
+}
+.tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.375rem;
+  padding: 0 0.375rem;
+  border-radius: 9999px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.375rem;
+}
+.section-tab[aria-current="page"] .tab-count { background: var(--secondary); color: var(--secondary-foreground); }
 
 /* Loading skeleton pulse. */
 .skeleton {

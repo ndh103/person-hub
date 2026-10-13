@@ -7,11 +7,11 @@
   <!--
     Design reference: app shell + post-login landing (feature slug: app-shell). Status: draft.
     Not production code. All data shown is synthetic fixture data. See design-notes.md.
-    External runtime dependencies: Google Fonts (Space Grotesk, JetBrains Mono) and the pinned Tailwind browser runtime.
+    External runtime dependencies: Google Fonts (Source Serif 4, Inter, JetBrains Mono) and the pinned Tailwind browser runtime.
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../_foundation/theme.css" />
   <link rel="stylesheet" href="styles.css" />
   <script>
@@ -57,6 +57,7 @@
       --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
       --color-sidebar-border: var(--sidebar-border);
       --color-sidebar-ring: var(--sidebar-ring);
+      --font-heading: var(--font-heading);
       --radius-sm: calc(var(--radius) - 4px);
       --radius-md: calc(var(--radius) - 2px);
       --radius-lg: var(--radius);
@@ -98,7 +99,7 @@
         <a href="#/home" class="flex min-h-11 min-w-0 items-center gap-3 rounded-md" data-route-link>
           <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground" aria-hidden="true">PH</span>
           <span class="min-w-0 leading-tight">
-            <span id="brand-name" class="block text-base font-semibold">Personal Hub</span>
+            <span id="brand-name" class="block font-heading text-lg font-medium">Personal Hub</span>
             <span class="block truncate text-sm">you@example.com</span>
           </span>
         </a>
@@ -157,7 +158,7 @@
         <button type="button" id="drawer-open" class="grid size-11 place-items-center rounded-md hover:bg-sidebar-accent" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
           <svg class="icon size-5" aria-hidden="true"><use href="#i-menu"/></svg>
         </button>
-        <p id="topbar-title" class="truncate text-base font-semibold">Home</p>
+        <p id="topbar-title" class="truncate font-heading text-lg font-medium">Home</p>
       </header>
 
       <main id="main" tabindex="-1" class="content-card flex-1 rounded-t-2xl bg-background lg:rounded-2xl">
@@ -165,16 +166,17 @@
 
         <!-- ============ HOME (default landing after sign-in) ============ -->
         <section data-view="home" aria-labelledby="home-title">
-          <h1 id="home-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Welcome back</h1>
+          <p class="eyebrow">Personal Hub · Home</p>
+          <h1 id="home-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">Welcome back</h1>
           <p class="mt-1 text-sm text-muted-foreground">Choose an app to continue.</p>
 
           <ul class="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Apps">
             <li>
-              <a href="#/finisher" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
+              <a href="#/finisher" class="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 text-card-foreground transition-colors hover:border-primary">
                 <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
                   <svg class="icon size-5"><use href="#i-flag"/></svg>
                 </span>
-                <span class="mt-4 text-lg font-semibold">Finisher</span>
+                <span class="mt-4 font-heading text-xl font-medium">Finisher</span>
                 <span class="mt-1 text-sm text-muted-foreground">Finish your tasks and follow through on your projects, week by week.</span>
                 <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
                   Open Finisher <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
@@ -182,11 +184,11 @@
               </a>
             </li>
             <li>
-              <a href="#/events" class="group flex h-full flex-col rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-colors hover:border-primary">
+              <a href="#/events" class="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 text-card-foreground transition-colors hover:border-primary">
                 <span class="grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground" aria-hidden="true">
                   <svg class="icon size-5"><use href="#i-calendar"/></svg>
                 </span>
-                <span class="mt-4 text-lg font-semibold">Events</span>
+                <span class="mt-4 font-heading text-xl font-medium">Events</span>
                 <span class="mt-1 text-sm text-muted-foreground">Record moments in your life, like buying a new TV.</span>
                 <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-foreground">
                   Open Events <svg class="icon size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true"><use href="#i-arrow-right"/></svg>
@@ -194,7 +196,7 @@
               </a>
             </li>
             <li class="sm:col-span-2">
-              <div class="flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+              <div class="flex items-center gap-3 rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">
                 <svg class="icon size-5" aria-hidden="true"><use href="#i-grid-plus"/></svg>
                 More apps will appear here and in the sidebar as they are added.
               </div>
@@ -206,22 +208,23 @@
         <section data-view="finisher" aria-labelledby="finisher-title" hidden>
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 id="finisher-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Finisher</h1>
+              <h1 id="finisher-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">Finisher</h1>
               <p class="mt-1 font-mono text-[0.8125rem] text-muted-foreground">Today · <time datetime="2026-10-09">Friday, 9 October 2026</time></p>
             </div>
-            <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover">
+            <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
               <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
               Add task
             </button>
           </div>
 
           <!-- Finisher sections (FIN-001). Illustrative: only Today is shown in the shell reference. -->
-          <nav aria-label="Finisher sections" class="mt-5">
-            <ul class="grid grid-cols-4 gap-1 rounded-xl border border-border bg-muted p-1 text-sm font-medium sm:inline-grid">
-              <li><a href="#/finisher" aria-current="page" class="flex min-h-11 items-center justify-center rounded-lg px-2 aria-[current=page]:bg-background aria-[current=page]:text-foreground aria-[current=page]:shadow-sm sm:px-4">Today</a></li>
-              <li><button type="button" data-placeholder-action="Tasks tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Tasks</button></li>
-              <li><button type="button" data-placeholder-action="Projects tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Projects</button></li>
-              <li><button type="button" data-placeholder-action="Closed tab" class="flex min-h-11 w-full items-center justify-center rounded-lg px-2 text-muted-foreground hover:text-foreground sm:px-4">Closed</button></li>
+          <!-- Underline tabs with count pills (Claude reference). The row scrolls inside itself below ~340px; the page never does. -->
+          <nav aria-label="Finisher sections" class="mt-5 border-b border-border">
+            <ul class="-mb-px flex gap-5 overflow-x-auto text-[0.9375rem] sm:gap-8">
+              <li><a href="#/finisher" aria-current="page" class="section-tab">Today <span class="tab-count"><span class="sr-only">(</span>5<span class="sr-only"> open)</span></span></a></li>
+              <li><button type="button" data-placeholder-action="Tasks tab" class="section-tab">Tasks <span class="tab-count"><span class="sr-only">(</span>12<span class="sr-only"> open)</span></span></button></li>
+              <li><button type="button" data-placeholder-action="Projects tab" class="section-tab">Projects <span class="tab-count"><span class="sr-only">(</span>3<span class="sr-only"> active)</span></span></button></li>
+              <li><button type="button" data-placeholder-action="Closed tab" class="section-tab">Closed</button></li>
             </ul>
           </nav>
 
@@ -229,28 +232,28 @@
             <!-- Ready -->
             <div data-state="ready" class="space-y-6">
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <p class="inline-block rounded-full bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">Sample data</p>
+                <p class="inline-block rounded-full border border-primary/60 bg-card px-2.5 py-0.5 font-mono text-xs text-accent-foreground">Sample data</p>
                 <p class="font-mono text-[0.8125rem] text-muted-foreground">1 of 3 sessions done today · 1 overdue task</p>
               </div>
 
               <div>
-                <h2 class="mb-2 text-sm font-semibold">Sessions today</h2>
-                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                <h2 class="mb-3 font-heading text-xl font-medium">Sessions today</h2>
+                <ul class="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
                   <li class="flex items-center gap-4 p-4">
                     <div class="min-w-0 flex-1"><p class="font-medium">Watch ABK program</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Teach my daughter English · 30 min · 19:00</p></div>
-                    <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <button type="button" data-checkin aria-pressed="true" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Done</span><span class="sr-only"> — Watch ABK program</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
                     <div class="min-w-0 flex-1"><p class="font-medium">Learn together</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Teach my daughter English · 30 min · 19:30</p></div>
-                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Learn together</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
                     <div class="min-w-0 flex-1"><p class="font-medium">Practice guitar chords</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Play three songs on guitar · 20 min</p></div>
-                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Practice guitar chords</span>
                     </button>
                   </li>
@@ -258,17 +261,17 @@
               </div>
 
               <div>
-                <h2 class="mb-2 text-sm font-semibold">Tasks</h2>
-                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+                <h2 class="mb-3 font-heading text-xl font-medium">Tasks</h2>
+                <ul class="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
                   <li class="flex items-center gap-4 p-4">
                     <div class="min-w-0 flex-1"><p class="font-medium">Get new passport photos</p><p class="mt-0.5 font-mono text-[0.8125rem] text-destructive">Overdue · due <time datetime="2026-10-07">Wed 7 Oct</time></p></div>
-                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Get new passport photos</span>
                     </button>
                   </li>
                   <li class="flex items-center gap-4 p-4">
                     <div class="min-w-0 flex-1"><p class="font-medium">Prepare paperwork and submit the school form</p><p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">Due today · <time datetime="2026-10-09T17:00">17:00</time></p></div>
-                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-input px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
+                    <button type="button" data-checkin aria-pressed="false" class="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground">
                       <svg class="icon size-4" aria-hidden="true"><use href="#i-circle"/></svg><span>Done</span><span class="sr-only"> — Prepare paperwork and submit the school form</span>
                     </button>
                   </li>
@@ -279,7 +282,7 @@
             <!-- Loading -->
             <div data-state="loading" aria-busy="true" hidden>
               <p class="sr-only" role="status">Loading today’s plan…</p>
-              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
+              <div class="divide-y divide-border rounded-2xl border border-border bg-card" aria-hidden="true">
                 <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-2/5"></div></div><div class="skeleton h-11 w-24"></div></div>
                 <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div><div class="skeleton h-3 w-1/3"></div></div><div class="skeleton h-11 w-24"></div></div>
                 <div class="flex items-center gap-4 p-4"><div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/5"></div><div class="skeleton h-3 w-1/4"></div></div><div class="skeleton h-11 w-24"></div></div>
@@ -288,15 +291,15 @@
 
             <!-- Empty -->
             <div data-state="empty" hidden>
-              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
+              <div class="flex flex-col items-center rounded-2xl border border-dashed border-border px-6 py-12 text-center">
                 <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-flag"/></svg></span>
-                <h2 class="mt-4 text-lg font-semibold">Nothing scheduled today</h2>
+                <h2 class="mt-4 font-heading text-xl font-medium">Nothing scheduled today</h2>
                 <p class="mt-1 max-w-sm text-sm text-muted-foreground">Add a task you need to finish, or start a project and give it time slots in your week.</p>
                 <div class="mt-5 flex flex-wrap justify-center gap-2">
-                  <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+                  <button type="button" data-placeholder-action="Add task" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
                     <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> Add task
                   </button>
-                  <button type="button" data-placeholder-action="New project" class="inline-flex min-h-11 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                  <button type="button" data-placeholder-action="New project" class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card shadow-[var(--elev-ring)] px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
                     <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New project
                   </button>
                 </div>
@@ -305,13 +308,13 @@
 
             <!-- Error -->
             <div data-state="error" hidden>
-              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
+              <div role="alert" class="flex flex-col gap-3 rounded-2xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
                 <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
                 <div class="flex-1">
                   <p class="font-medium text-destructive">Couldn’t load today’s plan</p>
                   <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
                 </div>
-                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
+                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-lg border border-border bg-card shadow-[var(--elev-ring)] px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
                   <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
                 </button>
               </div>
@@ -323,10 +326,10 @@
         <section data-view="events" aria-labelledby="events-title" hidden>
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 id="events-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">Events</h1>
+              <h1 id="events-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">Events</h1>
               <p class="mt-1 text-sm text-muted-foreground">Moments you have recorded, newest first.</p>
             </div>
-            <button type="button" data-placeholder-action="New event" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover">
+            <button type="button" data-placeholder-action="New event" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
               <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>
               New event
             </button>
@@ -335,8 +338,8 @@
           <div class="mt-6">
             <!-- Ready -->
             <div data-state="ready">
-              <p class="mb-3 inline-block rounded-full bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">Sample data</p>
-              <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+              <p class="mb-3 inline-block rounded-full border border-primary/60 bg-card px-2.5 py-0.5 font-mono text-xs text-accent-foreground">Sample data</p>
+              <ul class="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
                 <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
                   <time datetime="2026-09-28" class="w-28 shrink-0 text-sm text-muted-foreground">28 Sep 2026</time>
                   <div class="min-w-0"><p class="font-medium">Bought a new TV</p><p class="mt-0.5 text-sm text-muted-foreground">55-inch, for the living room.</p></div>
@@ -359,7 +362,7 @@
             <!-- Loading -->
             <div data-state="loading" aria-busy="true" hidden>
               <p class="sr-only" role="status">Loading events…</p>
-              <div class="divide-y divide-border rounded-xl border border-border bg-card" aria-hidden="true">
+              <div class="divide-y divide-border rounded-2xl border border-border bg-card" aria-hidden="true">
                 <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-1/2"></div><div class="skeleton h-3 w-3/4"></div></div></div>
                 <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-2/5"></div></div></div>
                 <div class="flex gap-6 p-4"><div class="skeleton h-4 w-24"></div><div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/5"></div><div class="skeleton h-3 w-2/3"></div></div></div>
@@ -368,11 +371,11 @@
 
             <!-- Empty -->
             <div data-state="empty" hidden>
-              <div class="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-12 text-center">
+              <div class="flex flex-col items-center rounded-2xl border border-dashed border-border px-6 py-12 text-center">
                 <span class="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground" aria-hidden="true"><svg class="icon size-6"><use href="#i-calendar"/></svg></span>
-                <h2 class="mt-4 text-lg font-semibold">No events yet</h2>
+                <h2 class="mt-4 font-heading text-xl font-medium">No events yet</h2>
                 <p class="mt-1 max-w-sm text-sm text-muted-foreground">Record your first life event, such as a purchase, a move or a milestone.</p>
-                <button type="button" data-placeholder-action="New event" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+                <button type="button" data-placeholder-action="New event" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
                   <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> New event
                 </button>
               </div>
@@ -380,13 +383,13 @@
 
             <!-- Error -->
             <div data-state="error" hidden>
-              <div role="alert" class="flex flex-col gap-3 rounded-xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
+              <div role="alert" class="flex flex-col gap-3 rounded-2xl border border-destructive/40 bg-card p-4 sm:flex-row sm:items-center">
                 <svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>
                 <div class="flex-1">
                   <p class="font-medium text-destructive">Couldn’t load your events</p>
                   <p class="text-sm text-muted-foreground">Check your connection and try again. Your data has not been changed.</p>
                 </div>
-                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
+                <button type="button" data-retry class="inline-flex min-h-11 items-center gap-2 self-start rounded-lg border border-border bg-card shadow-[var(--elev-ring)] px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground sm:self-auto">
                   <svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Try again
                 </button>
               </div>
@@ -396,9 +399,9 @@
 
         <!-- ============ Unknown app route ============ -->
         <section data-view="not-found" aria-labelledby="nf-title" hidden>
-          <h1 id="nf-title" tabindex="-1" class="text-2xl font-bold tracking-tight lg:text-3xl">App not found</h1>
+          <h1 id="nf-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">App not found</h1>
           <p class="mt-1 text-sm text-muted-foreground">This app does not exist or is no longer available.</p>
-          <a href="#/home" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">Go to Home</a>
+          <a href="#/home" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card shadow-[var(--elev-ring)] px-4 text-sm font-medium hover:bg-accent hover:text-accent-foreground">Go to Home</a>
         </section>
 
         <!-- ============ Prototype-only controls (not product UI) ============ -->
@@ -407,10 +410,10 @@
           <fieldset class="mt-3">
             <legend class="text-muted-foreground">Show state for <span id="proto-module">this app</span>:</legend>
             <div class="mt-2 flex flex-wrap gap-2">
-              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="ready" checked class="accent-[var(--primary)]"> Ready</label>
-              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="loading" class="accent-[var(--primary)]"> Loading</label>
-              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="empty" class="accent-[var(--primary)]"> Empty</label>
-              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-input px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="error" class="accent-[var(--primary)]"> Error</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="ready" checked class="accent-[var(--primary)]"> Ready</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="loading" class="accent-[var(--primary)]"> Loading</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="empty" class="accent-[var(--primary)]"> Empty</label>
+              <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-input bg-card px-3 has-checked:border-primary has-checked:bg-accent"><input type="radio" name="proto-state" value="error" class="accent-[var(--primary)]"> Error</label>
             </div>
           </fieldset>
         </details>

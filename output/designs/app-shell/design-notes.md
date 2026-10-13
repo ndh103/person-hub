@@ -2,18 +2,28 @@
 
 - Feature slug: `app-shell`
 - Status: draft (exploratory; no requirement exists yet)
-- Date: 2026-10-08; revised 2026-10-10 (Habit Tracker replaced by Finisher; Finisher listed first); revised 2026-10-11 (bright orange with white text)
+- Date: 2026-10-08; revised 2026-10-10 (Habit Tracker replaced by Finisher; Finisher listed first); revised 2026-10-11 (bright orange with white text); revised 2026-10-13 (Claude design system, orange #D4724F, serif headings)
 - Source request: "Design a landing page for my person-hub, the screen a user lands on after logging in. Sidebar with a menu item per app (Events, Habit Tracker, …); clicking a menu item shows that app module on the right."
 - Related inputs: [CLAUDE.md](../../../CLAUDE.md), [project brief](../../../docs/project-brief.md), [foundation](../_foundation/design-system.md) and [theme.css](../_foundation/theme.css)
 - Related requirements: [requirements/finisher.md](../../../requirements/finisher.md) (FIN-001 navigation order and Today default). No shell requirement yet. Suggested BA artifact: `requirements/app-shell.md`. Placeholder IDs below (`SHELL-*`) are design proposals, not confirmed requirements.
 - Architecture: none yet.
+
+## Change 2026-10-13: Claude design system and reference orange
+
+The user supplied a reference image and asked for its orange on buttons and the sidebar, both with white text, and for the Claude design system (open-design.ai "design-system-claude", used as inspiration only; no Anthropic fonts, logos or assets). The tokens are in the [foundation](../_foundation/design-system.md). What changed in this reference:
+
+- **Colour.** Orange `#D4724F` (sampled from the image) for filled buttons, the pressed Done toggle and the light sidebar frame, all with white text (3.32:1, AA large only, user choice). Hover and the active nav pill are terracotta `#C96442` (3.90:1). The page is parchment `#F5F4ED` with ivory `#FAF9F5` cards. Dark is near-black `#141413` with `#30302E` cards.
+- **Type.** Page titles, section headings, card titles, dialog titles and the brand name use Source Serif 4 at weight 500 (`font-heading font-medium`; never bold). Body and UI text use Inter. Small read-only meta stays in JetBrains Mono.
+- **Shapes.** Buttons are 8px (`rounded-lg`). Inputs, selects and the date field are 12px (`rounded-xl`). List and app cards are 16px (`rounded-2xl`) with a 1px border and no drop shadow. Outline buttons are ivory with a 1px ring, like the image's "Copy prompt".
+- **Patterns from the image.** A mono uppercase eyebrow in rust above a page title (Home). Underline section tabs with muted count pills (Finisher Today 5, Tasks 12, Projects 3, Closed), where the active tab gets a 2px foreground underline. The "Sample data" tag is an orange-outlined mono pill.
+- **Not changed.** Layout, routes, drawer behaviour, states and copy. Production code in `src/` was not touched. For the Developer: copy the new tokens into `src/app/globals.css`, swap `@fontsource-variable/space-grotesk` for `@fontsource-variable/inter` and `@fontsource-variable/source-serif-4` in `src/main.tsx`, map `--font-heading`, and restyle the Finisher tabs (`finisher-tabs.tsx`) to the underline pattern.
 
 ## Preview
 
 Open `output/designs/app-shell/index.html` directly in a browser (no server needed). Needs network access for:
 
 - the pinned Tailwind v4 browser runtime `@tailwindcss/browser@4.1.11` from jsDelivr (prototype only, never copy into the app)
-- Space Grotesk and JetBrains Mono from Google Fonts (fall back to system sans and mono offline). Fonts changed on 2026-10-12; see the foundation "Typography" section. Page titles are now bold, and list meta, the date line, the summary line, the "Apps" label, and the "Sample data" tag use mono.
+- Source Serif 4, Inter and JetBrains Mono from Google Fonts (fall back to Georgia, system sans and system mono offline). Fonts changed on 2026-10-13; see the foundation "Typography" section. Headings are serif at weight 500; list meta, the date line, the summary line, the eyebrow, tab counts, the "Apps" label and the "Sample data" tag use mono.
 
 Routes are hash URLs standing in for App Router paths: `#/home`, `#/finisher`, `#/events`; any other `#/x` shows "App not found". Resize below 1024px to see the drawer. On Finisher and Events, open "Prototype controls" at the bottom of the page to switch Ready / Loading / Empty / Error. The sidebar footer toggles light/dark.
 
@@ -71,7 +81,7 @@ Only foundation tokens via semantic classes: `bg-background`, `text-foreground`,
 | Loading rows | `Skeleton` |
 | Error banner | `Alert variant="destructive"` with retry `Button` |
 | Finisher "Done" toggle (session / task) | `Toggle` (pressed state); the full Finisher design may switch tasks to `Checkbox` |
-| Finisher section tabs | `Tabs` with `TabsList` / `TabsTrigger` rendered as links (each tab has its own URL per FIN-001) |
+| Finisher section tabs | `Tabs` with `TabsList` / `TabsTrigger` rendered as links (each tab has its own URL per FIN-001), restyled to the underline variant (`.section-tab`) with a count `Badge` (`.tab-count`) |
 | Toasts | `Sonner` |
 | Sidebar header (monogram, name, email) | `SidebarHeader` (+ `Avatar`) |
 | Light/Dark switch | `ToggleGroup type="single"` (two `ToggleGroupItem`s); the reference uses `aria-pressed` buttons |
@@ -114,13 +124,20 @@ Re-check 2026-10-10 (headless Chrome via DevTools protocol, scratch script not c
 
 Re-check 2026-10-11 (colour and label weight only): headless Chrome screenshots of Finisher at 1280×800 in light and dark were reviewed after the switch to the lighter `#F46530`: orange frame/sidebar with white text, darker active pill with white bar, orange buttons and pressed Done toggle with white semibold text. All new colour pairs computed with a script (see foundation). The 390px screenshot was clipped by headless Chrome's minimum window width, so phone overflow was not re-measured; no layout code changed. Hover and focus states were not screenshotted.
 
+Re-check 2026-10-13 (Claude design system restyle), headless Edge screenshots (scratch, not committed):
+
+- Finisher at 1280×1100 in light and in dark (forced `prefers-color-scheme: dark`): orange frame and sidebar with white text, terracotta active pill with white bar, serif headings, underline tabs with count pills, orange Done toggle.
+- Phone widths rendered in 375px and 320px iframes, because headless Edge enforces a minimum window width: Finisher at 375 and Home at 320 show no horizontal overflow; the tab row fits at 375.
+- All new colour pairs computed with a script (see the foundation).
+- Not re-run: drawer focus behaviour, the Loading, Empty and Error states, hover states, and the 800px tablet width. The markup and scripts for these did not change, only classes. It was not confirmed whether the Google web fonts or their fallbacks rendered in the screenshots.
+
 Not checked: real screen readers (NVDA, VoiceOver), real mobile devices/Safari, 200% zoom, Windows High Contrast mode, and the shadcn implementation itself. The static reference shows patterns; it does not prove the production component is accessible.
 
 ## Unresolved questions
 
 1. Landing target after sign-in: this design uses a Home page with app cards. Alternatives: go straight to Events, or reopen the last-used app. (Assumption, easy to change.)
 2. Should Home ever show summaries (e.g. today's Finisher sessions, recent events)? Dashboards are not confirmed scope, so Home is navigation only.
-3. Bright orange `#F46530` with white text chosen by the user on 2026-10-11 (after `#C4511A` was too dark); white labels are below AA for normal-size text. The dark-mode sidebar stays charcoal (assumption); light/dark support is still an assumption.
+3. Orange `#D4724F` with white text (2026-10-13, from the user's reference image; previously `#F46530`). White labels are 3.32:1, below AA for normal-size text (user choice). Tab counts are fixture numbers; which count each tab shows (open tasks, active projects) needs a BA decision before implementation. The dark-mode sidebar stays charcoal (assumption); light/dark support is still an assumption.
 4. Desktop sidebar collapse to an icon rail (`collapsible="icon"`) is not shown; add if wanted.
 5. Mobile breakpoint for the drawer: 1024px here vs shadcn's 768px default.
 6. Sign-in pages are out of scope here. Access model and flows are now in [requirements/auth.md](../../../requirements/auth.md) and [docs/architecture/auth.md](../../../docs/architecture/auth.md). Sign out must POST to `/api/auth/sign-out` (AUTH-006). The sign-in page design belongs in `output/designs/auth/`.

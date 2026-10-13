@@ -1,85 +1,95 @@
 /*
  * Personal Hub — foundation theme (single source of truth for colors and fonts)
- * Fonts: Space Grotesk (sans, headings) + JetBrains Mono (meta accents); see design-system.md "Typography".
+ * Direction (2026-10-13): Claude-style warm editorial system (open-design.ai "design-system-claude", inspiration only)
+ * with the orange #D4724F sampled from the user's reference image.
+ * Fonts: Source Serif 4 (headings, weight 500) + Inter (body/UI) + JetBrains Mono (small meta); see design-system.md.
  * Status: draft. See design-system.md for rationale and contrast checks.
  *
  * Variable names follow shadcn/ui theming so these values can be copied into
  * the application's globals.css. Light values on :root, dark values on .dark
  * (shadcn's class-based dark mode). Feature designs must not redefine these.
  *
- * Palette (2026-10-11, lighter): orange #F46530 with WHITE text (3.11:1, AA large text only; user choice, see design-system.md).
- * Hover darkens to --primary-hover (#E0551F, 3.83:1); never lighten. Focus ring on light surfaces is #D94F1C.
- * Light sidebar = the same orange frame with white text; active/hover pill #E0551F; never dim that text.
- * Orange-tinted text on light surfaces uses --accent-foreground (rust), not --primary.
+ * Orange #D4724F with WHITE text = 3.32:1 (AA large text only; user choice). Hover darkens to
+ * --primary-hover #C96442 (3.90:1); never lighten. Light sidebar = the same orange with white text.
+ * Orange-tinted text on light surfaces uses --accent-foreground (rust), never --primary.
  */
 
 :root {
-  /* Fonts (2026-10-12): Space Grotesk for headings and UI text, JetBrains Mono for small meta accents. */
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-heading: var(--font-sans);
+  --font-heading: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas, monospace;
 
-  --radius: 0.625rem;
+  /* 8px: buttons and cards. shadcn derives sm 4px, md 6px, lg 8px, xl 12px (inputs, featured), 2xl 16px (sections). */
+  --radius: 0.5rem;
 
-  --background: #faf9f5;
-  --foreground: #141413;
-  --card: #ffffff;
+  /* Elevation: rings instead of drop shadows; one soft lift for overlays. */
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 4px 24px rgb(0 0 0 / 0.05);
+
+  /* Motion */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --background: #f5f4ed;            /* Parchment */
+  --foreground: #141413;            /* Near Black */
+  --card: #faf9f5;                  /* Ivory */
   --card-foreground: #141413;
   --popover: #ffffff;
   --popover-foreground: #141413;
-  --primary: #f46530;
+  --primary: #d4724f;               /* reference-image orange */
   --primary-foreground: #ffffff;
-  --primary-hover: #e0551f;
-  --secondary: #f0eee6;
-  --secondary-foreground: #3d3d3a;
+  --primary-hover: #c96442;         /* Terracotta */
+  --secondary: #e8e6dc;             /* Warm Sand */
+  --secondary-foreground: #4d4c48;  /* Charcoal Warm */
   --muted: #f0eee6;
-  --muted-foreground: #5e5d59;
-  --accent: #fdebe1;
-  --accent-foreground: #8a3a1c;
-  --destructive: #b91c1c;
+  --muted-foreground: #5e5d59;      /* Olive Gray */
+  --accent: #f6e4db;                /* terracotta tint */
+  --accent-foreground: #8a3a1c;     /* rust, for orange-tinted text */
+  --destructive: #b53333;           /* Error Crimson */
   --destructive-foreground: #ffffff;
   --border: #e8e6dc;
-  --input: #8a8880;
-  --ring: #d94f1c;
+  --input: #87867f;                 /* Stone Gray, ≥3:1 for control edges */
+  --ring: #c96442;
 
-  --sidebar: #f46530;
+  --sidebar: #d4724f;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #f46530;
-  --sidebar-accent: #e0551f;
+  --sidebar-primary-foreground: #d4724f;
+  --sidebar-accent: #c96442;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #ff9a62;
+  --sidebar-border: #e3987c;        /* decorative only */
   --sidebar-ring: #ffffff;
 }
 
 .dark {
-  --background: #262624;
+  --background: #141413;            /* Deep Dark */
   --foreground: #faf9f5;
-  --card: #30302e;
+  --card: #30302e;                  /* Dark Surface */
   --card-foreground: #faf9f5;
   --popover: #30302e;
   --popover-foreground: #faf9f5;
-  --primary: #f46530;
+  --primary: #d4724f;
   --primary-foreground: #ffffff;
-  --primary-hover: #e0551f;
+  --primary-hover: #c96442;
   --secondary: #30302e;
   --secondary-foreground: #e8e6dc;
-  --muted: #30302e;
-  --muted-foreground: #b7b5a9;
+  --muted: #262624;
+  --muted-foreground: #b0aea5;      /* Warm Silver */
   --accent: #43291e;
   --accent-foreground: #ffc9b0;
   --destructive: #f87171;
   --destructive-foreground: #3b0a0a;
   --border: #3e3d39;
   --input: #85837b;
-  --ring: #f59563;
+  --ring: #d97757;                  /* Coral */
 
-  --sidebar: #1a1918;
+  --sidebar: #1f1e1d;
   --sidebar-foreground: #e8e6dc;
-  --sidebar-primary: #f46530;
+  --sidebar-primary: #d4724f;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #43291e;
   --sidebar-accent-foreground: #ffc9b0;
   --sidebar-border: #3e3d39;
-  --sidebar-ring: #f59563;
+  --sidebar-ring: #d97757;
 }
