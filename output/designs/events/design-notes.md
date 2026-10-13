@@ -18,11 +18,15 @@ Open `index.html` in a browser from this folder. It needs a network connection f
 
 All data is synthetic.
 
+## Change 2026-10-13
+
+At the user's request, the "Your life log" eyebrow was removed. A mono "Today · 13 Oct 2026" line now sits under the title, matching the Finisher header.
+
 ## Page structure
 
 ```
-Your life log                                  [ + Add event ]
-Events
+Events                                         [ + Add event ]
+Today · 13 Oct 2026
 Search events                        Year
 [🔍 Title or notes            ✕ ]   [ All years ▾ ]
 12 events                                  Clear search and filters

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@/components/link";
-import { formatDuration, formatDate } from "../../domain/dates";
+import { formatDuration } from "../../domain/dates";
 import { finisherQueries } from "../../api";
 import type { SessionItem } from "../../types";
 import { AddTaskButton } from "../add-task-button";
@@ -39,10 +39,8 @@ export function TodayView() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* The "Today · 13 Oct 2026" line is in the Finisher header (tabs-layout.tsx). */}
       <div className="flex flex-col gap-1">
-        <p className="font-mono text-[0.8125rem] text-muted-foreground">
-          Today · <time dateTime={now.date}>{formatDate(now.date)}</time>
-        </p>
         <p className="font-mono text-[0.8125rem] text-muted-foreground" role="status">
           {data.sessionsDone} of {data.sessionsTotal} {data.sessionsTotal === 1 ? "session" : "sessions"} done today ·{" "}
           {overdueCount} overdue {overdueCount === 1 ? "task" : "tasks"}

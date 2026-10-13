@@ -9,6 +9,10 @@
   - [Events architecture](../architecture/events.md)
   - [ADR-0004](../architecture/decisions/ADR-0004-events-table-writes-under-rls.md)
 
+## Change 2026-10-13: header matches Finisher
+
+At the user's request, the "Your life log" eyebrow above the title was removed. A mono "Today · 13 Oct 2026" line (the browser's local date) now sits under the "Events" title, the same as the Finisher header. Only `events-view.tsx` changed.
+
 ## What was built
 
 | Requirement | Where |

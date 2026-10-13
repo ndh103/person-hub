@@ -13,6 +13,18 @@
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
 
+## Change 2026-10-13: FIN-035 tab counts and the header date line
+
+Inputs: [requirements/finisher.md](../../requirements/finisher.md) v3.2 (FIN-035, decision 14, assumption A10) and the [app-shell design](../../output/designs/app-shell/design-notes.md) (underline tabs with muted count pills; "Today · date" line under the title).
+
+- **Changes:**
+  - `GET /api/finisher/basics` now also returns `counts: { today, tasks, projects }` (`getFinisherBasics` in `server/queries.ts`). Today counts unmarked sessions today (the same schedule logic as the Today view) plus open tasks due today or overdue; Tasks counts open tasks; Projects counts active projects. Two `count: "exact", head: true` queries, so no task rows are transferred.
+  - `finisher-tabs.tsx` shows each count in a mono pill (`bg-muted`, `bg-secondary` on the active tab), with screen-reader text such as "(12 open)". Closed has none. Counts are hidden until loaded.
+  - The Finisher header (`tabs-layout.tsx`) shows the mono "Today · 13 Oct 2026" line from the design on every tab, replacing the description sentence. The Today view no longer repeats that line.
+  - Counts refresh with the other Finisher views after every write (all reads share the `["finisher"]` key).
+- **Checks (2026-10-13):** `npm run typecheck` passes; `npm run lint` 0 errors (only the existing fast-refresh warnings); `npm test` 186 passed, including `tests/unit/finisher-tab-counts.test.ts` (done, skipped and other-weekday sessions excluded; parked projects excluded); `npm run build` passes with the existing chunk-size warning.
+- **Not done:** no browser run (signing in needs the live project). Tester: check the pills at 320px, in dark mode, and that they change after marking a session or completing a task.
+
 ## Change 2026-10-12: FIN-034 due-date shortcuts
 
 Inputs: [requirements/finisher.md](../../requirements/finisher.md) v3 (FIN-034, decision 11, assumption A9) and the [task form design](../../output/designs/finisher/design-notes.md).

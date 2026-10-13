@@ -29,6 +29,7 @@ import {
   type ClosedOutcome,
   type ClosedTabData,
   type ClosedType,
+  type FinisherBasics,
   type ProjectCard,
   type ProjectDetail,
   type ProjectFilter,
@@ -393,8 +394,28 @@ export async function getTask(ctx: FinisherContext, taskId: string): Promise<Tas
 }
 
 /** What "Add task" and "New project" need: the caller's today and project options. */
-export async function getFinisherBasics(ctx: FinisherContext): Promise<{ today: LocalDate; projects: ProjectOption[] }> {
-  return { today: ctx.now.date, projects: projectOptions(await projectIndex(ctx)) };
+export async function getFinisherBasics(ctx: FinisherContext): Promise<FinisherBasics> {
+  const { now } = ctx;
+  const index = await projectIndex(ctx);
+  const activeIds = [...index.values()].filter((project) => project.status === "active").map((project) => project.id);
+
+  const [schedules, dueOrOverdue, open] = await Promise.all([
+    loadSchedules(ctx, activeIds, now.date, now.date),
+    ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open").lte("due_date", now.date),
+    ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open"),
+  ]);
+  if (dueOrOverdue.error) throw fromDbError(dueOrOverdue.error);
+  if (open.error) throw fromDbError(open.error);
+
+  // FIN-035: what is still to do today, open tasks, and active projects.
+  const unmarkedToday = activeIds
+    .flatMap((projectId) => sessionsFor(schedules.get(projectId), now.date, now.date))
+    .filter((session) => session.state === "unmarked").length;
+  return {
+    today: now.date,
+    projects: projectOptions(index),
+    counts: { today: unmarkedToday + (dueOrOverdue.count ?? 0), tasks: open.count ?? 0, projects: activeIds.length },
+  };
 }
 
 // ---------------------------------------------------------------------------

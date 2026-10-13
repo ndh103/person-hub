@@ -4,7 +4,7 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 3.1 (2026-10-12). Adds FIN-034 (due-date shortcuts) and the date display rule to version 2 (2026-10-10); see Change notes.
+- Version: 3.2 (2026-10-13). Adds FIN-035 (tab counts) to v3.1, which added FIN-034 (due-date shortcuts) and the date display rule to version 2 (2026-10-10); see Change notes.
 - Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), and 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), plus answers to clarifying questions.
 - Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts](../output/designs/finisher/design-notes.md) (other screens not yet designed). Architecture (`docs/architecture/finisher.md`) and test report: not yet created.
 
@@ -107,6 +107,17 @@ Finisher is the **first** app in the shell's Apps group, followed by Events. It 
 - Given a signed-in user, when they select Finisher in the sidebar or the phone drawer, then the Today tab opens. The nav item is marked current, the page title is "Finisher · Personal Hub", and focus moves to the page heading (SHELL-003).
 - Each tab has its own URL, so a reload or a shared link reopens the same tab.
 - Each tab has loading (skeleton), empty, and error states. The error state offers Retry. An error never shows partial data that belongs to another account.
+
+### FIN-035 Tab counts (Must)
+
+The Today, Tasks and Projects tabs each show a count of their items next to the label, as a small muted pill (app-shell design). The Closed tab has no count (decision 14).
+
+- **Today:** what is still to do today: unmarked sessions today from Active projects, plus Open tasks that are due today or overdue (A10). Done and Skipped sessions, Done tasks, and Parked tasks are not counted.
+- **Tasks:** Open tasks. Parked tasks are not counted (A10).
+- **Projects:** Active projects. Parked projects are not counted (A10).
+- The counts appear on every Finisher page, update after any change without a reload, and are left out (not shown as 0) while loading or if loading fails.
+- Each count is read with its tab by assistive technology, for example "Tasks (12 open)", "Today (5 to do)", "Projects (3 active)". The current tab is still marked by weight and an underline, not by the colour of its pill.
+- There is no horizontal page overflow at 320px; the tab row scrolls inside itself if needed (FIN-018).
 
 ### FIN-031 Today view (Must)
 
@@ -294,6 +305,10 @@ From the user, 2026-10-12:
 12. Dates are displayed as "12 Oct 2026", including the value in date fields (Due date, Target date, Revisit on).
 13. The Today and Next week shortcut buttons caption their date as "Monday 12 Oct".
 
+From the user, 2026-10-13:
+
+14. Each Finisher tab shows its number of items, except the Closed tab.
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -304,6 +319,7 @@ From the user, 2026-10-12:
 - A6. Closed-tab stats are counts only, with no percentage success rate.
 - A7. All text limits, the 20-slot cap, the 5–480 minute duration range, and the page sizes are proposed defaults.
 - A9. The due-date shortcuts appear in both the Add task and the Edit task dialogs. The request named only Add task.
+- A10. What each tab count includes (FIN-035): Today counts what is still to do (unmarked sessions plus due or overdue open tasks); Tasks counts Open tasks; Projects counts Active projects. Parked items are left out, because they are collapsed and not being worked on. The request said only "number of item".
 
 ## Open questions
 
@@ -314,6 +330,7 @@ From the user, 2026-10-12:
 
 ## Change notes
 
+- **2026-10-13, v3.2.** Added FIN-035: counts on the Today, Tasks and Projects tabs (decision 14, assumption A10), matching the app-shell design. **Affects:** `finisher-tabs.tsx`, the Finisher header (`tabs-layout.tsx`), `GET /api/finisher/basics` (now returns `counts`), and tests. No schema or RLS change.
 - **2026-10-12, v3.** Added FIN-034: Today and Next week shortcut buttons below the Due date field in the task form. Added assumption A9 and confirmed decision 11 ("Next week" = Monday of next week). No other requirement changes; FIN-019 validation applies unchanged. Also added the date display rule (business rules, decisions 12 and 13). **v3.1:** date fields now display "12 Oct 2026" instead of the browser's format, and the shortcut captions use "Monday 12 Oct". Affects the task form, the project form (Target date), and the Park dialog (Revisit on).
   - **Affects:** the Finisher design (task form dialog), `src/features/finisher/components/task-form-dialog.tsx`, and the task-form tests. No API, schema, or RLS change is expected.
 - **2026-10-10, v2.** Finisher was redefined around Tasks, Projects, slots, and sessions, and it replaces Habit Tracker.

@@ -10,7 +10,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
-import { browserToday } from "@/lib/dates";
+import { browserToday, formatDate } from "@/lib/dates";
 import { eventsKeys, eventsQueries, type EventsFilter } from "../api";
 import { cleanQuery, LIMITS } from "../domain/validation";
 import type { EventItem } from "../types";
@@ -196,12 +196,15 @@ export function EventsView({
 
   return (
     <section aria-labelledby="events-title" className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
-          <p className="eyebrow">Your life log</p>
-          <h1 id="events-title" tabIndex={-1} className="mt-1 font-heading text-3xl font-medium outline-none lg:text-4xl">
+      {/* Same header as Finisher: title, then the mono "Today · 13 Oct 2026" line. */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 id="events-title" tabIndex={-1} className="font-heading text-3xl font-medium outline-none lg:text-4xl">
             Events
           </h1>
+          <p className="font-mono text-[0.8125rem] text-muted-foreground">
+            Today · <time dateTime={today}>{formatDate(today)}</time>
+          </p>
         </div>
         <Button className="h-11" onClick={() => openForm()}>
           <PlusIcon data-icon="inline-start" aria-hidden="true" />

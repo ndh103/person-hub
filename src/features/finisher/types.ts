@@ -30,6 +30,18 @@ export type TaskDetail = TaskItem & {
 
 export type ProjectOption = { id: string; title: string; status: ProjectStatus };
 
+/** Counts on the Finisher tabs (FIN-035). Closed has no count. */
+export type FinisherTabCounts = {
+  /** Unmarked sessions today plus open tasks due today or overdue. */
+  today: number;
+  /** Open tasks, not parked. */
+  tasks: number;
+  /** Active projects, not parked. */
+  projects: number;
+};
+
+export type FinisherBasics = { today: LocalDate; projects: ProjectOption[]; counts: FinisherTabCounts };
+
 export type SessionItem = {
   slotId: string;
   projectId: string;

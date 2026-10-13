@@ -7,6 +7,7 @@ import type {
   ClosedOutcome,
   ClosedTabData,
   ClosedType,
+  FinisherBasics,
   ProjectDetail,
   ProjectOption,
   ProjectsTabData,
@@ -85,7 +86,7 @@ export const finisherQueries = {
   basics: () =>
     queryOptions({
       queryKey: ["finisher", "basics"],
-      queryFn: () => load<{ today: LocalDate; projects: ProjectOption[] }>("/api/finisher/basics"),
+      queryFn: () => load<FinisherBasics>("/api/finisher/basics"),
     }),
   today: () => queryOptions({ queryKey: ["finisher", "today"], queryFn: () => load<TodayData>("/api/finisher/today") }),
   tasks: (project: string | undefined) =>
