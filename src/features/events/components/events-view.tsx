@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
@@ -184,6 +184,10 @@ export function EventsView({
   const yearOptions = [...(years.data ?? [])];
   if (filter.year !== undefined && !yearOptions.includes(filter.year)) yearOptions.push(filter.year);
   yearOptions.sort((a, b) => b - a);
+  const yearItems: { value: number | null; label: string }[] = [
+    { value: null, label: "All years" },
+    ...yearOptions.map((year) => ({ value: year, label: String(year) })),
+  ];
 
   let summary = "";
   if (list.isPending) summary = "Loading events…";
@@ -254,23 +258,26 @@ export function EventsView({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor={yearId}>Year</Label>
-          <NativeSelect
-            id={yearId}
-            className="w-full [&_select]:h-11"
-            value={filter.year ? String(filter.year) : ""}
-            onChange={(e) => {
+          <Select
+            items={yearItems}
+            value={filter.year ?? null}
+            onValueChange={(year) => {
               // Include text typed in the last moment, before its pause elapsed.
               lastSent.current = cleanQuery(text);
-              onFilterChange({ q: lastSent.current || undefined, year: e.target.value ? Number(e.target.value) : undefined });
+              onFilterChange({ q: lastSent.current || undefined, year: year ?? undefined });
             }}
           >
-            <NativeSelectOption value="">All years</NativeSelectOption>
-            {yearOptions.map((year) => (
-              <NativeSelectOption key={year} value={String(year)}>
-                {year}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            <SelectTrigger id={yearId} className="h-11 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearItems.map((item) => (
+                <SelectItem key={item.value ?? "all"} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </form>
 
