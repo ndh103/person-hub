@@ -210,7 +210,7 @@ function SortableTaskRow({
           {...attributes}
           {...listeners}
           aria-label={`Reorder “${task.title}”`}
-          className="grid h-11 w-7 shrink-0 cursor-grab touch-none place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-pressed:bg-accent aria-pressed:text-accent-foreground active:cursor-grabbing"
+          className="relative grid h-9 w-7 shrink-0 cursor-grab after:absolute after:inset-x-0 after:-inset-y-1 touch-none place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-pressed:bg-accent aria-pressed:text-accent-foreground active:cursor-grabbing"
         >
           <GripVerticalIcon aria-hidden="true" className="size-4" />
         </button>

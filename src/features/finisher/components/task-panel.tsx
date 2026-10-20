@@ -168,7 +168,7 @@ function TaskPanel({ id, onClose }: { id: string; onClose: () => void }) {
         </div>
       </div>
 
-      <h2 id="task-panel-title" ref={titleRef} tabIndex={-1} className="font-heading text-2xl font-medium break-words outline-none">
+      <h2 id="task-panel-title" ref={titleRef} tabIndex={-1} className="font-heading text-xl font-medium break-words outline-none">
         {heading ?? (
           <>
             <span className="sr-only">Loading task…</span>

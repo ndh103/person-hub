@@ -85,13 +85,14 @@
   .task-row { gap: 0.75rem; padding-right: 0.75rem; }
 }
 
-/* Drag handle: 28px wide, 44px tall touch target. touch-action: none only here, so the rest of the row still scrolls. */
+/* Drag handle: 28 × 36px, with .hit-44-style ::after extending the touch target to 44px tall. touch-action: none only here, so the rest of the row still scrolls. */
 .drag-handle {
   display: grid;
   place-items: center;
   flex-shrink: 0;
   width: 1.75rem;
-  height: 2.75rem;
+  height: 2.25rem;
+  position: relative;
   border-radius: calc(var(--radius) - 2px);
   color: var(--muted-foreground);
   cursor: grab;
@@ -238,3 +239,9 @@ body.is-reordering, body.is-reordering * { cursor: grabbing !important; user-sel
   .pomo-dot { animation: none; }
   .pomo-bar { transition: none; }
 }
+
+/* Compact row controls (2026-10-21): the visible control is 28px (check-off) or 36px (⋯),
+   and a transparent ::after keeps a 44px touch target. Maps to after:absolute after:-inset-* in the app. */
+.hit-44 { position: relative; }
+.hit-44::after { content: ""; position: absolute; inset: 50% auto auto 50%; width: 2.75rem; height: 2.75rem; transform: translate(-50%, -50%); }
+.drag-handle::after { content: ""; position: absolute; inset: -0.25rem 0; }

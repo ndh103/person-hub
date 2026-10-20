@@ -28,9 +28,9 @@ function SortableSectionInner({ section, tasks, today, projects }: { section: st
 
 function SessionRow({ session }: { session: SessionItem }) {
   return (
-    <li className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+    <li className="flex items-center gap-3 px-3 py-2 sm:gap-4 sm:px-4">
       <div className="min-w-0 flex-1">
-        <p className="font-medium break-words">{session.activity}</p>
+        <p className="text-sm font-medium break-words">{session.activity}</p>
         <p className="font-mono text-[0.8125rem] break-words text-muted-foreground">
           <Link to="/finisher/projects/$id" params={{ id: session.projectId }} className="underline-offset-4 hover:underline">
             {session.projectTitle}

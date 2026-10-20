@@ -125,10 +125,11 @@ export function TaskCheck({ task, variant = "icon" }: { task: TaskItem; variant?
       aria-pressed={done}
       aria-label={`Mark “${task.title}” done`}
       disabled={busy}
-      className="size-11 shrink-0 rounded-full aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
+      // 28px circle; the ::after keeps a 44px touch target.
+      className="relative size-7 shrink-0 rounded-full after:absolute after:-inset-2 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
       onClick={() => void setDone(!done)}
     >
-      {done ? <CheckIcon /> : <CircleIcon className="text-muted-foreground" />}
+      {done ? <CheckIcon className="size-3.5" /> : <CircleIcon className="size-3.5 text-muted-foreground" />}
     </Button>
   );
 }
@@ -250,7 +251,7 @@ export function TaskActionsMenu({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon-lg" className="size-11 shrink-0" aria-label={`More actions for “${task.title}”`} />
+            <Button variant="ghost" size="icon-lg" className="relative size-9 shrink-0 after:absolute after:-inset-1" aria-label={`More actions for “${task.title}”`} />
           }
         >
           <MoreHorizontalIcon />
@@ -396,7 +397,7 @@ export function TaskRow({
       ref={rowRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 p-3 sm:gap-4 sm:p-4",
+        "flex items-center gap-3 px-3 py-2 sm:gap-4 sm:px-4",
         handle !== undefined && "gap-2 pl-1 sm:gap-3 sm:pl-2",
         // Selected in the panel: tint plus a leading bar, not colour alone (FIN-036).
         selected && "bg-accent shadow-[inset_3px_0_0_var(--ring)]",
@@ -417,7 +418,7 @@ export function TaskRow({
             panel.open(task.id);
           }}
           className={cn(
-            "font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline",
+            "text-sm font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline",
             selected && "font-semibold",
             task.status === "done" && "text-muted-foreground line-through",
           )}

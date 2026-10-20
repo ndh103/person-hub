@@ -123,13 +123,15 @@ Open `task-list.html` (same font and Tailwind runtime dependencies as `index.htm
 ┌──────────────────────────────────────────────────────────┐
 │ ⠿  ( ◯ )  Prepare the paperwork and submit the form   ⋯ │
 │ │    │     Due today 17:00 · Teach my daughter English   │ │
-│ │    └ check-off, 44px                                   │ └ row menu, 44px
-│ └ drag handle, 28 × 44px (only when the section has 2+ tasks)
+│ │    └ check-off, 28px circle (44px touch area)          │ └ row menu, 36px (44px touch area)
+│ └ drag handle, 28 × 36px, 44px tall touch area (only when the section has 2+ tasks)
 └──────────────────────────────────────────────────────────┘
 ```
 
+- **Compact rows (2026-10-21, user request):** the title is `text-sm` (14px) and row padding is 8px top and bottom, so a one-line task row is about 56px tall instead of 68 to 76px. The check-off is a 28px circle with a 14px icon; the ⋯ menu and the drag handle are 36px tall. Each keeps a 44px touch target through a transparent `::after` (`.hit-44` here; `after:absolute after:-inset-*` in the app), so the change is visual only. Sessions on the Today tab use the same title size, padding and 36px controls. Task titles in the side panel are `text-xl`, and on the task page `text-xl` on phones and `text-2xl` from 640px (previously `text-3xl`/`text-4xl`).
+
 - **Handle placement:** the handle sits at the far left, flush with the card edge (4px inset), before the check-off. The left edge is where people look for a grip in reorderable lists, and it keeps the ⋯ menu in the same place as today. On the right it would sit next to ⋯ and the two would be easy to mistake for each other.
-- **Width budget at 320px:** handle 28 + check 44 + ⋯ 44 + gaps 24 + padding 12 = 152px, which leaves about 136px for the title. Titles wrap to two or three lines and nothing overflows (checked). The check-off keeps its 44px.
+- **Width budget at 320px:** handle 28 + check 28 + ⋯ 36 + gaps 24 + padding 12 = 128px, which leaves about 160px for the title. Titles wrap to two or three lines and nothing overflows (checked at the original sizes; the compact sizes only free width). The check-off keeps a 44px touch area.
 - **Sections with one task** (No date in the fixture) show no handle, with a 28px spacer so titles stay aligned with other sections. Their menu has no Order group.
 - **Parked rows** have no handle and no check-off (the check-off space is kept as a spacer), and are sorted by revisit date.
 

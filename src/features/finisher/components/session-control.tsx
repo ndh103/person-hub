@@ -53,7 +53,7 @@ export function SessionCheck({ slotId, date, state: saved, activity }: { slotId:
         variant="outline"
         aria-pressed={state === "done"}
         aria-label={state === "skipped" ? `Undo skip for “${activity}”` : `Mark “${activity}” done`}
-        className="h-11 gap-2 px-3 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
+        className="relative h-9 gap-2 px-3 after:absolute after:-inset-1 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
         onClick={() => void mark(marked ? "unmarked" : "done", activity)}
       >
         {state === "done" ? (
@@ -68,7 +68,7 @@ export function SessionCheck({ slotId, date, state: saved, activity }: { slotId:
       {state === "unmarked" ? (
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon-lg" className="size-11" aria-label={`More actions for “${activity}”`} />}
+            render={<Button variant="ghost" size="icon-lg" className="relative size-9 after:absolute after:-inset-1" aria-label={`More actions for “${activity}”`} />}
           >
             <MoreHorizontalIcon />
           </DropdownMenuTrigger>
