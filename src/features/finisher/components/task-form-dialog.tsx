@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
@@ -56,6 +56,15 @@ export function TaskFormDialog({
     task?.projectId && !projects.some((project) => project.id === task.projectId)
       ? [...projects, { id: task.projectId, title: task.projectTitle ?? "Closed project", status: "finished" as const }]
       : projects;
+  const projectItems: { value: string | null; label: string }[] = [
+    { value: null, label: "No project" },
+    ...options.map((project) => ({
+      value: project.id,
+      label:
+        project.title +
+        (project.status === "parked" ? " (parked)" : project.status !== "active" ? " (closed)" : ""),
+    })),
+  ];
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -184,20 +193,22 @@ export function TaskFormDialog({
             </FormField>
             <FormField name="projectId" label="Project" optional errors={fieldErrors}>
               {(props) => (
-                <NativeSelect
-                  {...props}
-                  className="w-full [&_select]:h-11"
-                  value={values.projectId}
-                  onChange={(event) => set("projectId", event.target.value)}
+                <Select
+                  items={projectItems}
+                  value={values.projectId || null}
+                  onValueChange={(next) => set("projectId", next ?? "")}
                 >
-                  <NativeSelectOption value="">No project</NativeSelectOption>
-                  {options.map((project) => (
-                    <NativeSelectOption key={project.id} value={project.id}>
-                      {project.title}
-                      {project.status === "parked" ? " (parked)" : project.status !== "active" ? " (closed)" : ""}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  <SelectTrigger {...props} className="h-11 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projectItems.map((item) => (
+                      <SelectItem key={item.value ?? ""} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </FormField>
           </FieldGroup>
