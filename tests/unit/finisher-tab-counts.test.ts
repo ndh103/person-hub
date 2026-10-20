@@ -38,6 +38,9 @@ const TABLES: Record<string, unknown[]> = {
   ],
 };
 
+/** One running Pomodoro and 3 completed today (FIN-039, FIN-040). */
+const RUNNING = { id: "pomo-1", task_id: "task-1", started_at: "2026-10-13T08:50:00Z", ends_at: "2026-10-13T09:15:00Z" };
+
 /** Head counts for finisher_tasks: open tasks, and those due today or overdue (filtered with lte). */
 const TASK_COUNTS = { open: 5, dueOrOverdue: 2 };
 
@@ -45,18 +48,25 @@ function stubSupabase(): SupabaseClient {
   return {
     from(table: string) {
       let dueFilter = false;
+      let head = false;
       const builder: Record<string, unknown> = {};
-      for (const method of ["select", "eq", "in", "lte", "gte", "or", "order", "limit", "not"]) {
+      for (const method of ["select", "eq", "in", "lte", "gte", "gt", "is", "or", "order", "limit", "not"]) {
         builder[method] = (...args: unknown[]) => {
           if (method === "lte" && args[0] === "due_date") dueFilter = true;
+          if (method === "select" && (args[1] as { head?: boolean } | undefined)?.head) head = true;
           return builder;
         };
       }
+      builder.maybeSingle = () => Promise.resolve({ data: { title: "Paperwork" }, error: null });
       builder.then = (resolve: (value: unknown) => unknown) =>
         resolve(
           table === "finisher_tasks"
             ? { data: null, error: null, count: dueFilter ? TASK_COUNTS.dueOrOverdue : TASK_COUNTS.open }
-            : { data: TABLES[table] ?? [], error: null },
+            : table === "finisher_pomodoros"
+              ? head
+                ? { data: null, error: null, count: 3 }
+                : { data: [RUNNING], error: null }
+              : { data: TABLES[table] ?? [], error: null },
         );
       return builder;
     },
@@ -76,5 +86,15 @@ describe("Finisher tab counts (FIN-035)", () => {
     expect(basics.counts).toEqual({ today: 3, tasks: 5, projects: 1 });
     expect(basics.today).toBe(TODAY);
     expect(basics.projects.map((project) => project.id).sort()).toEqual([ACTIVE, PARKED]);
+    // FIN-039/040: the running session with its task title, today's count in minutes, and the server clock.
+    expect(basics.pomodoro.active).toEqual({
+      id: "pomo-1",
+      taskId: "task-1",
+      taskTitle: "Paperwork",
+      startedAt: "2026-10-13T08:50:00.000Z",
+      endsAt: "2026-10-13T09:15:00.000Z",
+    });
+    expect(basics.pomodoro.today).toEqual({ completed: 3, minutes: 75 });
+    expect(Number.isNaN(Date.parse(basics.pomodoro.serverNow))).toBe(false);
   });
 });

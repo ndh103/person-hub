@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { finisherQueries } from "../api";
 import { isUuid } from "../domain/validation";
 import { TASK_STATUS_LABEL } from "../messages";
+import { PomodoroBlock, PomodoroWatcher } from "./pomodoro";
 import { TaskPanelContext, type TaskPanelApi } from "./task-panel-context";
 import { TaskFormDialog } from "./task-form-dialog";
 import { TaskActionsMenu, TaskCheck, TaskDue } from "./task-row";
@@ -96,6 +97,8 @@ export function TaskPanelLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TaskPanelContext.Provider value={api}>
+      {/* Shows a Pomodoro's completion on any page with task lists (FIN-039). */}
+      <PomodoroWatcher />
       <div
         data-task-panel-open={selectedId ? "" : undefined}
         className={cn(
@@ -212,6 +215,7 @@ function TaskPanel({ id, onClose }: { id: string; onClose: () => void }) {
               </Button>
             ) : null}
           </div>
+          <PomodoroBlock task={task} />
           <TaskFacts task={task} className="mt-5 grid-cols-[auto_minmax(0,1fr)] border-t pt-4 sm:grid-cols-[auto_minmax(0,1fr)]" />
           <p className="mt-5 text-xs text-muted-foreground">
             <Link to="/finisher/tasks/$id" params={{ id: task.id }} className="underline underline-offset-4">

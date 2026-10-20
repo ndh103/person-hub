@@ -3,9 +3,9 @@
 - Feature slug: `finisher`
 - Status: `ready` for the v4 task enhancements (FIN-034 Tomorrow, FIN-036, FIN-037, FIN-038). This document does **not** yet describe the whole of Finisher. The existing data model and write path are recorded in [ADR-0002](decisions/ADR-0002-finisher-rpc-writes.md), in the migration `supabase/migrations/20261011120000_finisher.sql` and in [the implementation notes](../implementation/finisher.md). See [Gaps](#gaps-in-this-document).
 - Date: 2026-10-20
-- Requirements: [requirements/finisher.md](../../requirements/finisher.md) v4.1: FIN-034, FIN-036, FIN-037, FIN-038, and related FIN-017, FIN-020, FIN-021, FIN-022, FIN-031. Decisions 15–22, assumptions A11–A17.
+- Requirements: [requirements/finisher.md](../../requirements/finisher.md) v5.0: FIN-034, FIN-036, FIN-037, FIN-038, FIN-039, FIN-040, and related FIN-017, FIN-020, FIN-021, FIN-022, FIN-031. Decisions 15–26, assumptions A11–A20.
 - Design: [design notes](../../output/designs/finisher/design-notes.md), `output/designs/finisher/task-list.html` and `index.html`.
-- Decisions: [ADR-0005 task order keys](decisions/ADR-0005-finisher-task-order-keys.md) (new), [ADR-0006 drag-and-drop library](decisions/ADR-0006-drag-and-drop-library.md) (new), [ADR-0002 RPC writes](decisions/ADR-0002-finisher-rpc-writes.md), [ADR-0003 SPA and Worker API](decisions/ADR-0003-spa-and-worker-api.md).
+- Decisions: [ADR-0007 Pomodoro sessions](decisions/ADR-0007-finisher-pomodoros.md) (new, v5), [ADR-0005 task order keys](decisions/ADR-0005-finisher-task-order-keys.md) (new), [ADR-0006 drag-and-drop library](decisions/ADR-0006-drag-and-drop-library.md) (new), [ADR-0002 RPC writes](decisions/ADR-0002-finisher-rpc-writes.md), [ADR-0003 SPA and Worker API](decisions/ADR-0003-spa-and-worker-api.md).
 
 ## Summary of changes
 
@@ -195,6 +195,87 @@ The library choice is in [ADR-0006](decisions/ADR-0006-drag-and-drop-library.md)
 - **Shortcut dates:** Today, Tomorrow (`addDays(today, 1)`) and Next week (the Monday of next week) are local dates in the browser's IANA zone (A1). They are computed with the existing `domain/dates.ts` helpers at click time.
 - **Server role:** the server validates the result against its own `today` from `p_tz`, ±5 years. The local date and time decide "passed today" for decision 22. The API is unaware of shortcuts. Date-only values are never converted to UTC.
 
+## Pomodoro (FIN-039, FIN-040)
+
+Decision: [ADR-0007](decisions/ADR-0007-finisher-pomodoros.md). The server stores the start and end, and the state is derived from `now()`:
+
+- **running** = `stopped_at is null and now() < ends_at`;
+- **completed** = `stopped_at is null and ends_at <= now()`;
+- **abandoned** = `stopped_at is not null`.
+
+### Schema (migration `supabase/migrations/20261021120000_finisher_pomodoros.sql`)
+
+```sql
+create table public.finisher_pomodoros (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  task_id uuid,
+  started_at timestamptz not null,
+  ends_at timestamptz not null,
+  duration_minutes smallint not null default 25 check (duration_minutes = 25),
+  stopped_at timestamptz,
+  foreign key (task_id, user_id) references public.finisher_tasks (id, user_id) on delete set null (task_id),
+  check (ends_at = started_at + make_interval(mins => duration_minutes)),
+  check (stopped_at is null or stopped_at >= started_at)
+);
+create index finisher_pomodoros_user_ends on public.finisher_pomodoros (user_id, ends_at);
+create index finisher_pomodoros_task on public.finisher_pomodoros (task_id) where task_id is not null;
+```
+
+- **Access:** RLS is enabled. Grants are revoked from `public`, `anon` and `authenticated`; `authenticated` gets `select` with the policy `user_id = (select auth.uid())`. There are no write grants.
+- **Helper:** `finisher_private.lock_pomodoro(p_uid)`, an advisory transaction lock keyed `'finisher_pomodoro:' || uid`.
+- **`finisher_start_pomodoro(p_task_id uuid, p_replace boolean default false) returns uuid`:**
+  1. Take the lock.
+  2. Select the task `where id = p_task_id and user_id = v_uid`: not found gives `PH404`; a status other than `open` gives `PH409`.
+  3. Look for a running session: `PH409 pomodoro_running` unless `p_replace`, which sets `stopped_at = now()` on it.
+  4. Insert `(now(), now() + 25 min)`.
+- **`finisher_stop_pomodoro(p_id uuid) returns void`:** select `for update` where the id and `user_id` match. Not found gives `PH404`; not running gives `PH409`.
+- **`finisher_delete_task`** (create or replace, same signature): before deleting, stop the task's running session.
+- **Grants:** `execute` to `authenticated` only for both new functions.
+
+### API
+
+| Route | Body (allowlist) | Function | Responses |
+| --- | --- | --- | --- |
+| `POST /api/finisher/tasks/:id/pomodoros` | `{ replace?: boolean }` | `finisher_start_pomodoro` | 200 `{ id }`; 404; 409 `not_allowed` (running, or task not Open); 422 (a non-boolean `replace`) |
+| `POST /api/finisher/pomodoros/:id/stop` | none | `finisher_stop_pomodoro` | 200; 404; 409 (already completed or stopped: the client refetches and says it counted) |
+
+These use the existing write guards (`requireUser`, the foreign-`Origin` refusal, JSON-only bodies), `private, no-store` and the error mapping.
+
+### Reads
+
+- **`GET /basics`** (`getFinisherBasics`) adds:
+  ```
+  pomodoro: {
+    active: { id, taskId: string | null, taskTitle: string | null, startedAt, endsAt } | null,
+    today: { completed, minutes },
+    serverNow,
+  }
+  ```
+  - **active:** `stopped_at is null and ends_at > now`, latest first, limit 1. The title comes from a second select on `finisher_tasks` by id, under RLS.
+  - **today:** count `stopped_at is null and ends_at >= zonedToUtc(now.date, tz) and ends_at <= now`; `minutes = completed × 25`.
+  - **serverNow:** the Worker's ISO instant at the time of the read.
+- **`GET /tasks/:id`** (`getTask`) adds `pomodoros: { today, total }` for that task: completed sessions only, with `today` bounded as above.
+- **No new GET routes:** the header, Today view, panel and task page already load these two.
+
+### SPA
+
+- **The clock hook** (`use-pomodoro-clock.ts`) takes the `basics.pomodoro` active session and the offset `serverNow − Date.now()` at fetch time. It ticks every second and derives the time left from timestamps.
+- **`PomodoroWatcher`** is mounted once by `TaskPanelLayout` (the Finisher tabs and the project page). It fires the completion message, the chime and a refresh once per session id. It doesn't write.
+- **Chime:** Web Audio oscillators (`components/chime.ts`), unlocked on the Start click. There is no audio file, and the CSP is unchanged because Web Audio needs no `media-src`.
+
+### Tests
+
+- **Database:**
+  - anonymous refused; direct writes refused;
+  - a second user's start or stop on the owner's data gives `PH404`, unchanged;
+  - one running session (`PH409`), replace, and two quick starts;
+  - Parked or Done tasks give `PH409`;
+  - stopping a completed or stopped session gives `PH409`;
+  - deleting a task abandons its running session and keeps completed ones (`task_id` null).
+- **API:** the allowlist, the guards and the error mapping on the new routes; `basics` and the task's `pomodoros` fields.
+- **Unit:** the time left, the clock-offset handling, and once-only completion.
+
 ## Threats and controls
 
 | Threat | Control |
@@ -209,6 +290,8 @@ The library choice is in [ADR-0006](decisions/ADR-0006-drag-and-drop-library.md)
 | Shared caching of personal order | `private, no-store` on the API. Lists live only in the in-memory query cache. |
 | XSS through task titles in drag announcements | Announcements are plain strings rendered by React or dnd-kit's live region as text. No `dangerouslySetInnerHTML`. CSP unchanged. |
 | Write abuse (rapid drags) | One small write per drop. The same bounds as other Finisher writes; no new public endpoint. The free Workers plan's request limits are ample for one user. |
+| Pomodoro: forged times or another user's session | Times come only from the database's `now()`. Start and stop filter by `auth.uid()`; foreign ids give `PH404`. There is no table write grant. |
+| Pomodoro: two sessions running | A per-user advisory lock plus the running check in `finisher_start_pomodoro`. |
 | New dependency risk | The packages are pinned exactly and reviewed in ADR-0006. They have no network access or HTML injection surface. |
 
 ## Concurrency and failure

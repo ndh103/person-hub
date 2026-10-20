@@ -3,6 +3,7 @@ import {
   parseDueInput,
   parseMarkInput,
   parseMoveInput,
+  parseStartPomodoro,
   parseNewProject,
   parseProjectAction,
   parseProjectInput,
@@ -97,6 +98,20 @@ export async function moveTask(ctx: FinisherContext, taskId: string, body: Body)
   const id = requireId(taskId);
   const input = unwrap(parseMoveInput(body, id));
   await rpc(ctx, "finisher_move_task", { p_task_id: id, p_after_id: input.afterId, p_before_id: input.beforeId });
+}
+
+/** FIN-039: start a 25-minute Pomodoro on an Open task (ADR-0007). */
+export async function startPomodoro(ctx: FinisherContext, taskId: string, body: Body): Promise<{ id: string }> {
+  const id = requireId(taskId);
+  const input = unwrap(parseStartPomodoro(body));
+  const pomodoroId = await rpc<string>(ctx, "finisher_start_pomodoro", { p_task_id: id, p_replace: input.replace });
+  return { id: pomodoroId };
+}
+
+/** FIN-039: stop (abandon) the running Pomodoro; it isn't counted. */
+export async function stopPomodoro(ctx: FinisherContext, pomodoroId: string): Promise<void> {
+  const id = requireId(pomodoroId);
+  await rpc(ctx, "finisher_stop_pomodoro", { p_id: id });
 }
 
 export async function deleteTask(ctx: FinisherContext, taskId: string): Promise<void> {

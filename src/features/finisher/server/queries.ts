@@ -49,6 +49,7 @@ import {
 } from "../types";
 import type { FinisherContext } from "./context";
 import { fromDbError } from "./errors";
+import { getPomodoroSummary, getTaskPomodoros } from "./pomodoros";
 
 /**
  * Finisher reads. Every query runs with the caller's session, so RLS limits
@@ -379,9 +380,10 @@ export async function getTask(ctx: FinisherContext, taskId: string): Promise<Tas
   if (result.error) throw fromDbError(result.error);
   if (!result.data) return null;
   const row = result.data as TaskRow & { notes: string | null; close_note: string | null; closed_at: string | null; created_at: string };
-  const index = await projectIndex(ctx);
+  const [index, pomodoros] = await Promise.all([projectIndex(ctx), getTaskPomodoros(ctx, row.id)]);
   return {
     ...toTaskItem(row, index, ctx.now),
+    pomodoros,
     notes: row.notes,
     reason: row.close_note,
     createdOn: localDateOf(row.created_at, ctx.timeZone),
@@ -396,10 +398,11 @@ export async function getFinisherBasics(ctx: FinisherContext): Promise<FinisherB
   const index = await projectIndex(ctx);
   const activeIds = [...index.values()].filter((project) => project.status === "active").map((project) => project.id);
 
-  const [schedules, dueOrOverdue, open] = await Promise.all([
+  const [schedules, dueOrOverdue, open, pomodoro] = await Promise.all([
     loadSchedules(ctx, activeIds, now.date, now.date),
     ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open").lte("due_date", now.date),
     ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open"),
+    getPomodoroSummary(ctx),
   ]);
   if (dueOrOverdue.error) throw fromDbError(dueOrOverdue.error);
   if (open.error) throw fromDbError(open.error);
@@ -412,6 +415,7 @@ export async function getFinisherBasics(ctx: FinisherContext): Promise<FinisherB
     today: now.date,
     projects: projectOptions(index),
     counts: { today: unmarkedToday + (dueOrOverdue.count ?? 0), tasks: open.count ?? 0, projects: activeIds.length },
+    pomodoro, // FIN-039, FIN-040
   };
 }
 

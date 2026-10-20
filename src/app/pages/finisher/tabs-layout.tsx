@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { finisherQueries } from "@/features/finisher/api";
 import { AddTaskButton } from "@/features/finisher/components/add-task-button";
 import { FinisherTabs } from "@/features/finisher/components/finisher-tabs";
+import { PomodoroHeader } from "@/features/finisher/components/pomodoro";
 import { TaskPanelLayout } from "@/features/finisher/components/task-panel";
 import { formatDate } from "@/lib/dates";
 
@@ -29,6 +30,8 @@ export function FinisherTabsLayout() {
           ) : (
             <Skeleton className="h-4 w-36" />
           )}
+          {/* FIN-040: Pomodoros completed today and the running session. */}
+          <PomodoroHeader />
         </div>
         {data ? <AddTaskButton today={data.today} projects={data.projects} /> : <Skeleton className="h-11 w-28" />}
       </div>

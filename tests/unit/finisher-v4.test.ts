@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { formatCountdown, formatPomodoroSummary, pomodoroProgress, remainingMs } from "@/features/finisher/domain/pomodoro";
 import { quickDueChoice, quickDueDate } from "@/features/finisher/domain/quick-due";
 import { availableMoves, moveBy, moveToIndex, neighbours } from "@/features/finisher/domain/task-order";
 import { parseDueInput, parseMoveInput, parseTaskAction } from "@/features/finisher/domain/validation";
@@ -109,5 +110,57 @@ describe("request parsing for the new endpoints", () => {
     expect(parseTaskAction({ action: "reopen" }, "2026-10-20")).toEqual({ ok: true, value: { action: "reopen", keepPosition: false } });
     expect(parseTaskAction({ action: "reopen", keepPosition: "yes" }, "2026-10-20").ok).toBe(false);
     expect(parseTaskAction({ action: "done", keepPosition: true }, "2026-10-20")).toEqual({ ok: true, value: { action: "done" } });
+  });
+});
+
+describe("Pomodoro countdown (FIN-039, FIN-040)", () => {
+  const startedAt = "2026-10-20T09:00:00.000Z";
+  const endsAt = "2026-10-20T09:25:00.000Z";
+  const at = (iso: string) => Date.parse(iso);
+
+  it("counts down from the server's end instant and never goes below zero", () => {
+    expect(formatCountdown(remainingMs(endsAt, at(startedAt)))).toBe("25:00");
+    expect(formatCountdown(remainingMs(endsAt, at("2026-10-20T09:24:59.500Z")))).toBe("00:01");
+    expect(formatCountdown(remainingMs(endsAt, at("2026-10-20T09:30:00.000Z")))).toBe("00:00");
+    // Rounds seconds up, so "00:00" shows only at the end.
+    expect(formatCountdown(1)).toBe("00:01");
+  });
+
+  it("works from timestamps, so a late tick (throttled background tab) still shows the right time", () => {
+    expect(formatCountdown(remainingMs(endsAt, at("2026-10-20T09:12:30.000Z")))).toBe("12:30");
+    expect(pomodoroProgress(startedAt, endsAt, at("2026-10-20T09:12:30.000Z"))).toBeCloseTo(0.5);
+    expect(pomodoroProgress(startedAt, endsAt, at("2026-10-20T08:00:00.000Z"))).toBe(0);
+    expect(pomodoroProgress(startedAt, endsAt, at("2026-10-20T10:00:00.000Z"))).toBe(1);
+  });
+
+  it("words today's summary", () => {
+    expect(formatPomodoroSummary(0, 0)).toBe("No Pomodoros yet today");
+    expect(formatPomodoroSummary(1, 25)).toBe("1 Pomodoro today · 25 min");
+    expect(formatPomodoroSummary(3, 75)).toBe("3 Pomodoros today · 75 min");
+  });
+});
+
+describe("Pomodoro 'today' boundary (FIN-040)", () => {
+  it("counts sessions that ended since local midnight in the caller's timezone", async () => {
+    const { getPomodoroSummary } = await import("@/features/finisher/server/pomodoros");
+    const filters: [string, unknown][] = [];
+    const builder: Record<string, unknown> = {};
+    for (const method of ["select", "is", "gt", "gte", "lte", "order", "limit", "eq"]) {
+      builder[method] = (...args: unknown[]) => {
+        if (method === "gte") filters.push([String(args[0]), args[1]]);
+        return builder;
+      };
+    }
+    builder.then = (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null, count: 0 });
+    const ctx = {
+      user: { id: "00000000-0000-4000-8000-00000000000a", email: null },
+      supabase: { from: () => builder },
+      timeZone: "Asia/Ho_Chi_Minh",
+      now: { date: "2026-10-20", time: "06:00" },
+    } as unknown as Parameters<typeof getPomodoroSummary>[0];
+    const summary = await getPomodoroSummary(ctx);
+    // Midnight on 20 Oct in Ho Chi Minh City (UTC+7) is 17:00 UTC on 19 Oct.
+    expect(filters).toEqual([["ends_at", "2026-10-19T17:00:00.000Z"]]);
+    expect(summary).toMatchObject({ active: null, today: { completed: 0, minutes: 0 } });
   });
 });

@@ -215,3 +215,26 @@ body.is-reordering, body.is-reordering * { cursor: grabbing !important; user-sel
   .finisher-page[data-panel="open"] .workspace { grid-template-columns: minmax(0, 1fr) 26rem; }
 }
 .panel-check[aria-pressed="true"] { background: var(--secondary); color: var(--secondary-foreground); border-color: var(--secondary); }
+
+/* ======================================================================
+   Pomodoro (FIN-039, FIN-040) in task-list.html.
+   ====================================================================== */
+
+/* Running session in the header: a small pulsing dot in --primary (decorative; the time is text). */
+.pomo-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  animation: pomo-pulse 2s ease-in-out infinite;
+}
+@keyframes pomo-pulse { 50% { opacity: 0.35; } }
+
+/* Progress bar fill: --primary on --muted; moves smoothly between one-second ticks. */
+.pomo-bar { transition: width 1s linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pomo-dot { animation: none; }
+  .pomo-bar { transition: none; }
+}

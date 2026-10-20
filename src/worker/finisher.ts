@@ -110,6 +110,14 @@ export const finisher = new Hono<Env>()
     await mutations.moveTask(c.var.finisher, c.req.valid("param").id, await body(c));
     return c.json({ ok: true });
   })
+  // FIN-039 Pomodoro: start on a task (optionally replacing the running one), stop.
+  .post("/tasks/:id/pomodoros", idParam, async (c) =>
+    c.json(await mutations.startPomodoro(c.var.finisher, c.req.valid("param").id, await body(c))),
+  )
+  .post("/pomodoros/:id/stop", idParam, async (c) => {
+    await mutations.stopPomodoro(c.var.finisher, c.req.valid("param").id);
+    return c.json({ ok: true });
+  })
   .delete("/tasks/:id", idParam, async (c) => {
     await mutations.deleteTask(c.var.finisher, c.req.valid("param").id);
     return c.json({ ok: true });

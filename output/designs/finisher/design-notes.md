@@ -227,6 +227,63 @@ ORDER
 - **Menu resize:** do not close the menu on height-only `resize` events. Phone browsers fire them when the address bar hides.
 - **Today tab:** use the same row and handle in the Overdue and Due today sections. Sessions and Done today have no handles.
 
+## Pomodoro (FIN-039, FIN-040)
+
+Added 2026-10-20 for requirements v5.0 (decisions 23–26). It is in `task-list.html`: open a task, for example `task-list.html#task=t2`. The prototype control **Fast Pomodoro** (on by default) makes a session last 25 seconds, so completion can be reviewed.
+
+### Pomodoro block (side panel and task page)
+
+It sits under the Mark done / Edit actions and above the facts, separated by a rule. Its heading is "Pomodoro" (`text-sm font-medium`).
+
+| State | Shows |
+| --- | --- |
+| Idle, Open task | **Start Pomodoro · 25 min**: the panel's one primary (orange) button, with a timer icon. |
+| Running for this task | <ul><li>A mono `text-4xl` countdown, `role="timer"`, labelled "Time left on this Pomodoro".</li><li>An 8px progress bar (`--primary` on `--muted`, decorative; the time is the text).</li><li>An outline **Stop** button. Focus moves to Stop after starting.</li></ul> |
+| Running for another task | "A Pomodoro is running for 'X': 18:42 left." plus an outline **Switch to this task** (Open tasks only). |
+| Parked, Done, Let go | No Start; counts only. |
+| Always | "Pomodoros: 2 today · 9 total" (mono meta). |
+
+- **Confirmations** (`AlertDialog`):
+  - Stop: "Stop this Pomodoro? It won't be counted."
+  - Switch: "Stop the Pomodoro for 'X' and start one for 'Y'? The stopped session won't count."
+  - Cancel is labelled **Keep going** and gets the initial focus, so Enter doesn't abandon a session by accident.
+- **Completion:**
+  - a toast "Pomodoro complete: 'title'" with **Mark task done**;
+  - a polite announcement;
+  - a two-note chime (880 and 1319 Hz sine, about 0.8 s, gain 0.2) built with Web Audio, with no audio file;
+  - the counts update.
+  - The `AudioContext` is created or resumed on the Start click (autoplay rules).
+
+### Header (every Finisher tab)
+
+Under "Today · 20 Oct 2026":
+- a muted mono pill with a timer icon and the count, read as "3 Pomodoros completed today";
+- while a session runs, a chip with a pulsing `--primary` dot (static under reduced motion), the mono countdown, and the truncated task title. The chip is a link: the panel on laptop, the task page on phone.
+
+The row wraps at 320px. The chip is 44px tall on phones and 32px from `sm`.
+
+### Today tab
+
+The summary line gains "· 3 Pomodoros today · 75 min", or "· No Pomodoros yet today". The prototype shows the Tasks tab, so this line is specified here only.
+
+### Mapping and notes for the Developer
+
+- **Components:** `Button` (default for Start, outline for Stop and Switch), `AlertDialog`, the existing toast with `actionProps`, `Badge`-like pill markup for the header count.
+- **Countdown:** compute the time left from server timestamps on every tick, rather than counting ticks, so throttled background tabs and reloads stay correct. Update the text once a second; do not use `aria-live` on the timer.
+- No foundation tokens were added. `.pomo-dot` and `.pomo-bar` in `styles.css` use foundation variables only.
+
+### Checks
+
+A scripted headless Edge run of `task-list.html` at 1280px (scratch, not committed) passed:
+- idle → Start (focus on Stop; timer role present; header chip appears);
+- another task shows Switch; the confirmation names both tasks; confirming starts the new task;
+- after 25 s the header count goes from 2 to 3, the task count from 1 to 2, the block returns to Start, and the toast has "Mark task done".
+
+**Not checked:**
+- the chime (headless has no audio);
+- 320px and dark mode screenshots of the new states;
+- a screen reader.
+
 ## ui-ux-pro-max research
 
 **2026-10-20 (Tasks list).** Python is not installed, so the skill's CSV data was searched with grep for "drag", "reorder", "side panel", and "master-detail". One relevant row: *Accessibility / Dragging Movements*: WCAG 2.2 AA needs a single-pointer alternative, for example "Move up and Move down buttons beside drag handle". This was adopted as the Order group in the ⋯ menu, rather than visible arrow buttons on every row, which would not fit at 320px. Nothing was found for side panels or list-detail layouts, so those choices are the designer's own judgement.

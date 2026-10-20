@@ -26,6 +26,8 @@ export type TaskDetail = TaskItem & {
   createdOn: LocalDate;
   closedOn: LocalDate | null;
   projectStatus: ProjectStatus | null;
+  /** Completed Pomodoros for this task (FIN-040). */
+  pomodoros: { today: number; total: number };
 };
 
 export type ProjectOption = { id: string; title: string; status: ProjectStatus };
@@ -40,7 +42,30 @@ export type FinisherTabCounts = {
   projects: number;
 };
 
-export type FinisherBasics = { today: LocalDate; projects: ProjectOption[]; counts: FinisherTabCounts };
+/** The caller's running Pomodoro (FIN-039). Instants are ISO strings from the server clock. */
+export type PomodoroActive = {
+  id: string;
+  /** null when the task was deleted mid-session (that session is then abandoned, so rarely seen). */
+  taskId: string | null;
+  taskTitle: string | null;
+  startedAt: string;
+  endsAt: string;
+};
+
+export type PomodoroSummary = {
+  active: PomodoroActive | null;
+  /** Completed sessions that ended on the caller's local today (FIN-040). */
+  today: { completed: number; minutes: number };
+  /** The server's clock when this was read, so the countdown can ignore a wrong device clock. */
+  serverNow: string;
+};
+
+export type FinisherBasics = {
+  today: LocalDate;
+  projects: ProjectOption[];
+  counts: FinisherTabCounts;
+  pomodoro: PomodoroSummary;
+};
 
 export type SessionItem = {
   slotId: string;

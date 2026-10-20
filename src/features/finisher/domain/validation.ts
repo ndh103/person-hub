@@ -128,6 +128,12 @@ export function parseDueInput(raw: Record<string, unknown>, today: LocalDate): P
   return done(c, { dueDate, dueTime });
 }
 
+/** FIN-039: start a Pomodoro; `replace` stops the running one first (Switch). */
+export function parseStartPomodoro(raw: Record<string, unknown>): Parsed<{ replace: boolean }> {
+  if (raw.replace !== undefined && typeof raw.replace !== "boolean") return { ok: false, errors: { replace: "invalid" } };
+  return { ok: true, value: { replace: raw.replace === true } };
+}
+
 export type MoveInput = { afterId: string | null; beforeId: string | null };
 
 /**

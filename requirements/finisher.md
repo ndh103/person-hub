@@ -4,9 +4,9 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 4.1 (2026-10-20; v4.1 records design-review decisions 21–22). Adds FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
+- Version: 5.0 (2026-10-20). Adds FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26. v4.1 (same day) recorded design-review decisions 21–22; v4.0 added FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
 - Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), and 2026-10-20 ("for web version, i don't need to open a task detail in a separate page… a quick menu item to quickly assign a task to: Today, Tomorrow, and Next Week… the Tomorrow button (next to Today button)… drag and drop to rearrange the order of tasks in each section"), plus answers to clarifying questions.
-- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts, and the Tasks list with side panel, drag order and quick due-date menu](../output/designs/finisher/design-notes.md) (`index.html`, `task-list.html`; other screens not yet designed). Architecture: [docs/architecture/finisher.md](../docs/architecture/finisher.md) (v4 task enhancements; ADR-0005 order keys, ADR-0006 drag library). Test report: not yet created.
+- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts, and the Tasks list with side panel, drag order and quick due-date menu](../output/designs/finisher/design-notes.md) (`index.html`, `task-list.html`; other screens not yet designed). Architecture: [docs/architecture/finisher.md](../docs/architecture/finisher.md) (v4 task enhancements and v5 Pomodoro; ADR-0005 order keys, ADR-0006 drag library, ADR-0007 Pomodoro sessions). Test report: not yet created.
 
 ## Goal and target user
 
@@ -25,6 +25,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 - Tasks: create, edit, due date with optional time (with Today, Tomorrow, and Next week shortcuts), optional link to a project, mark done, park, let go, reopen, delete.
 - Task details in a side panel next to the list on laptop (FIN-036); quick rescheduling to Today, Tomorrow, or Next week from a task's menu (FIN-037); the user's own order of open tasks, changed by drag and drop (FIN-038).
+- Pomodoro focus sessions of 25 minutes started from a task's details (FIN-039), and counts of completed sessions today and per task (FIN-040).
 - Projects: create, edit, a goal and a "Done when", optional target date, weekly slots, finish, park, let go, reopen, delete.
 - Sessions: generated from slots for each local date; marked Done or Skipped for today and the previous 7 days.
 - Weekly follow-through rate for each project.
@@ -36,7 +37,8 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 - Areas or life-area grouping (decided 2026-10-10: Projects and Tasks only).
 - Streaks (decided: weekly rate only).
 - Task checklists or sub-steps (decided: tasks stay simple).
-- Active-item limit, Waiting room, next step, 10-minute timer, staleness indicator, Finish → Event (retired from v1).
+- Active-item limit, Waiting room, next step, 10-minute timer, staleness indicator, Finish → Event (retired from v1). The Pomodoro (FIN-039) is new scope from 2026-10-20, not a return of the retired 10-minute timer.
+- For Pomodoros: breaks and long breaks, pause, lengths other than 25 minutes, browser or push notifications, and history or charts beyond today and per-task totals.
 - Recurring tasks, other than project slots.
 - Reminders, notifications, calendar sync, email, push.
 - Monthly or custom recurrence; slots repeat weekly only.
@@ -248,6 +250,53 @@ The user decides the order of their open tasks. In each task section they can dr
 
 - A user can reorder only their own open tasks (FIN-017). The server rejects a reorder that refers to a task the user does not own or a task that is not Open, and nothing changes. Keeping a task within its section is enforced by the interface; the server does not need to know about sections.
 
+### FIN-039 Pomodoro session on a task (Must)
+
+A Pomodoro is a 25-minute focus session tied to one task (decision 23). It helps the user start on a task and stay with it.
+
+**Starting**
+
+- The task's details show a **Pomodoro** block: in the side panel on laptop (FIN-036) and on the task page. For an **Open** task it offers **Start Pomodoro · 25 min** (A18). Parked, Done, and Let go tasks show their counts (FIN-040) but no Start.
+- Given no session is running, when the user chooses Start, then a session starts at once. The start time is set by the server, and the block shows the running state. A polite announcement says "Pomodoro started for 'title'. 25 minutes."
+- **One at a time.** Only one session runs at a time for the user, across all tasks and devices. Given a session is running for task X, the details of another task Y offer **Switch to this task** instead of Start. It asks "Stop the Pomodoro for 'X' and start one for 'Y'? The stopped session won't count." Confirming stops X (not counted) and starts Y in one step.
+
+**Running**
+
+- The block shows the time left as mm:ss, counting down, with a progress bar and the task title. The countdown is worked out from the server's start time, so it is the same after a reload, after navigating away, and on another device.
+- **Stop** asks "Stop this Pomodoro? It won't be counted." Confirming abandons the session (decision 24). There is no pause.
+
+**Completing**
+
+- When 25 minutes have passed without Stop, the session is **completed** and counts (FIN-040). This holds even if the app was closed at that moment: only Stop abandons a session (A20). Nothing else changes, and the task's status is untouched.
+- If the app is open in the browser at that moment, on any Finisher page, then:
+  - a message says "Pomodoro complete: 'title'", with a **Mark task done** action (FIN-021) when the task is still Open or Parked;
+  - a short chime plays (decision 25). Browsers may block sound after a reload until the user clicks something; the message still shows.
+  - The counts update without a reload.
+- There are no browser or push notifications (decision 25; brief).
+
+**Permissions and failure**
+
+- Only the owner can start or stop sessions for their own tasks (FIN-017). Another user's task or session behaves as if it does not exist.
+- If starting or stopping fails, an error message appears and the block shows the server's state. If Stop arrives after the 25 minutes have passed, the session counts as completed, and the message says so.
+
+**Accessibility**
+
+- The countdown has the timer role. It is not announced every second; the start, stop, and completion are announced politely.
+- Start, Stop, and Switch are real buttons at least 44px tall. Dialogs follow FIN-018. The progress bar is not the only cue: the time left is always shown as text.
+
+### FIN-040 Pomodoro summary (Must)
+
+Completed sessions are counted (decision 26):
+
+- **Today tab:** the summary line adds "N Pomodoros today · M min", for example "3 Pomodoros today · 75 min", or "No Pomodoros yet today".
+- **Finisher header**, on every Finisher page:
+  - a small count pill next to the "Today · 20 Oct 2026" line, read as "3 Pomodoros completed today";
+  - while a session runs, a compact countdown with the task title, which opens that task's details (the panel on laptop, the task page on phone).
+- **Task details:** "Pomodoros: 2 today · 9 total" for that task.
+- **Which day a session counts for:** the user's local date on which it **ended** (started time + 25 minutes; business rules, A1). Abandoned sessions are never counted.
+- **Deleted tasks:** deleting a task keeps its completed sessions in the day's count; their link to the task is removed (A19).
+- The counts update after any start, stop, or completion without a reload. They are left out while loading, as the tab counts are (FIN-035).
+
 ### FIN-023 Create a project (Must)
 
 - Given the user chooses "New project", when they submit a valid title and Done when, then an Active project is created. The same form can add slots (FIN-025), or the user can add them later.
@@ -342,7 +391,7 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 
 ### FIN-018 Responsive layout and accessibility (Must)
 
-- Phone (< 1024px): single column. The tabs are a horizontally fitted segment control, or a select if they do not fit at 320px. There is no horizontal page overflow at 320px. Check-off targets are at least 44px. Secondary actions (Skip, quick due dates, Move up/down, Park, Let go, Delete) sit in a per-item menu. Selecting a task opens the task page.
+- Phone (< 1024px): single column. The tabs are a horizontally fitted segment control, or a select if they do not fit at 320px. There is no horizontal page overflow at 320px. Check-off targets are at least 44px. Secondary actions (Skip, quick due dates, Move up/down, Park, Let go, Delete) sit in a per-item menu. Selecting a task opens the task page, which holds the Pomodoro block (FIN-039). The header's running countdown (FIN-040) wraps under the date line at 320px rather than overflowing.
 - Laptop (≥ 1024px): the Today view may show sessions and tasks side by side. Project detail may show the slots and weekly rates beside the task list. Selecting a task opens the side panel (FIN-036).
 - Check-off controls are real buttons or checkboxes, with labels that include the item, such as "Mark 'Watch ABK program' done". They announce their pressed or checked state.
 - Every action can be done with the keyboard, with visible focus. Dialogs trap focus and return it to the element that opened them. Form errors are linked to their fields and announced. Status changes are announced politely.
@@ -398,6 +447,13 @@ From the user, 2026-10-20 (design review):
 21. Reordering starts from a visible drag handle on each row, on phones too (not a long-press).
 22. For a task due today at a time that has passed, the quick **Today** item stays enabled and clears the time.
 
+From the user, 2026-10-20 (Pomodoro):
+
+23. A Pomodoro session is a fixed 25 minutes, started from a task's details.
+24. There is no pause. Stopping early abandons the session, and it is not counted.
+25. When a session ends, the open app shows a message and plays a short chime. There are no browser notifications.
+26. Completed sessions are summarised on the Today tab, in the Finisher header, and per task in its details (today and total).
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -416,6 +472,9 @@ From the user, 2026-10-20 (design review):
 - A15. Undo after a quick reschedule restores the date and time but not the previous position in the order.
 - A16. Existing open tasks start in the order each section used before v4, so nothing looks shuffled on release.
 - A17. The side panel threshold is the same 1024px as the rest of the layout (FIN-018). If the window becomes narrower, the panel closes instead of switching to the task page.
+- A18. Pomodoros can be started only for Open tasks. The request did not say; a Parked task is set aside on purpose, and a closed one is finished.
+- A19. Deleting a task keeps its completed Pomodoros in the day's count, without the task link (like A5 for projects).
+- A20. A session that reaches 25 minutes while the app is closed still counts. Only Stop abandons a session; otherwise the count would depend on keeping a tab open.
 
 ## Open questions
 
@@ -427,6 +486,12 @@ From the user, 2026-10-20 (design review):
 
 ## Change notes
 
+- **2026-10-20, v5.0.** Added FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26, and assumptions A18–A20. FIN-018 notes the timer in the header on phones. The retired 10-minute timer (FIN-008) is not revived. **Affects:**
+  - the Finisher design (the Pomodoro block in the panel and on the task page, the header pill, the Today line);
+  - architecture (a new `finisher_pomodoros` table, start and stop functions, ADR-0007);
+  - `GET /api/finisher/basics` and `GET /api/finisher/tasks/:id` (Pomodoro fields), with new start and stop routes;
+  - the task panel, task page, Finisher header and Today view;
+  - tests (ownership, one running session, completion and day boundaries).
 - **2026-10-20, v4.1.** After the design review: decision 21 (drag handle, also on phones) added to FIN-038's interaction rules, and decision 22 (Today stays enabled for a task due today at a passed time) added to FIN-037. **Affects:** the FIN-037 menu logic and its tests.
 - **2026-10-20, v4.0.** Three task enhancements (decisions 15–20, assumptions A11–A17):
   - **FIN-034 changed:** adds a **Tomorrow** shortcut between Today and Next week, in both Add and Edit.

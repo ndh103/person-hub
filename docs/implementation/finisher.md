@@ -13,6 +13,61 @@
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
 
+## Change 2026-10-20: Pomodoro sessions and summary (v5.0)
+
+Inputs:
+- [requirements/finisher.md](../../requirements/finisher.md) v5.0: FIN-039, FIN-040; decisions 23–26; A18–A20.
+- [Design](../../output/designs/finisher/design-notes.md#pomodoro-fin-039-fin-040): `task-list.html`.
+- [Architecture](../architecture/finisher.md#pomodoro-fin-039-fin-040), [ADR-0007](../architecture/decisions/ADR-0007-finisher-pomodoros.md).
+
+### What was built
+
+| ID | Where |
+| --- | --- |
+| FIN-039 | <ul><li>**Migration** `20261021120000_finisher_pomodoros.sql`:<ul><li>the `finisher_pomodoros` table (owner SELECT only) and `unique (id, user_id)` on `finisher_tasks`, which the composite foreign key needs;</li><li>`finisher_start_pomodoro` (Open tasks only; one running session under a per-user lock; `p_replace` for Switch) and `finisher_stop_pomodoro`;</li><li>`finisher_delete_task` now abandons a running session first.</li></ul></li><li>**Routes:** `POST /api/finisher/tasks/:id/pomodoros` (`{ replace? }`) and `POST /api/finisher/pomodoros/:id/stop`.</li><li>**UI:** `components/pomodoro.tsx`, `PomodoroBlock` in the side panel and on the task page: Start, a countdown with `role="timer"`, a progress bar, Stop and Switch behind an `AlertDialog` whose Cancel ("Keep going") gets the initial focus, and polite announcements.</li><li>**Completion:** `PomodoroWatcher` (in `TaskPanelLayout` and on the task page) shows "Pomodoro complete" with **Mark task done**, plays the chime and refreshes, once per session.</li><li>**Clock and chime:** in `pomodoro-clock.ts`, a shared one-second ticker; the server-clock offset comes from `serverNow`; a Web Audio chime unlocked on the Start click.</li></ul> |
+| FIN-040 | <ul><li>`GET /basics` adds `pomodoro { active, today, serverNow }` (`server/pomodoros.ts`). "Today" counts sessions that ended since local midnight (`zonedToUtc`).</li><li>`GET /tasks/:id` adds `pomodoros { today, total }`.</li><li>`PomodoroHeader` in the Finisher header shows the count pill and a running chip that opens the panel on laptop or the task page on phone.</li><li>The Today summary line adds "N Pomodoros today · M min".</li></ul> |
+
+### Decisions and deviations
+
+- **Deleting a task abandons its running session.** This is an architecture addition (ADR-0007); without it, a session for a deleted task would run and count.
+- **Where the header appears:** it is on the Finisher tabs. Project pages and the task page have no Finisher header, so no pill appears there; the panel or page block shows the counts. The completion message also shows on project pages and the task page (the watcher is mounted there). It doesn't show on the New and Edit project pages or outside Finisher; the count is still right on return.
+- **Stop sends `{}`:** the write guard requires a JSON content type on every POST.
+- **Bundle:** the main chunk is +37.7 kB minified (+11.3 kB gzip): from 1,179.98 to 1,217.67 kB.
+
+### Checks (2026-10-20)
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Pass |
+| `npm run lint` | 0 errors. The same 6 fast-refresh warnings as before; none in new files. |
+| `npm test` | **241 passed** in 13 files. |
+| Database tests | 96 passed (+11 in `finisher-pomodoro.test.ts`). They cover: <ul><li>anonymous refused; direct insert, update and delete refused; no access to the lock helper;</li><li>a second user cannot start on the owner's task, stop the owner's session or read it (`PH404`);</li><li>the owner and the time come from the session and the database clock;</li><li>one running session; Switch abandons the first; each user has their own;</li><li>Parked and Done tasks give `PH409`;</li><li>Stop works, and stopping a stopped or completed session gives `PH409`;</li><li>a session that runs out without Stop counts (A20);</li><li>deleting a task keeps completed sessions unlinked and abandons the running one.</li></ul> A mutation check (the owner filter removed from Start) made two ownership tests fail. |
+| API tests | +4: <ul><li>start passes only `replace` (a client `startedAt` and `user_id` are ignored);</li><li>a non-boolean `replace` gives 422 with no database call; a running session gives 409;</li><li>stop's 200, 404 and 409 mapping;</li><li>foreign Origin 403, form body 415 and no-token 401 on the new routes.</li></ul> |
+| Unit tests | <ul><li>Countdown, progress and summary wording.</li><li>The basics stub now asserts the `pomodoro` summary (title, 3 sessions = 75 min, `serverNow`).</li><li>The "today" boundary for `Asia/Ho_Chi_Minh` is `2026-10-19T17:00Z`.</li></ul> |
+| `npm run build` | Pass, with the existing chunk-size warning. |
+| CSP / Permissions-Policy | No change needed: Web Audio oscillators fetch nothing, and there is no autoplay directive. |
+
+### Not verified
+
+- **No browser run.** This needs a Supabase session, as before. Untested in practice:
+  - the real countdown and the chime;
+  - completion while the app is open and while it is closed;
+  - the Switch dialog;
+  - the header chip at 320px;
+  - dark mode;
+  - a screen reader on the timer.
+- **No component test of once-only completion:** React Testing Library is not installed. The guard is the `announcedCompletions` set in `pomodoro-clock.ts`.
+- **No live database:** the migration has not been applied anywhere. Apply it after `20261020120000_finisher_task_order.sql`, under your own authorization. Rollback: drop the two functions and the table, restore the previous `finisher_delete_task`, and drop the `finisher_tasks_id_user` constraint. This loses the Pomodoro history only.
+
+### Tester
+
+- Start a session from the panel and from the task page. Reload mid-session, open it on a second device, and check the countdown matches.
+- Switch from another task (the first session is not counted). Stop (not counted).
+- Let a session finish with the tab open: the message, **Mark task done**, the chime (after a click since load) and the counts.
+- Let one finish with the tab closed: the count still rises.
+- Header chip: on laptop it opens the panel; on phone, the task page. Check 320px wrapping and dark mode.
+- On a live project, call `finisher_start_pomodoro` and `finisher_stop_pomodoro` through PostgREST as a second account and as `anon`.
+
 ## Change 2026-10-20: Tomorrow shortcut, side panel, quick due date, task order (v4.1)
 
 Inputs:

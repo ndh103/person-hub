@@ -2,6 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "@/components/link";
 import { cn } from "@/lib/utils";
+import { formatPomodoroSummary } from "../../domain/pomodoro";
+import { usePomodoro } from "../pomodoro-clock";
 import { formatDuration, type LocalDate } from "../../domain/dates";
 import { finisherQueries } from "../../api";
 import type { ProjectOption, SessionItem, TaskItem } from "../../types";
@@ -49,6 +51,7 @@ export function TodayView() {
   const { now } = data;
   // With the side panel open there is room for one column only (FIN-036).
   const panelOpen = Boolean(useTaskPanel()?.selectedId);
+  const pomodoroToday = usePomodoro().summary?.today; // FIN-040
   const overdueCount = data.overdue.length;
   const revisitTotal = data.revisitDue.tasks + data.revisitDue.projects;
   const nothingToday =
@@ -61,6 +64,7 @@ export function TodayView() {
         <p className="font-mono text-[0.8125rem] text-muted-foreground" role="status">
           {data.sessionsDone} of {data.sessionsTotal} {data.sessionsTotal === 1 ? "session" : "sessions"} done today ·{" "}
           {overdueCount} overdue {overdueCount === 1 ? "task" : "tasks"}
+          {pomodoroToday ? ` · ${formatPomodoroSummary(pomodoroToday.completed, pomodoroToday.minutes)}` : ""}
         </p>
         {revisitTotal > 0 ? (
           <p className="text-sm">

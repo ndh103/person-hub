@@ -293,6 +293,56 @@ describe("writes", () => {
     expect(rpc.mock.calls.map(([, args]) => (args as { p_keep_position: boolean }).p_keep_position)).toEqual([true, false, false]);
   });
 
+  it("starts a Pomodoro with only `replace`; the owner and the time come from the server (FIN-039)", async () => {
+    signedIn();
+    rpc.mockResolvedValue({ data: "8b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d99", error: null });
+    const response = await call("POST", `/api/finisher/tasks/${TASK_ID}/pomodoros`, {
+      replace: true,
+      startedAt: "2020-01-01T00:00:00Z",
+      user_id: "00000000-0000-4000-8000-00000000000b",
+    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({ id: "8b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d99" });
+    expect(rpc).toHaveBeenCalledWith("finisher_start_pomodoro", { p_task_id: TASK_ID, p_replace: true });
+    await call("POST", `/api/finisher/tasks/${TASK_ID}/pomodoros`, {});
+    expect(rpc).toHaveBeenLastCalledWith("finisher_start_pomodoro", { p_task_id: TASK_ID, p_replace: false });
+  });
+
+  it("refuses a non-boolean replace without a database call, and maps a running session to 409", async () => {
+    signedIn();
+    const invalid = await call("POST", `/api/finisher/tasks/${TASK_ID}/pomodoros`, { replace: "yes" });
+    expect(invalid.status).toBe(422);
+    expect(rpc).not.toHaveBeenCalled();
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PH409", message: "pomodoro_running" } });
+    const running = await call("POST", `/api/finisher/tasks/${TASK_ID}/pomodoros`, {});
+    expect(running.status).toBe(409);
+    expect(await running.json()).toEqual({ error: "not_allowed" });
+  });
+
+  it("stops a Pomodoro by id; foreign or finished sessions map to 404 and 409", async () => {
+    signedIn();
+    rpc.mockResolvedValueOnce({ data: null, error: null });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PH404", message: "not_found" } });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PH409", message: "not_running" } });
+    expect((await call("POST", `/api/finisher/pomodoros/${TASK_ID}/stop`, {})).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("finisher_stop_pomodoro", { p_id: TASK_ID });
+    expect((await call("POST", `/api/finisher/pomodoros/${TASK_ID}/stop`, {})).status).toBe(404);
+    expect((await call("POST", `/api/finisher/pomodoros/${TASK_ID}/stop`, {})).status).toBe(409);
+    expect((await call("POST", "/api/finisher/pomodoros/not-an-id/stop", {})).status).toBe(404);
+  });
+
+  it("guards the Pomodoro writes: foreign origin, form bodies and missing tokens", async () => {
+    signedIn();
+    const foreign = await call("POST", `/api/finisher/tasks/${TASK_ID}/pomodoros`, {}, { origin: "https://evil.test" });
+    const form = await call("POST", `/api/finisher/pomodoros/${TASK_ID}/stop`, "x=1", { "content-type": "application/x-www-form-urlencoded" });
+    expect(foreign.status).toBe(403);
+    expect(form.status).toBe(415);
+    getClaims.mockResolvedValue({ data: null, error: { message: "invalid JWT" } });
+    expect((await call("POST", `/api/finisher/pomodoros/${TASK_ID}/stop`, {}, { authorization: "" })).status).toBe(401);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("marks a session idempotently through one function call", async () => {
     signedIn();
     rpc.mockResolvedValue({ data: "done", error: null });
