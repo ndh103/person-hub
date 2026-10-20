@@ -153,7 +153,7 @@ describe("ownership (FIN-017): another user's records behave as if they don't ex
   it("the database refuses cross-user references even for the owner role", async () => {
     // Defence in depth: composite foreign keys tie child rows to the parent's owner.
     const state = await sqlState(
-      db.admin.query("insert into public.finisher_tasks (user_id, project_id, title) values ($1, $2, 'x')", [
+      db.admin.query("insert into public.finisher_tasks (user_id, project_id, title, sort_key) values ($1, $2, 'x', 999)", [
         USER_B,
         projectId,
       ]),

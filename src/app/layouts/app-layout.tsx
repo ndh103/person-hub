@@ -34,7 +34,8 @@ export function AppLayout({ account }: { account: string | null }) {
           >
             <AppTopBar />
             <div className="flex-1 rounded-t-2xl bg-background text-foreground lg:rounded-2xl lg:shadow-elev-raised lg:ring-1 lg:ring-sidebar-border">
-              <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14">
+              {/* Wider while the Finisher task side panel is open, so the list keeps its room (FIN-036). */}
+              <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14 lg:has-[[data-task-panel-open]]:max-w-7xl lg:has-[[data-task-panel-open]]:px-8">
                 <Outlet />
               </div>
             </div>

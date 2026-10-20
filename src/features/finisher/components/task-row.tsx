@@ -9,16 +9,28 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { finisherApi } from "../api";
-import { formatDate, formatRelativeDate, type LocalDate } from "../domain/dates";
+import { browserTimeZone, finisherApi } from "../api";
+import {
+  DEFAULT_TIME_ZONE,
+  formatDate,
+  formatRelativeDate,
+  formatWeekdayDate,
+  zonedNow,
+  type LocalDate,
+  type LocalTime,
+} from "../domain/dates";
+import { QUICK_DUE_KINDS, QUICK_DUE_LABELS, quickDueChoice, type QuickDueChoice } from "../domain/quick-due";
+import type { MoveTarget } from "../domain/task-order";
 import { generalErrorMessage } from "../messages";
 import type { ProjectOption, TaskDetail, TaskItem } from "../types";
 import { DeleteDialog, LetGoDialog, ParkDialog } from "./lifecycle-dialogs";
+import { isPlainClick, useTaskPanel } from "./task-panel-context";
 import { TaskFormDialog } from "./task-form-dialog";
 import { useFinisherRefresh } from "./use-refresh";
 
@@ -50,21 +62,29 @@ export function TaskDue({ task, today }: { task: TaskItem; today: LocalDate }) {
   );
 }
 
+/** After a refresh moved a task to another section, its menu trigger is gone: put focus on its title. */
+function focusTaskIfLost(id: string) {
+  const active = document.activeElement;
+  if (active && active !== document.body && active.isConnected) return;
+  document.querySelector<HTMLElement>(`[data-task-title="${id}"]`)?.focus();
+}
+
 /**
  * Check-off control (FIN-021): a real button that announces its pressed
  * state. Completing is optimistic; failure reverts it with a message, and
- * success offers Undo (reopen).
+ * success offers Undo, which reopens the task in its old place (FIN-038).
+ * `labelled` is the side panel's "Mark done" button (FIN-036).
  */
-export function TaskCheck({ task }: { task: TaskItem }) {
+export function TaskCheck({ task, variant = "icon" }: { task: TaskItem; variant?: "icon" | "labelled" }) {
   const refresh = useFinisherRefresh();
   const [optimisticDone, setOptimisticDone] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const done = optimisticDone ?? task.status === "done";
 
-  async function setDone(next: boolean) {
+  async function setDone(next: boolean, keepPosition = false) {
     setBusy(true);
     setOptimisticDone(next);
-    const result = await finisherApi("POST", `/api/finisher/tasks/${task.id}/actions`, { action: next ? "done" : "reopen" });
+    const result = await finisherApi("POST", `/api/finisher/tasks/${task.id}/actions`, next ? { action: "done" } : { action: "reopen", keepPosition });
     setBusy(false);
     if (!result.ok) {
       setOptimisticDone(null);
@@ -75,10 +95,27 @@ export function TaskCheck({ task }: { task: TaskItem }) {
       toast.add({
         title: `Done: “${task.title}”`,
         type: "success",
-        actionProps: { children: "Undo", onClick: () => void setDone(false) },
+        actionProps: { children: "Undo", onClick: () => void setDone(false, true) },
       });
     }
     void refresh().finally(() => setOptimisticDone(null));
+  }
+
+  if (variant === "labelled") {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        aria-pressed={done}
+        disabled={busy}
+        className="h-11 aria-pressed:bg-secondary aria-pressed:text-secondary-foreground"
+        onClick={() => void setDone(!done)}
+      >
+        {done ? <CheckIcon data-icon="inline-start" /> : <CircleIcon data-icon="inline-start" />}
+        {done ? "Done" : "Mark done"}
+        <span className="sr-only"> — {task.title}</span>
+      </Button>
+    );
   }
 
   return (
@@ -96,15 +133,61 @@ export function TaskCheck({ task }: { task: TaskItem }) {
   );
 }
 
+const QUICK_DUE_WORDS = { today: "today", tomorrow: "tomorrow", nextWeek: "next week" } as const;
+
+const MOVE_LABELS: Record<MoveTarget, string> = {
+  top: "Move to top",
+  up: "Move up",
+  down: "Move down",
+  bottom: "Move to bottom",
+};
+
+/** Reorder controls a sortable section passes to its rows (FIN-038). */
+export type RowReorder = { moves: MoveTarget[]; onMove: (target: MoveTarget) => void };
+
+/**
+ * FIN-037: Today / Tomorrow / Next week for an Open task. Rendered only while
+ * the menu is open, so "now" is read when the menu opens.
+ */
+function QuickDueItems({ task, onChoose }: { task: TaskItem; onChoose: (choice: QuickDueChoice) => void }) {
+  const now = zonedNow(browserTimeZone() ?? DEFAULT_TIME_ZONE);
+  return (
+    <DropdownMenuGroup>
+      <DropdownMenuLabel className="font-mono text-[0.6875rem] tracking-[0.12em] uppercase">Due</DropdownMenuLabel>
+      {QUICK_DUE_KINDS.map((kind) => {
+        const choice = quickDueChoice(kind, task, now);
+        const caption = formatWeekdayDate(choice.date);
+        return (
+          <DropdownMenuItem
+            key={kind}
+            className="min-h-11 justify-between gap-3"
+            disabled={choice.current}
+            aria-label={`Set due date to ${QUICK_DUE_WORDS[kind]}, ${caption}${choice.current ? " (current due date)" : ""}`}
+            onClick={() => onChoose(choice)}
+          >
+            <span>{QUICK_DUE_LABELS[kind]}</span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {caption}
+              {choice.current ? " · current" : ""}
+            </span>
+          </DropdownMenuItem>
+        );
+      })}
+    </DropdownMenuGroup>
+  );
+}
+
 type OpenDialog = "edit" | "park" | "letgo" | "delete" | null;
 
-/** Per-item menu with secondary actions (FIN-018). */
+/** Per-item menu with secondary actions (FIN-018), quick due dates (FIN-037) and Move items (FIN-038). */
 export function TaskActionsMenu({
   task,
   today,
   projects,
   editTask,
   deleteRedirect,
+  onDeleted,
+  reorder,
 }: {
   task: TaskItem;
   today: LocalDate;
@@ -113,6 +196,9 @@ export function TaskActionsMenu({
   editTask?: TaskDetail;
   /** Where to go after deleting (the task page itself would no longer exist). */
   deleteRedirect?: "/finisher/tasks";
+  /** Called after a successful delete (the side panel closes itself). */
+  onDeleted?: () => void;
+  reorder?: RowReorder;
 }) {
   const navigate = useNavigate();
   const refresh = useFinisherRefresh();
@@ -129,6 +215,36 @@ export function TaskActionsMenu({
     void refresh();
   }
 
+  async function setDue(dueDate: LocalDate | null, dueTime: LocalTime | null) {
+    return finisherApi("PUT", `/api/finisher/tasks/${task.id}/due`, { dueDate, dueTime });
+  }
+
+  // FIN-037: saved at once, then Undo restores the previous date and time (not the place, A15).
+  async function reschedule(choice: QuickDueChoice) {
+    const previous = { dueDate: task.dueDate, dueTime: task.dueTime };
+    const result = await setDue(choice.date, choice.time);
+    if (!result.ok) {
+      toast.add({ title: "Couldn’t change the due date", description: generalErrorMessage(result.error), type: "error" });
+      return;
+    }
+    toast.add({
+      title: `Due ${QUICK_DUE_WORDS[choice.kind]}, ${formatDate(choice.date)}`,
+      type: "success",
+      actionProps: {
+        children: "Undo",
+        onClick: () =>
+          void setDue(previous.dueDate, previous.dueTime).then((undo) => {
+            if (!undo.ok) {
+              toast.add({ title: "Couldn’t undo the change", description: generalErrorMessage(undo.error), type: "error" });
+            }
+            return refresh().then(() => focusTaskIfLost(task.id));
+          }),
+      },
+    });
+    await refresh();
+    focusTaskIfLost(task.id);
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -139,10 +255,16 @@ export function TaskActionsMenu({
         >
           <MoreHorizontalIcon />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuGroup>
-            {open ? (
-              editTask ? (
+        <DropdownMenuContent align="end" className="w-64">
+          {task.status === "open" ? (
+            <>
+              <QuickDueItems task={task} onChoose={(choice) => void reschedule(choice)} />
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
+          {open ? (
+            <DropdownMenuGroup>
+              {editTask ? (
                 <DropdownMenuItem className="min-h-11" onClick={() => setDialog("edit")}>
                   Edit
                 </DropdownMenuItem>
@@ -150,8 +272,24 @@ export function TaskActionsMenu({
                 <DropdownMenuItem className="min-h-11" render={<Link to="/finisher/tasks/$id" params={{ id: task.id }} />}>
                   Open and edit
                 </DropdownMenuItem>
-              )
-            ) : null}
+              )}
+            </DropdownMenuGroup>
+          ) : null}
+          {reorder && reorder.moves.length ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="font-mono text-[0.6875rem] tracking-[0.12em] uppercase">Order</DropdownMenuLabel>
+                {reorder.moves.map((target) => (
+                  <DropdownMenuItem key={target} className="min-h-11" onClick={() => reorder.onMove(target)}>
+                    {MOVE_LABELS[target]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
+          <DropdownMenuGroup>
             {open ? (
               <DropdownMenuItem className="min-h-11" onClick={() => setDialog("park")}>
                 {task.status === "parked" ? "Change revisit date" : "Park"}
@@ -211,35 +349,76 @@ export function TaskActionsMenu({
             ? () => {
                 void navigate({ to: deleteRedirect, replace: true }).then(() => refresh());
               }
-            : undefined
+            : onDeleted
+              ? () => {
+                  onDeleted();
+                  void refresh();
+                }
+              : undefined
         }
       />
     </>
   );
 }
 
-/** One task in a list: check-off, title (links to details), due and project, actions. */
+/**
+ * One task in a list: optional drag handle (FIN-038), check-off, title, due
+ * and project, actions. On laptop a plain click on the title opens the side
+ * panel (FIN-036); the title stays a real link to the task page, so phones and
+ * modifier clicks (a new tab) still open the full page.
+ */
 export function TaskRow({
   task,
   today,
   projects,
   showProject = true,
+  handle,
+  reorder,
+  rowRef,
+  style,
+  className,
 }: {
   task: TaskItem;
   today: LocalDate;
   projects: ProjectOption[];
   showProject?: boolean;
+  handle?: React.ReactNode;
+  reorder?: RowReorder;
+  rowRef?: (element: HTMLLIElement | null) => void;
+  style?: React.CSSProperties;
+  className?: string;
 }) {
+  const panel = useTaskPanel();
+  const selected = panel?.selectedId === task.id;
   const closable = task.status === "open" || task.status === "parked" || task.status === "done";
   return (
-    <li className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+    <li
+      ref={rowRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-3 p-3 sm:gap-4 sm:p-4",
+        handle !== undefined && "gap-2 pl-1 sm:gap-3 sm:pl-2",
+        // Selected in the panel: tint plus a leading bar, not colour alone (FIN-036).
+        selected && "bg-accent shadow-[inset_3px_0_0_var(--ring)]",
+        className,
+      )}
+    >
+      {handle}
       {closable ? <TaskCheck task={task} /> : null}
       <div className="min-w-0 flex-1">
         <Link
           to="/finisher/tasks/$id"
           params={{ id: task.id }}
+          data-task-title={task.id}
+          aria-current={selected ? "true" : undefined}
+          onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+            if (!panel?.enabled || !isPlainClick(event)) return;
+            event.preventDefault();
+            panel.open(task.id);
+          }}
           className={cn(
             "font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline",
+            selected && "font-semibold",
             task.status === "done" && "text-muted-foreground line-through",
           )}
         >
@@ -255,7 +434,7 @@ export function TaskRow({
           ) : null}
         </p>
       </div>
-      <TaskActionsMenu task={task} today={today} projects={projects} />
+      <TaskActionsMenu task={task} today={today} projects={projects} reorder={reorder} />
     </li>
   );
 }

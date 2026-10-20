@@ -1,6 +1,6 @@
 # ADR-0002: Finisher writes go through database functions; tables are read-only to users
 
-- Status: proposed (made by the Developer because `docs/architecture/finisher.md` does not exist yet; the Technical Architect should review it. This is not a record of user approval.)
+- Status: accepted (reviewed by the Technical Architect on 2026-10-20 in [docs/architecture/finisher.md](../finisher.md#review-of-adr-0002); originally proposed by the Developer on 2026-10-11. This is not a record of user approval.)
 - Date: 2026-10-11
 - Related: [requirements/finisher.md](../../../requirements/finisher.md) (FIN-017, FIN-025 to FIN-028), [docs/implementation/finisher.md](../../implementation/finisher.md), [ADR-0001](ADR-0001-supabase-auth-ssr.md), migration `supabase/migrations/20261011120000_finisher.sql`
 

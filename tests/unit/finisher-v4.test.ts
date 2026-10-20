@@ -1,0 +1,113 @@
+import { describe, expect, it } from "vitest";
+import { quickDueChoice, quickDueDate } from "@/features/finisher/domain/quick-due";
+import { availableMoves, moveBy, moveToIndex, neighbours } from "@/features/finisher/domain/task-order";
+import { parseDueInput, parseMoveInput, parseTaskAction } from "@/features/finisher/domain/validation";
+
+const TASK = "8b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d10";
+const OTHER = "1b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d11";
+
+describe("quick due dates (FIN-034, FIN-037)", () => {
+  it("Today, Tomorrow and Next week, including Sunday, month end and year end", () => {
+    expect(quickDueDate("today", "2026-10-20")).toBe("2026-10-20");
+    expect(quickDueDate("tomorrow", "2026-10-20")).toBe("2026-10-21");
+    expect(quickDueDate("nextWeek", "2026-10-20")).toBe("2026-10-26");
+    // Sunday: Tomorrow and Next week are the same Monday (both are still offered).
+    expect(quickDueDate("tomorrow", "2026-10-18")).toBe("2026-10-19");
+    expect(quickDueDate("nextWeek", "2026-10-18")).toBe("2026-10-19");
+    expect(quickDueDate("tomorrow", "2026-10-31")).toBe("2026-11-01");
+    expect(quickDueDate("tomorrow", "2026-12-31")).toBe("2027-01-01");
+    expect(quickDueDate("nextWeek", "2026-12-28")).toBe("2027-01-04");
+  });
+
+  const now = { date: "2026-10-20", time: "14:30" };
+
+  it("keeps the due time (A14)", () => {
+    expect(quickDueChoice("tomorrow", { dueDate: "2026-10-16", dueTime: "09:00" }, now)).toEqual({
+      kind: "tomorrow",
+      date: "2026-10-21",
+      time: "09:00",
+      current: false,
+    });
+    expect(quickDueChoice("today", { dueDate: "2026-10-16", dueTime: "17:00" }, now).time).toBe("17:00");
+  });
+
+  it("Today clears a time that has passed today and stays enabled for a task due today at a passed time (decision 22)", () => {
+    const choice = quickDueChoice("today", { dueDate: "2026-10-20", dueTime: "09:00" }, now);
+    expect(choice).toEqual({ kind: "today", date: "2026-10-20", time: null, current: false });
+    // Tomorrow keeps 09:00, because the time has not passed tomorrow.
+    expect(quickDueChoice("tomorrow", { dueDate: "2026-10-20", dueTime: "09:00" }, now).time).toBe("09:00");
+  });
+
+  it("marks the item that would change nothing as current", () => {
+    expect(quickDueChoice("today", { dueDate: "2026-10-20", dueTime: null }, now).current).toBe(true);
+    expect(quickDueChoice("today", { dueDate: "2026-10-20", dueTime: "17:00" }, now).current).toBe(true);
+    expect(quickDueChoice("tomorrow", { dueDate: "2026-10-20", dueTime: null }, now).current).toBe(false);
+    expect(quickDueChoice("today", { dueDate: null, dueTime: null }, now).current).toBe(false);
+  });
+});
+
+describe("task order helpers (FIN-038)", () => {
+  const ids = ["a", "b", "c", "d"];
+
+  it("moves to an index and reports no change", () => {
+    expect(moveToIndex(ids, "d", 1)).toEqual(["a", "d", "b", "c"]);
+    expect(moveToIndex(ids, "a", 3)).toEqual(["b", "c", "d", "a"]);
+    expect(moveToIndex(ids, "b", 1)).toBeNull();
+    expect(moveToIndex(ids, "x", 0)).toBeNull();
+  });
+
+  it("Move up, down, to top and to bottom", () => {
+    expect(moveBy(ids, "c", "up")).toEqual(["a", "c", "b", "d"]);
+    expect(moveBy(ids, "c", "down")).toEqual(["a", "b", "d", "c"]);
+    expect(moveBy(ids, "c", "top")).toEqual(["c", "a", "b", "d"]);
+    expect(moveBy(ids, "b", "bottom")).toEqual(["a", "c", "d", "b"]);
+    expect(moveBy(ids, "a", "up")).toBeNull();
+    expect(moveBy(ids, "d", "down")).toBeNull();
+  });
+
+  it("offers only the moves that are possible", () => {
+    expect(availableMoves(0, 4)).toEqual(["down", "bottom"]);
+    expect(availableMoves(2, 4)).toEqual(["top", "up", "down", "bottom"]);
+    expect(availableMoves(3, 4)).toEqual(["top", "up"]);
+    expect(availableMoves(0, 1)).toEqual([]);
+  });
+
+  it("sends the shown neighbours (filtered or partly loaded lists use only what is shown)", () => {
+    expect(neighbours(["a", "d", "b"], "d")).toEqual({ afterId: "a", beforeId: "b" });
+    expect(neighbours(["d", "a"], "d")).toEqual({ afterId: null, beforeId: "a" });
+    expect(neighbours(["a", "d"], "d")).toEqual({ afterId: "a", beforeId: null });
+  });
+});
+
+describe("request parsing for the new endpoints", () => {
+  it("parses a move and rejects a missing or self-referencing position", () => {
+    expect(parseMoveInput({ afterId: OTHER.toUpperCase(), beforeId: null }, TASK)).toEqual({
+      ok: true,
+      value: { afterId: OTHER, beforeId: null },
+    });
+    expect(parseMoveInput({}, TASK)).toEqual({ ok: false, errors: { position: "invalid" } });
+    expect(parseMoveInput({ afterId: TASK }, TASK).ok).toBe(false);
+    expect(parseMoveInput({ afterId: OTHER, beforeId: OTHER }, TASK).ok).toBe(false);
+    expect(parseMoveInput({ afterId: "1 or 1=1" }, TASK)).toEqual({ ok: false, errors: { position: "invalid" } });
+  });
+
+  it("parses a due date change with the task form's rules", () => {
+    expect(parseDueInput({ dueDate: "2026-10-21", dueTime: "09:00" }, "2026-10-20")).toEqual({
+      ok: true,
+      value: { dueDate: "2026-10-21", dueTime: "09:00" },
+    });
+    expect(parseDueInput({ dueDate: null, dueTime: null }, "2026-10-20").ok).toBe(true);
+    expect(parseDueInput({ dueTime: "09:00" }, "2026-10-20")).toEqual({ ok: false, errors: { dueTime: "needs_date" } });
+    expect(parseDueInput({ dueDate: "2040-01-01" }, "2026-10-20")).toEqual({ ok: false, errors: { dueDate: "out_of_range" } });
+  });
+
+  it("accepts keepPosition only as a boolean, and only uses it for reopen", () => {
+    expect(parseTaskAction({ action: "reopen", keepPosition: true }, "2026-10-20")).toEqual({
+      ok: true,
+      value: { action: "reopen", keepPosition: true },
+    });
+    expect(parseTaskAction({ action: "reopen" }, "2026-10-20")).toEqual({ ok: true, value: { action: "reopen", keepPosition: false } });
+    expect(parseTaskAction({ action: "reopen", keepPosition: "yes" }, "2026-10-20").ok).toBe(false);
+    expect(parseTaskAction({ action: "done", keepPosition: true }, "2026-10-20")).toEqual({ ok: true, value: { action: "done" } });
+  });
+});

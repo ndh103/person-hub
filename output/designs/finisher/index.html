@@ -6,6 +6,7 @@
   <title>Finisher · Personal Hub</title>
   <!--
     Design reference: Finisher task form with due-date shortcuts (feature slug: finisher; FIN-019, FIN-020, FIN-034). Status: draft.
+    The Tasks list with the side panel, drag order and quick due-date menu is in task-list.html.
     Not production code. All data shown is synthetic fixture data. See design-notes.md.
     External runtime dependencies: Google Fonts (Source Serif 4, Inter, JetBrains Mono) and the pinned Tailwind browser runtime.
   -->
@@ -185,7 +186,7 @@
               <select id="proto-today" class="mt-1 h-11 w-full rounded-xl border border-input bg-card px-3 text-base sm:text-sm">
                 <option value="2026-10-12">Monday 12 Oct 2026</option>
                 <option value="2026-10-14">Wednesday 14 Oct 2026</option>
-                <option value="2026-10-18">Sunday 18 Oct 2026 (Next week = tomorrow)</option>
+                <option value="2026-10-18">Sunday 18 Oct 2026 (Tomorrow = Next week)</option>
               </select>
             </div>
             <fieldset>
@@ -247,9 +248,13 @@
               </button>
               <input id="f-due-date" name="dueDate" type="date" tabindex="-1" aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-0" />
             </div>
-            <div role="group" aria-label="Due date shortcuts" class="mt-2 grid gap-2 min-[360px]:grid-cols-2">
+            <div role="group" aria-label="Due date shortcuts" class="mt-2 grid gap-2 min-[520px]:grid-cols-3">
               <button type="button" class="due-shortcut" data-shortcut="today">
                 <span class="text-sm font-medium">Today</span>
+                <span class="due-shortcut-date text-xs" data-shortcut-date></span>
+              </button>
+              <button type="button" class="due-shortcut" data-shortcut="tomorrow">
+                <span class="text-sm font-medium">Tomorrow</span>
                 <span class="due-shortcut-date text-xs" data-shortcut-date></span>
               </button>
               <button type="button" class="due-shortcut" data-shortcut="next-week">
@@ -312,7 +317,8 @@
       return addDays(isoDate, 7 - mondayIndex);
     }
     // Resolved at tap time, so a dialog left open past midnight uses the new date.
-    function shortcutDate(kind) { return kind === "today" ? today : nextWeekMonday(today); }
+    function shortcutDate(kind) { return kind === "today" ? today : kind === "tomorrow" ? addDays(today, 1) : nextWeekMonday(today); }
+    var SHORTCUT_WORDS = { today: "today", tomorrow: "tomorrow", "next-week": "next week" };
 
     // ---------------- Dialog ----------------
     var dialog = document.getElementById("task-dialog");
@@ -333,7 +339,7 @@
       document.querySelectorAll("[data-shortcut]").forEach(function (btn) {
         var d = shortcutDate(btn.getAttribute("data-shortcut"));
         btn.querySelector("[data-shortcut-date]").textContent = fmt(d, SHORT);
-        var label = btn.getAttribute("data-shortcut") === "today" ? "today" : "next week";
+        var label = SHORTCUT_WORDS[btn.getAttribute("data-shortcut")];
         btn.setAttribute("aria-label", "Set due date to " + label + ", " + fmt(d, SHORT));
       });
     }

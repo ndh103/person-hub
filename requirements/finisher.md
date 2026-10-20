@@ -4,9 +4,9 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 3.2 (2026-10-13). Adds FIN-035 (tab counts) to v3.1, which added FIN-034 (due-date shortcuts) and the date display rule to version 2 (2026-10-10); see Change notes.
-- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), and 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), plus answers to clarifying questions.
-- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts](../output/designs/finisher/design-notes.md) (other screens not yet designed). Architecture (`docs/architecture/finisher.md`) and test report: not yet created.
+- Version: 4.1 (2026-10-20; v4.1 records design-review decisions 21–22). Adds FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
+- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), and 2026-10-20 ("for web version, i don't need to open a task detail in a separate page… a quick menu item to quickly assign a task to: Today, Tomorrow, and Next Week… the Tomorrow button (next to Today button)… drag and drop to rearrange the order of tasks in each section"), plus answers to clarifying questions.
+- Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts, and the Tasks list with side panel, drag order and quick due-date menu](../output/designs/finisher/design-notes.md) (`index.html`, `task-list.html`; other screens not yet designed). Architecture: [docs/architecture/finisher.md](../docs/architecture/finisher.md) (v4 task enhancements; ADR-0005 order keys, ADR-0006 drag library). Test report: not yet created.
 
 ## Goal and target user
 
@@ -23,7 +23,8 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 ### In scope
 
-- Tasks: create, edit, due date with optional time (with Today and Next week shortcuts), optional link to a project, mark done, park, let go, reopen, delete.
+- Tasks: create, edit, due date with optional time (with Today, Tomorrow, and Next week shortcuts), optional link to a project, mark done, park, let go, reopen, delete.
+- Task details in a side panel next to the list on laptop (FIN-036); quick rescheduling to Today, Tomorrow, or Next week from a task's menu (FIN-037); the user's own order of open tasks, changed by drag and drop (FIN-038).
 - Projects: create, edit, a goal and a "Done when", optional target date, weekly slots, finish, park, let go, reopen, delete.
 - Sessions: generated from slots for each local date; marked Done or Skipped for today and the previous 7 days.
 - Weekly follow-through rate for each project.
@@ -40,6 +41,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 - Reminders, notifications, calendar sync, email, push.
 - Monthly or custom recurrence; slots repeat weekly only.
 - Attachments, sharing, collaboration, data export, and Home-page summaries.
+- Dragging a task into a different section to change its date (decision 19), dragging projects, sessions, or Parked and closed tasks, and a task side panel on phones (decision 17).
 
 ## Concepts
 
@@ -124,8 +126,8 @@ The Today, Tasks and Projects tabs each show a count of their items next to the 
 The Today tab shows, in this order:
 
 1. **Sessions today** from Active projects: timed slots first (sorted by start time), then untimed slots. Each session shows the activity, the project title, the duration, and the start time if set.
-2. **Overdue tasks**: open tasks whose due moment has passed, oldest first.
-3. **Due today**: open tasks due today, with timed tasks sorted by time first, then untimed tasks.
+2. **Overdue tasks**: open tasks whose due moment has passed, in the user's task order (FIN-038).
+3. **Due today**: open tasks due today, in the user's task order (FIN-038). A due time is still shown on each task but no longer decides its position (decision 18).
 4. **Done today**: sessions marked Done today and tasks completed today, collapsed by default, so items do not vanish when checked off.
 
 - Given an unmarked session today, when the user taps its check-off control, then it becomes Done immediately (an optimistic update that is reverted with an error message if saving fails). A secondary action marks it Skipped. Tapping a Done or Skipped session again returns it to Unmarked.
@@ -143,23 +145,56 @@ The Today tab shows, in this order:
 
 ### FIN-034 Due-date shortcuts in the task form (Must)
 
-Below the **Due date** field in the Add task dialog, two shortcut buttons, **Today** and **Next week**, set the due date in one tap, so the user does not have to open the date picker.
+Below the **Due date** field in the Add task dialog, three shortcut buttons, in this order **Today**, **Tomorrow**, and **Next week**, set the due date in one tap, so the user does not have to open the date picker. (v4 added Tomorrow, decision 15.)
 
 - **Today** sets the due date to today's local date (business rules, assumption A1).
+- **Tomorrow** sets the due date to the local date after today. For example, on Monday 12 October 2026 it sets Tuesday 13 October 2026; on Sunday 18 October 2026 it sets Monday 19 October 2026, the same date as Next week, and both buttons are still shown.
 - **Next week** sets the due date to the Monday of next week, the first day of the following Monday-to-Sunday week (confirmed decision 11; week start per assumption A2). For example, on Monday 12 October 2026 or on Sunday 18 October 2026 it sets Monday 19 October 2026.
 - Each button shows, under its label, the date it will set, in the format "Monday 12 Oct" (weekday, day, short month; decision 13).
-- Given the Add task dialog is open, when the user taps Today or Next week, then the Due date field shows that date at once, as "12 Oct 2026". Nothing is submitted, and focus stays on the button.
+- Given the Add task dialog is open, when the user taps Today, Tomorrow, or Next week, then the Due date field shows that date at once, as "12 Oct 2026". Nothing is submitted, and focus stays on the button.
 - A shortcut replaces any due date already in the field. It does not change the due time, the title, or any other field. The user can still change or clear the date with the date field.
-- "Today" is worked out when the button is tapped, not when the dialog opened, so a dialog left open past midnight uses the new date.
+- "Today" is worked out when the button is tapped, not when the dialog opened, so a dialog left open past midnight uses the new date. The same applies to Tomorrow, Next week, and the dates shown under each button.
 - A date set by a shortcut is an ordinary due date. It is saved only when the form is submitted, with the same server validation as FIN-019; the server does not need to know that a shortcut was used.
 - The shortcuts also appear in the Edit task dialog (FIN-020) for Open and Parked tasks, because it is the same form (assumption A9).
-- Accessibility: the shortcuts are real buttons that come after the date field in tab order. Their accessible names include the resulting date as shown on the button, for example "Set due date to today, Monday 12 Oct". After a tap, the new value is announced politely ("Due date set to 12 Oct 2026"). On phones each button is at least 44px tall, and there is no horizontal overflow at 320px (the buttons may stack on very narrow screens).
+- Accessibility: the shortcuts are real buttons that come after the date field in tab order. Their accessible names include the resulting date as shown on the button, for example "Set due date to today, Monday 12 Oct" or "Set due date to tomorrow, Tuesday 13 Oct". After a tap, the new value is announced politely ("Due date set to 12 Oct 2026"). On phones each button is at least 44px tall, and there is no horizontal overflow at 320px (the three buttons may wrap or stack on very narrow screens).
+
+### FIN-037 Quick due-date menu (Must)
+
+The per-task menu (⋯) of an **Open** task offers three items that reschedule the task in one step, without opening the edit form: **Today**, **Tomorrow**, and **Next week** (decision 16). They are grouped under a "Due" heading (or a "Set due date" submenu if the design prefers) and placed before the other actions.
+
+- The dates are worked out exactly as in FIN-034: Today is today's local date, Tomorrow is the next local date, and Next week is the Monday of next week. They are calculated when the menu opens, and each item shows its resulting date in the "Monday 12 Oct" format.
+- The menu is offered wherever an Open task has a ⋯ menu: the Today tab, the Tasks tab, the open tasks on a project page, the task page, and the side panel (FIN-036).
+- It is **not** offered on Parked, Done, or Let go tasks (decision 20). Parked tasks keep Unpark and Change revisit date.
+- Given an Open task, when the user chooses one of the items, then the due date is saved at once, without a confirmation step. The task moves to the section that matches its new date (for example from Overdue to Due today), at the bottom of that section (FIN-038). The tab counts update (FIN-035).
+- The due time is kept (assumption A14), except when the user chooses Today and the task's due time has already passed today: then the time is cleared, so the task is not overdue as soon as it is rescheduled.
+- If the task is already due on that date, the item is shown as current (for example "Today · current") and is disabled. Exception (decision 22): when a task is due today at a time that has already passed, **Today** stays enabled, and choosing it clears the time so the task is no longer overdue.
+- A success message names the new date ("Due tomorrow, 21 Oct 2026") and offers **Undo**, which restores the previous due date and time. Undo does not need to restore the previous position in the order.
+- The server applies the same validation and ownership rules as editing a task (FIN-019, FIN-017). If saving fails, the task stays where it was, with its old date, and an error message appears.
+- Accessibility: the items are real menu items with accessible names that include the date, for example "Set due date to tomorrow, Wednesday 21 Oct". After a change, focus returns to the task's ⋯ button, or to the task title if the task moved to another section. On phones each item is at least 44px tall.
 
 ### FIN-020 View and edit a task (Must)
 
 - The user can open a task to see its title, notes, due date and time, project link, status, and created, done, or closed dates.
 - Open and Parked tasks can be edited, with FIN-019 validation. The user can remove the due date, the due time, or the project link.
 - Done and Let go tasks are read-only, except for Reopen (FIN-030) and Delete (FIN-016).
+- On phones (< 1024px) a task opens on its own page, as before. On laptop it opens in a side panel (FIN-036). The task page stays available at its own URL on every screen size, for links and reloads.
+
+### FIN-036 Task side panel on laptop (Must)
+
+On laptop (≥ 1024px), selecting a task in a list opens its details in a panel beside the list, instead of going to a separate page (decision 17). The list stays visible, so the user can look through several tasks quickly.
+
+- Applies to every task list in Finisher: the Today tab, the Tasks tab (including Parked), the open tasks on a project page, and task entries in the Closed tab.
+- The panel shows the same information as the task page (FIN-020): title, status, notes, due date and time, project link, created date, done or closed date, and any reason. It also offers the check-off control and the same ⋯ menu as the task page, including the quick due-date items (FIN-037) for Open tasks.
+- **Edit** opens the existing Edit task dialog (assumption A11). After saving, the panel shows the new values.
+- Given the panel is open, when the user selects another task, then the panel shows that task. The selected task is visibly marked in the list (not by colour alone) and exposed to assistive technology as current.
+- The panel closes with its Close (✕) button or Escape. Focus then returns to the task in the list that opened it, or to the list heading if that task is no longer in the list.
+- The open panel is part of the URL (assumption A12): reloading reopens it with the same task, and browser Back closes it before leaving the page. Opening another task does not add a separate history entry for each task.
+- The task title in the list stays a real link to the task page, so opening it in a new tab (Ctrl/Cmd-click or middle-click) opens the full task page.
+- States: a loading state while the task loads; an error state with Retry; and "This task no longer exists" if it was deleted elsewhere or belongs to another account (FIN-017: nothing reveals whether another user's task exists).
+- After an action in the panel, the list updates without a reload. When the task is deleted, the panel closes. When it is marked done, parked, let go, or rescheduled, the panel stays open and shows the new state, even if the task left the current list.
+- If the window becomes narrower than 1024px while the panel is open, the panel closes and the list stays; nothing is lost (assumption A17).
+- Layout: the list and the panel share the content area. The list stays readable (titles not cut to a few characters), there is no horizontal page overflow, and the panel scrolls independently when its content is long.
+- Accessibility: the panel is a labelled region named after the task (it does not block the list, so it is not a modal dialog). When it opens, focus moves to the task title in the panel. Every control is reachable by keyboard with visible focus.
 
 ### FIN-021 Mark a task done (Must)
 
@@ -168,11 +203,50 @@ Below the **Due date** field in the Add task dialog, two shortcut buttons, **Tod
 
 ### FIN-022 Tasks tab (Must)
 
-- The tab lists Open tasks in groups: **Overdue**, **Today**, **Upcoming** (sorted by due date and time), and **No date** (newest first). A collapsed **Parked** group follows, sorted by revisit date. Tasks whose revisit date has arrived are labelled "Due for revisit".
+- The tab lists Open tasks in groups: **Overdue**, **Today**, **Upcoming**, and **No date**, each in the user's task order (FIN-038; changed in v4 from sorting by date and time, decision 18). A collapsed **Parked** group follows, sorted by revisit date. Tasks whose revisit date has arrived are labelled "Due for revisit".
 - Each task shows its title, due date or time (relative wording such as "Mon" or "Tomorrow 09:00" is allowed, with the full date available to assistive technology), and the project title if it is linked.
 - The user can filter by project: All, a specific project, or No project.
 - Each group loads at most 50 tasks at a time and offers "Load more".
 - Empty state: "No open tasks", with an Add task action.
+
+### FIN-038 Task order and drag and drop (Must)
+
+The user decides the order of their open tasks. In each task section they can drag a task to a new position, and that order replaces sorting by date (decisions 18 and 19).
+
+**Where it applies**
+
+- Draggable sections: on the Today tab, **Overdue** and **Due today**; on the Tasks tab, **Overdue**, **Today**, **Upcoming**, and **No date**.
+- Not draggable: sessions, Done today, the Parked group (still sorted by revisit date), the Closed tab, and projects. The open tasks on a project page are shown in the same order but cannot be dragged there (assumption A13).
+- A task can be moved only within its own section. Dropping it in another section, or outside any section, cancels the drag and the task returns to its place. Dragging never changes a due date; rescheduling uses FIN-037 or Edit.
+
+**One order for all views**
+
+- Each user has one order for their open tasks. Every section shows its tasks in that order, so a reorder in the Tasks tab's Today group is also seen in the Today tab's Due today section, and the reverse.
+- Given the Tasks tab is filtered by project (FIN-022), when the user reorders, then only the shown tasks change places among themselves; hidden tasks keep their positions.
+- A task goes to the **bottom** of its section when it is created, reopened, or unparked, and when the user changes its due date (with Edit, a form shortcut, or FIN-037). Editing other fields, including only the due time, keeps its position. The exception is the immediate Undo after marking a task done (FIN-021): the task returns to the place it had.
+- When a task changes section because time passes (for example from Today to Overdue at midnight), it keeps its place in the user's order and nothing is saved (business rules: no automation). It therefore appears among the Overdue tasks according to that order, not necessarily at the bottom.
+- On release (v4 migration), existing open tasks get an order that reproduces what each section showed before: overdue, today, and upcoming tasks by due date and time, and no-date tasks newest first (assumption A16).
+- The order is saved on the server, so it is the same after a reload and on another device. If the order is changed on two devices, the last saved change wins, and the other device shows it after its next refresh.
+
+**Interaction**
+
+- Each task row in a draggable section has a visible drag handle, on phones and laptops (decision 21). Dragging starts from the handle with a mouse, pen, or touch, so swiping on a phone still scrolls the page and tapping the title, check-off, or ⋯ still works as before.
+- While dragging, the task follows the pointer and a clear marker shows where it will land. The list scrolls automatically near the top or bottom edge. Escape cancels a drag.
+- A section with one task shows no handle (or a disabled one).
+- The new order appears at once (an optimistic update). If saving fails, the section returns to its previous order and an error message appears.
+- "Load more" (FIN-022): only loaded tasks can be dragged, and tasks loaded later appear in the same saved order below them.
+- Animations respect the reduced-motion setting.
+
+**Without dragging (accessibility)**
+
+- Each draggable task's ⋯ menu offers **Move up** and **Move down** (and **Move to top**, **Move to bottom**). They are left out or disabled when the move is not possible, for example Move up on the first task in its section. They follow the same save and failure rules as dragging.
+- The drag handle is a keyboard-operable button named after the task, for example "Reorder 'Submit form'". Space or Enter picks the task up, the arrow keys move it within its section, Space or Enter drops it, and Escape cancels. Each step is announced politely, for example "'Submit form' moved to position 2 of 5 in Due today".
+- After a move, focus stays on the moved task's handle (or its ⋯ button when the menu was used).
+- On phones the handle is at least 44px tall, and there is no horizontal overflow at 320px.
+
+**Permissions**
+
+- A user can reorder only their own open tasks (FIN-017). The server rejects a reorder that refers to a task the user does not own or a task that is not Open, and nothing changes. Keeping a task within its section is enforced by the interface; the server does not need to know about sections.
 
 ### FIN-023 Create a project (Must)
 
@@ -268,8 +342,8 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 
 ### FIN-018 Responsive layout and accessibility (Must)
 
-- Phone (< 1024px): single column. The tabs are a horizontally fitted segment control, or a select if they do not fit at 320px. There is no horizontal page overflow at 320px. Check-off targets are at least 44px. Secondary actions (Skip, Park, Let go, Delete) sit in a per-item menu.
-- Laptop (≥ 1024px): the Today view may show sessions and tasks side by side. Project detail may show the slots and weekly rates beside the task list.
+- Phone (< 1024px): single column. The tabs are a horizontally fitted segment control, or a select if they do not fit at 320px. There is no horizontal page overflow at 320px. Check-off targets are at least 44px. Secondary actions (Skip, quick due dates, Move up/down, Park, Let go, Delete) sit in a per-item menu. Selecting a task opens the task page.
+- Laptop (≥ 1024px): the Today view may show sessions and tasks side by side. Project detail may show the slots and weekly rates beside the task list. Selecting a task opens the side panel (FIN-036).
 - Check-off controls are real buttons or checkboxes, with labels that include the item, such as "Mark 'Watch ABK program' done". They announce their pressed or checked state.
 - Every action can be done with the keyboard, with visible focus. Dialogs trap focus and return it to the element that opened them. Form errors are linked to their fields and announced. Status changes are announced politely.
 
@@ -278,8 +352,9 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 - **Timezone:** session dates, task due dates, "today", overdue checks, the marking window, weeks, and revisit dates use the user's timezone (assumption A1). Created, done, and closed times are stored as UTC instants. A due date, revisit date, target date, or session date is a date-only value, not a timestamp. A due time is a local wall-clock time together with its due date.
 - **Overdue:** a task with a date but no time is overdue once that local date has ended. A task with a date and time is overdue once that local date and time has passed.
 - **Recurrence:** slots repeat weekly only, on the selected days. There are no exception dates (skipping a single date is done by marking it Skipped).
-- **Date display:** every date shown in the app uses the format "12 Oct 2026" (day, short month, year), including screen-reader text and the value shown in date fields such as Due date, Target date, and Revisit on (confirmed decision 12). The value must not depend on the browser's language. The only exception is the caption on the FIN-034 shortcut buttons, which uses "Monday 12 Oct" (decision 13). Relative words "Today", "Tomorrow", and "Yesterday" may replace a date where a requirement allows relative wording. Picking a date opens a calendar whose weeks start on Monday (A2); optional date fields offer a way to clear the date.
-- **No automation:** nothing changes status, marks a session, or sends a notification without a user action.
+- **Date display:** every date shown in the app uses the format "12 Oct 2026" (day, short month, year), including screen-reader text and the value shown in date fields such as Due date, Target date, and Revisit on (confirmed decision 12). The value must not depend on the browser's language. The only exceptions are the captions on the FIN-034 shortcut buttons and the FIN-037 menu items, which use "Monday 12 Oct" (decision 13). Relative words "Today", "Tomorrow", and "Yesterday" may replace a date where a requirement allows relative wording. Picking a date opens a calendar whose weeks start on Monday (A2); optional date fields offer a way to clear the date.
+- **No automation:** nothing changes status, marks a session, changes the task order, or sends a notification without a user action.
+- **Task order:** open tasks are shown in the user's order (FIN-038), not by date. Dates and times are still shown on every task; Overdue still means the due moment has passed.
 
 ## Confirmed decisions
 
@@ -309,6 +384,20 @@ From the user, 2026-10-13:
 
 14. Each Finisher tab shows its number of items, except the Closed tab.
 
+From the user, 2026-10-20:
+
+15. The task form has a **Tomorrow** shortcut next to Today, in both the Add and Edit task dialogs.
+16. A task's menu has quick items to set its due date to Today, Tomorrow, or Next week.
+17. On laptop, task details open in a side panel beside the list, not on a separate page. Phones keep the task page.
+18. In every task section, the order set by drag and drop replaces sorting by date and time. New tasks, and tasks moved into a section, go to the bottom.
+19. Dragging only reorders within a section. It never changes a task's due date.
+20. The quick due-date items are offered on Open tasks only, not on Parked tasks.
+
+From the user, 2026-10-20 (design review):
+
+21. Reordering starts from a visible drag handle on each row, on phones too (not a long-press).
+22. For a task due today at a time that has passed, the quick **Today** item stays enabled and clears the time.
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -320,6 +409,13 @@ From the user, 2026-10-13:
 - A7. All text limits, the 20-slot cap, the 5–480 minute duration range, and the page sizes are proposed defaults.
 - A9. The due-date shortcuts appear in both the Add task and the Edit task dialogs. The request named only Add task.
 - A10. What each tab count includes (FIN-035): Today counts what is still to do (unmarked sessions plus due or overdue open tasks); Tasks counts Open tasks; Projects counts Active projects. Parked items are left out, because they are collapsed and not being worked on. The request said only "number of item".
+- A11. Edit in the side panel (FIN-036) opens the existing Edit task dialog, rather than editing fields in the panel itself.
+- A12. The open side panel is kept in the URL (for example a `task` search parameter on the current tab), so reload reopens it and Back closes it. The exact URL shape is the Architect's choice.
+- A13. Drag and drop is available on the Today and Tasks tabs only. A project page shows its open tasks in the same order but without drag handles. The request said "in each section".
+- A14. The quick due-date items (FIN-037) keep the due time, except that Today clears a due time that has already passed today. The request did not mention times.
+- A15. Undo after a quick reschedule restores the date and time but not the previous position in the order.
+- A16. Existing open tasks start in the order each section used before v4, so nothing looks shuffled on release.
+- A17. The side panel threshold is the same 1024px as the rest of the layout (FIN-018). If the window becomes narrower, the panel closes instead of switching to the task page.
 
 ## Open questions
 
@@ -327,9 +423,17 @@ From the user, 2026-10-13:
 - Q2. Should the week start on Monday (A2) or be configurable?
 - Q3. Should the shell's Home page ever show a Today summary? Dashboards are not confirmed scope.
 - Q4. Should a slot ever have an end date, or a "starting from" date in the future?
+- Q5. Should rescheduling an overdue timed task to Today keep its time when that time is still later today? A14 keeps it; only a passed time is cleared. Does not block implementation.
 
 ## Change notes
 
+- **2026-10-20, v4.1.** After the design review: decision 21 (drag handle, also on phones) added to FIN-038's interaction rules, and decision 22 (Today stays enabled for a task due today at a passed time) added to FIN-037. **Affects:** the FIN-037 menu logic and its tests.
+- **2026-10-20, v4.0.** Three task enhancements (decisions 15–20, assumptions A11–A17):
+  - **FIN-034 changed:** adds a **Tomorrow** shortcut between Today and Next week, in both Add and Edit.
+  - **FIN-036 new:** on laptop, a task opens in a side panel next to the list; phones keep the task page. FIN-020 and FIN-018 are updated to match.
+  - **FIN-037 new:** Today / Tomorrow / Next week in the ⋯ menu of Open tasks, saved at once, with Undo.
+  - **FIN-038 new:** one user-defined order for open tasks, changed by drag and drop within a section, with Move up/down menu items as the non-drag alternative. **Behavior change:** FIN-022 (Overdue, Today, Upcoming, No date) and FIN-031 (Overdue, Due today) no longer sort by date and time.
+  - **Affects:** Finisher design (side panel, drag handle and drop marker, quick menu items, three-button shortcut row); architecture (an order column on tasks with a migration that seeds the current order, a reorder endpoint, ordering in list queries and pagination, URL state for the panel); `task-row.tsx`, `task-form-dialog.tsx`, `task-group-list.tsx`, `views/today-view.tsx`, `views/tasks-view.tsx`, `views/task-view.tsx`, `src/app/router.tsx`, `server/queries.ts`, `server/mutations.ts`; tests for ordering, reorder authorization (owner, other user, anonymous, non-Open task), shortcuts, and the panel. RLS policies are reviewed so that the new column cannot be used to write to another user's task.
 - **2026-10-13, v3.2.** Added FIN-035: counts on the Today, Tasks and Projects tabs (decision 14, assumption A10), matching the app-shell design. **Affects:** `finisher-tabs.tsx`, the Finisher header (`tabs-layout.tsx`), `GET /api/finisher/basics` (now returns `counts`), and tests. No schema or RLS change.
 - **2026-10-12, v3.** Added FIN-034: Today and Next week shortcut buttons below the Due date field in the task form. Added assumption A9 and confirmed decision 11 ("Next week" = Monday of next week). No other requirement changes; FIN-019 validation applies unchanged. Also added the date display rule (business rules, decisions 12 and 13). **v3.1:** date fields now display "12 Oct 2026" instead of the browser's format, and the shortcut captions use "Monday 12 Oct". Affects the task form, the project form (Target date), and the Park dialog (Revisit on).
   - **Affects:** the Finisher design (task form dialog), `src/features/finisher/components/task-form-dialog.tsx`, and the task-form tests. No API, schema, or RLS change is expected.
@@ -349,7 +453,11 @@ From the user, 2026-10-13:
   - Calculations for local dates, the marking window, and weekly rates.
   - Server enforcement of lifecycle transitions and the marking window.
   - Idempotent session marking.
-- **Developer:** implement once the design and architecture are ready. Open questions Q1–Q4 do not block the MVP, because the assumptions cover them.
+- **Developer:** implement once the design and architecture are ready. Open questions Q1–Q5 do not block implementation, because the assumptions cover them.
+- **v4 (FIN-034 Tomorrow, FIN-036, FIN-037, FIN-038):**
+  - **Designer:** extend `output/designs/finisher/` with the Tomorrow button, the laptop list + side panel (loading, error, not-found, selected-row state), the quick due-date menu items (including the disabled "current" item), and drag handles with a drop marker plus the keyboard and Move up/down alternatives at 320px and 1024px+.
+  - **Technical Architect:** add `docs/architecture/finisher.md` (or an ADR) for the order model (column type, how a move is saved, rebalancing if needed), seeding existing tasks (A16), the reorder endpoint's validation and ownership checks, the stable order for "Load more", and the panel's URL state.
+  - **Tester:** FIN-034 Tomorrow on a Sunday and at midnight; FIN-037 per status (offered only on Open), time kept or cleared (A14), Undo, failure revert; FIN-038 order shared between the Today and Tasks tabs, bottom placement after create/reopen/unpark/date change, unchanged position after a time-only edit or a midnight rollover, filtered reorder, keyboard reorder announcements, and reorder denied for another user's task and for anonymous callers (API and direct database); FIN-036 open, switch, Escape, focus return, Back and reload, deletion while open, and resizing below 1024px.
 - **Tester:**
   - Cover FIN-017 for an anonymous user, the owner, and a second user, both through the API and directly against the database.
   - Cover the lifecycle tables and the validation limits.

@@ -114,6 +114,37 @@ export function parseTaskInput(raw: Record<string, unknown>, today: LocalDate): 
   return done(c, { title: title ?? "", notes, dueDate, dueTime, projectId });
 }
 
+export type DueInput = { dueDate: LocalDate | null; dueTime: LocalTime | null };
+
+/** FIN-037: only the due date and time, with the same rules as the task form. */
+export function parseDueInput(raw: Record<string, unknown>, today: LocalDate): Parsed<DueInput> {
+  const c: Collector = { errors: {} };
+  const dueDate = optionalDate(c, raw.dueDate, "dueDate");
+  const dueTime = optionalTime(c, raw.dueTime, "dueTime");
+  if (dueDate && (dueDate < yearsFrom(today, -LIMITS.dueYears) || dueDate > yearsFrom(today, LIMITS.dueYears))) {
+    c.errors.dueDate = "out_of_range";
+  }
+  if (dueTime && !dueDate && !c.errors.dueDate) c.errors.dueTime = "needs_date";
+  return done(c, { dueDate, dueTime });
+}
+
+export type MoveInput = { afterId: string | null; beforeId: string | null };
+
+/**
+ * FIN-038: where a task lands, as the ids of the tasks shown directly before
+ * and after it. At least one is needed, and neither may be the task itself.
+ */
+export function parseMoveInput(raw: Record<string, unknown>, taskId: string): Parsed<MoveInput> {
+  const c: Collector = { errors: {} };
+  const afterId = optionalId(c, raw.afterId, "position");
+  const beforeId = optionalId(c, raw.beforeId, "position");
+  const self = taskId.toLowerCase();
+  if (!c.errors.position && ((!afterId && !beforeId) || afterId === self || beforeId === self || (afterId && afterId === beforeId))) {
+    c.errors.position = "invalid";
+  }
+  return done(c, { afterId, beforeId });
+}
+
 export type ProjectInput = {
   title: string;
   goal: string | null;
@@ -210,7 +241,9 @@ export const TASK_ACTIONS = ["done", "park", "unpark", "let_go", "reopen"] as co
 export type TaskAction = (typeof TASK_ACTIONS)[number];
 
 export type TaskActionInput =
-  | { action: "done" | "unpark" | "reopen" }
+  | { action: "done" | "unpark" }
+  /** keepPosition: the immediate Undo after Mark done returns the task to its place (FIN-021, FIN-038). */
+  | { action: "reopen"; keepPosition: boolean }
   | { action: "park"; revisitDate: LocalDate }
   | { action: "let_go"; reason: string };
 
@@ -225,7 +258,11 @@ export function parseTaskAction(raw: Record<string, unknown>, today: LocalDate):
     const reason = text(c, raw.reason, "reason", LIMITS.reason, true);
     return done(c, { action, reason: reason ?? "" });
   }
-  if (action === "done" || action === "unpark" || action === "reopen") return { ok: true, value: { action } };
+  if (action === "reopen") {
+    if (raw.keepPosition !== undefined && typeof raw.keepPosition !== "boolean") c.errors.keepPosition = "invalid";
+    return done(c, { action, keepPosition: raw.keepPosition === true });
+  }
+  if (action === "done" || action === "unpark") return { ok: true, value: { action } };
   return { ok: false, errors: { action: "invalid" } };
 }
 

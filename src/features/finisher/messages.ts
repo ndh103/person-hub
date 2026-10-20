@@ -1,5 +1,8 @@
 import type { FieldErrorCode } from "./domain/validation";
 import { LIMITS } from "./domain/validation";
+import type { TaskStatus } from "./types";
+
+export const TASK_STATUS_LABEL: Record<TaskStatus, string> = { open: "Open", parked: "Parked", done: "Done", let_go: "Let go" };
 
 /** Error codes returned by /api/finisher/*. */
 export type FinisherApiErrorCode =

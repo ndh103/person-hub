@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tasks · Finisher · Personal Hub</title>
+  <!--
+    Design reference: Finisher Tasks tab with the laptop side panel (FIN-036), drag-and-drop order (FIN-038)
+    and the quick due-date menu (FIN-037). Feature slug: finisher. Status: draft.
+    Not production code. All data shown is synthetic fixture data. See design-notes.md.
+    External runtime dependencies: Google Fonts (Source Serif 4, Inter, JetBrains Mono) and the pinned Tailwind browser runtime.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../_foundation/theme.css" />
+  <link rel="stylesheet" href="../app-shell/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("ph-theme"); } catch (e) {}
+      var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <!-- Prototype only: pinned Tailwind v4 browser runtime. Never ship this in the app. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --color-card: var(--card);
+      --color-card-foreground: var(--card-foreground);
+      --color-popover: var(--popover);
+      --color-popover-foreground: var(--popover-foreground);
+      --color-primary: var(--primary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-primary-hover: var(--primary-hover);
+      --color-secondary: var(--secondary);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-muted: var(--muted);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-accent: var(--accent);
+      --color-accent-foreground: var(--accent-foreground);
+      --color-destructive: var(--destructive);
+      --color-destructive-foreground: var(--destructive-foreground);
+      --color-border: var(--border);
+      --color-input: var(--input);
+      --color-ring: var(--ring);
+      --color-sidebar: var(--sidebar);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar-primary: var(--sidebar-primary);
+      --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+      --color-sidebar-border: var(--sidebar-border);
+      --color-sidebar-ring: var(--sidebar-ring);
+      --font-heading: var(--font-heading);
+      --radius-sm: calc(var(--radius) - 4px);
+      --radius-md: calc(var(--radius) - 2px);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) + 4px);
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-background text-foreground antialiased">
+
+  <!-- Icon sprite (Lucide paths, ISC licence). Production: lucide-react. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></symbol>
+  </svg>
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
+
+  <div class="min-h-dvh bg-sidebar lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div id="drawer-backdrop" class="drawer-backdrop lg:hidden" hidden></div>
+
+    <!-- ===================== Sidebar (same as app-shell reference) ===================== -->
+    <aside id="sidebar" class="sidebar on-sidebar flex flex-col bg-sidebar text-sidebar-foreground" aria-labelledby="brand-name">
+      <div class="flex items-start justify-between gap-2 px-5 pt-6 pb-2 lg:pt-8">
+        <a href="#" class="flex min-h-11 min-w-0 items-center gap-3 rounded-md">
+          <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground" aria-hidden="true">PH</span>
+          <span class="min-w-0 leading-tight">
+            <span id="brand-name" class="block font-heading text-lg font-medium">Personal Hub</span>
+            <span class="block truncate text-sm">you@example.com</span>
+          </span>
+        </a>
+        <button type="button" id="drawer-close" class="grid size-11 shrink-0 place-items-center rounded-md hover:bg-sidebar-accent lg:hidden" aria-label="Close navigation">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <nav aria-label="Apps" class="flex-1 overflow-y-auto px-3 pt-8 pb-4 lg:pt-14">
+        <ul class="space-y-1">
+          <li><a href="../app-shell/index.html#/home" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-home"/></svg> Home</a></li>
+        </ul>
+        <p class="mt-8 mb-2 px-3 font-mono text-xs font-medium uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
+        <ul class="space-y-1" aria-labelledby="apps-heading">
+          <li><a href="#" aria-current="page" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-flag"/></svg> Finisher</a></li>
+          <li><a href="../app-shell/index.html#/events" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg> Events</a></li>
+        </ul>
+      </nav>
+      <div class="space-y-3 px-5 pb-6 lg:pb-8">
+        <div role="group" aria-label="Theme" class="grid grid-cols-2 gap-1 rounded-xl border border-sidebar-border p-1">
+          <button type="button" data-theme-choice="light" aria-pressed="true" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-sun"/></svg> Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-moon"/></svg> Dark</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================== Content column ===================== -->
+    <div id="content-column" class="flex min-h-dvh min-w-0 flex-col lg:py-5 lg:pr-5">
+      <header class="on-sidebar sticky top-0 z-30 flex h-14 items-center gap-2 bg-sidebar px-2 text-sidebar-foreground lg:hidden">
+        <button type="button" id="drawer-open" class="grid size-11 place-items-center rounded-md hover:bg-sidebar-accent" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <p class="truncate font-heading text-lg font-medium">Finisher</p>
+      </header>
+
+      <main id="main" tabindex="-1" class="content-card flex-1 rounded-t-2xl bg-background lg:rounded-2xl">
+       <div id="page" class="finisher-page mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14">
+
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 id="page-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">Finisher</h1>
+            <p class="mt-1 font-mono text-[0.8125rem] text-muted-foreground">Today · <time datetime="2026-10-20">20 Oct 2026</time></p>
+          </div>
+          <a href="index.html#add" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> Add task
+          </a>
+        </div>
+
+        <nav aria-label="Finisher sections" class="mt-5 border-b border-border">
+          <ul class="-mb-px flex gap-5 overflow-x-auto text-[0.9375rem] sm:gap-8">
+            <li><a href="#" class="section-tab">Today <span class="tab-count"><span class="sr-only">(</span>5<span class="sr-only"> to do)</span></span></a></li>
+            <li><a href="#" aria-current="page" class="section-tab">Tasks <span class="tab-count"><span class="sr-only">(</span><span id="tasks-count">9</span><span class="sr-only"> open)</span></span></a></li>
+            <li><a href="#" class="section-tab">Projects <span class="tab-count"><span class="sr-only">(</span>2<span class="sr-only"> active)</span></span></a></li>
+            <li><a href="#" class="section-tab">Closed</a></li>
+          </ul>
+        </nav>
+
+        <!-- List column + side panel (FIN-036). The panel column exists only at ≥1024px while a task is selected. -->
+        <div id="workspace" class="workspace mt-6">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p class="inline-block rounded-full border border-primary/60 bg-card px-2.5 py-0.5 font-mono text-xs text-accent-foreground">Sample data</p>
+              <div class="flex items-center gap-2">
+                <label for="project-filter" class="text-sm text-muted-foreground">Project</label>
+                <select id="project-filter" class="h-11 rounded-xl border border-input bg-card px-3 text-base sm:h-10 sm:text-sm">
+                  <option value="all">All</option>
+                  <option value="Teach my daughter English">Teach my daughter English</option>
+                  <option value="Play three songs on guitar">Play three songs on guitar</option>
+                  <option value="none">No project</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Instructions for the drag handle, referenced by aria-describedby. -->
+            <p id="reorder-help" class="sr-only">Press Space or Enter to pick up. Use the up and down arrow keys to move within the section. Press Space or Enter to drop, or Escape to cancel.</p>
+
+            <div id="sections" class="mt-4"></div>
+
+            <!-- Parked group: collapsed, sorted by revisit date, never draggable (FIN-022, FIN-038). -->
+            <details id="parked" class="group mt-8">
+              <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg font-heading text-xl font-medium [&::-webkit-details-marker]:hidden">
+                <svg class="icon size-4 transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+                Parked <span class="font-mono text-xs text-muted-foreground"><span id="parked-count">1</span><span class="sr-only"> tasks</span></span>
+              </summary>
+              <ul id="parked-list" class="task-list mt-3 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card text-card-foreground"></ul>
+            </details>
+
+            <!-- ============ Prototype-only controls (not product UI) ============ -->
+            <details class="mt-12 rounded-lg border border-dashed border-border p-4 text-sm" open>
+              <summary class="cursor-pointer font-medium text-muted-foreground">Prototype controls (not part of the product)</summary>
+              <p class="mt-2 text-muted-foreground">Fixture time: Tuesday 20 Oct 2026, 14:30. Resize below 1024px to see phone behaviour (no panel; titles open the task page).</p>
+              <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                <label class="flex min-h-11 items-center gap-2">
+                  <input type="checkbox" id="proto-fail" class="size-4" /> Make the next save fail (reorder or due date)
+                </label>
+                <div>
+                  <label for="proto-panel" class="block text-muted-foreground">Next time the panel loads a task</label>
+                  <select id="proto-panel" class="mt-1 h-11 w-full rounded-xl border border-input bg-card px-3 text-base sm:text-sm">
+                    <option value="normal">Loads normally</option>
+                    <option value="slow">Slow (3 s loading state)</option>
+                    <option value="error">Fails (error with Retry)</option>
+                    <option value="missing">Deleted elsewhere (not found)</option>
+                  </select>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- ===================== Side panel (FIN-036). Non-modal labelled region. ===================== -->
+          <aside id="task-panel" class="task-panel" aria-labelledby="panel-title" hidden>
+            <div class="flex items-center justify-between gap-3">
+              <p class="eyebrow mb-0">Task</p>
+              <div class="-mr-2 flex items-center">
+                <!-- The task's ⋯ menu lives in the header so the action row fits the 18rem panel. Hidden while loading. -->
+                <button type="button" id="panel-more" data-more aria-haspopup="menu" aria-expanded="false" hidden class="grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+                  <svg class="icon size-5" aria-hidden="true"><use href="#i-more"/></svg>
+                </button>
+                <button type="button" id="panel-close" class="grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground" aria-label="Close task details">
+                  <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+                </button>
+              </div>
+            </div>
+            <h2 id="panel-title" tabindex="-1" class="font-heading text-2xl font-medium break-words outline-none"></h2>
+            <div id="panel-body" class="mt-3"></div>
+          </aside>
+        </div>
+       </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Shared row menu (maps to shadcn DropdownMenu). Positioned next to its trigger. -->
+  <div id="row-menu" class="row-menu" role="menu" hidden></div>
+
+  <!-- Drop marker (FIN-038). Moved into the active list while dragging. -->
+  <div id="drop-indicator" class="drop-indicator" aria-hidden="true" hidden></div>
+
+  <p id="live" class="sr-only" role="status" aria-live="polite"></p>
+  <div class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4" id="toast-region"></div>
+
+  <script>
+  (function () {
+    // ---------------- Fixtures and date helpers (date-only values) ----------------
+    var TODAY = "2026-10-20"; // Tuesday; production: the user's timezone (A1)
+    var NOW = "14:30";
+    function parse(iso) { var p = iso.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); }
+    function isoOf(d) { return d.toISOString().slice(0, 10); }
+    function addDays(iso, n) { var d = parse(iso); d.setUTCDate(d.getUTCDate() + n); return isoOf(d); }
+    function fmt(iso, opts) { return new Intl.DateTimeFormat("en-GB", Object.assign({ timeZone: "UTC" }, opts)).format(parse(iso)); }
+    var LONG = { day: "numeric", month: "short", year: "numeric" };          // "20 Oct 2026"
+    var SHORT = { weekday: "long", day: "numeric", month: "short" };         // "Wednesday 21 Oct" (decision 13)
+    function nextWeekMonday(iso) { return addDays(iso, 7 - ((parse(iso).getUTCDay() + 6) % 7)); }
+    function relative(iso) {
+      if (iso === TODAY) return "today";
+      if (iso === addDays(TODAY, 1)) return "tomorrow";
+      if (iso === addDays(TODAY, -1)) return "yesterday";
+      return fmt(iso, LONG);
+    }
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+    var EN = "Teach my daughter English", GT = "Play three songs on guitar";
+    var tasks = {
+      t1: { title: "Send the insurance claim form", dueDate: "2026-10-16", dueTime: null, project: null, notes: "Scan the receipt first. The claim number is on the letter.", created: "2026-10-02", status: "open" },
+      t4: { title: "Call the dentist to reschedule", dueDate: "2026-10-20", dueTime: "09:00", project: null, notes: null, created: "2026-10-15", status: "open" },
+      t2: { title: "Prepare the paperwork and submit the form", dueDate: "2026-10-20", dueTime: "17:00", project: null, notes: "Bring a copy of the ID and the signed page.", created: "2026-10-12", status: "open" },
+      t3: { title: "Print phonics flashcards", dueDate: "2026-10-20", dueTime: null, project: EN, notes: "Letters s, a, t, p, i, n.", created: "2026-10-18", status: "open" },
+      t10: { title: "Return the hiking boots", dueDate: "2026-10-20", dueTime: null, project: null, notes: null, created: "2026-10-19", status: "open" },
+      t6: { title: "Buy guitar strings", dueDate: "2026-10-22", dueTime: null, project: GT, notes: null, created: "2026-10-17", status: "open" },
+      t5: { title: "Book the car service", dueDate: "2026-10-23", dueTime: "10:00", project: null, notes: null, created: "2026-10-11", status: "open" },
+      t7: { title: "Renew library card", dueDate: "2026-11-03", dueTime: null, project: null, notes: null, created: "2026-10-09", status: "open" },
+      t8: { title: "Sort old photos into albums", dueDate: null, dueTime: null, project: null, notes: "Start with 2019.", created: "2026-10-05", status: "open" },
+      p1: { title: "Fix the squeaky door", dueDate: null, dueTime: null, project: null, notes: null, created: "2026-09-28", status: "parked", revisit: "2026-11-01" },
+    };
+    // One order for all open tasks (FIN-038), seeded from the pre-v4 sort (A16).
+    var order = ["t1", "t4", "t2", "t3", "t10", "t6", "t5", "t7", "t8"];
+    var SECTIONS = [["overdue", "Overdue"], ["today", "Today"], ["upcoming", "Upcoming"], ["nodate", "No date"]];
+    var SECTION_NAME = { overdue: "Overdue", today: "Today", upcoming: "Upcoming", nodate: "No date" };
+
+    var filter = "all", selectedId = null, pushedPanel = false, kb = null, drag = null;
+    var desktop = window.matchMedia("(min-width: 1024px)");
+    var sectionsEl = document.getElementById("sections");
+    var page = document.getElementById("page");
+    var panel = document.getElementById("task-panel");
+    var panelTitle = document.getElementById("panel-title");
+    var panelBody = document.getElementById("panel-body");
+    var panelMore = document.getElementById("panel-more");
+    var menu = document.getElementById("row-menu");
+    var indicator = document.getElementById("drop-indicator");
+    var failToggle = document.getElementById("proto-fail");
+    var panelMode = document.getElementById("proto-panel");
+
+    function sectionOf(t) {
+      if (!t.dueDate) return "nodate";
+      if (t.dueDate < TODAY || (t.dueDate === TODAY && t.dueTime && t.dueTime <= NOW)) return "overdue";
+      return t.dueDate === TODAY ? "today" : "upcoming";
+    }
+    function visible(t) { return t.status === "open" && (filter === "all" || (filter === "none" ? !t.project : t.project === filter)); }
+    function sectionIds(sec) { return order.filter(function (id) { return visible(tasks[id]) && sectionOf(tasks[id]) === sec; }); }
+    // Reorder only the shown tasks of one section; hidden and other tasks keep their slots.
+    function applySectionOrder(sec, newIds) {
+      var slots = [];
+      order.forEach(function (id, i) { if (visible(tasks[id]) && sectionOf(tasks[id]) === sec) slots.push(i); });
+      slots.forEach(function (slot, k) { order[slot] = newIds[k]; });
+    }
+    function toBottom(id) { order = order.filter(function (x) { return x !== id; }).concat(id); }
+
+    // ---------------- Announcements and toast ----------------
+    var live = document.getElementById("live");
+    function announce(msg) { live.textContent = ""; setTimeout(function () { live.textContent = msg; }, 30); }
+    var toastTimer;
+    function toast(message, opts) {
+      opts = opts || {};
+      var region = document.getElementById("toast-region");
+      region.innerHTML = "";
+      var el = document.createElement("div");
+      el.setAttribute("role", opts.error ? "alert" : "status");
+      el.className = "toast pointer-events-auto flex max-w-md items-center gap-4 rounded-lg border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg " + (opts.error ? "border-destructive/40" : "border-border");
+      var text = document.createElement("span");
+      text.textContent = message;
+      el.appendChild(text);
+      if (opts.action) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "min-h-11 shrink-0 rounded-md px-2 font-semibold text-accent-foreground underline underline-offset-4";
+        b.textContent = opts.action.label;
+        b.addEventListener("click", function () { region.innerHTML = ""; opts.action.run(); });
+        el.appendChild(b);
+      }
+      region.appendChild(el);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { region.innerHTML = ""; }, 6000);
+    }
+    // Simulated server save; "Make the next save fail" exercises the revert path.
+    function save(onFail) {
+      setTimeout(function () {
+        if (failToggle.checked) { failToggle.checked = false; onFail(); }
+      }, 500);
+    }
+
+    // ---------------- Rendering ----------------
+    function dueHtml(t) {
+      if (t.status === "parked") {
+        var due = t.revisit <= TODAY;
+        return (due ? '<span class="rounded-full bg-secondary px-2 text-secondary-foreground">Due for revisit</span> ' : "") +
+          'Revisit <time datetime="' + t.revisit + '">' + fmt(t.revisit, LONG) + "</time>";
+      }
+      if (!t.dueDate) return "";
+      var overdue = sectionOf(t) === "overdue";
+      var label = relative(t.dueDate);
+      var full = label !== fmt(t.dueDate, LONG) ? '<span class="sr-only"> (' + fmt(t.dueDate, LONG) + ")</span>" : "";
+      return '<span class="' + (overdue ? "text-destructive" : "") + '">' + (overdue ? "Overdue · due " : "Due ") +
+        '<time datetime="' + t.dueDate + (t.dueTime ? "T" + t.dueTime : "") + '">' + label + (t.dueTime ? " " + t.dueTime : "") + "</time>" + full + "</span>";
+    }
+
+    function rowHtml(id, sec, count) {
+      var t = tasks[id];
+      var draggable = sec && count > 1;
+      var lifted = kb && kb.id === id;
+      var selected = selectedId === id;
+      var handle = draggable
+        ? '<button type="button" class="drag-handle" data-handle aria-label="Reorder “' + esc(t.title) + '”" aria-describedby="reorder-help"' + (lifted ? ' aria-pressed="true"' : "") + '><svg class="icon size-4" aria-hidden="true"><use href="#i-grip"/></svg></button>'
+        : '<span class="drag-handle-spacer" aria-hidden="true"></span>';
+      var check = t.status === "parked" ? '<span class="size-11 shrink-0" aria-hidden="true"></span>' :
+        '<button type="button" data-check aria-pressed="false" aria-label="Mark “' + esc(t.title) + '” done" class="grid size-11 shrink-0 place-items-center rounded-full border border-input bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-circle"/></svg></button>';
+      var meta = dueHtml(t);
+      if (t.project) meta += (meta ? " · " : "") + '<span class="min-w-0 break-words">' + esc(t.project) + "</span>";
+      return '<li class="task-row' + (selected ? " is-selected" : "") + (lifted ? " is-lifted" : "") + '" data-id="' + id + '">' +
+        handle + check +
+        '<div class="min-w-0 flex-1 py-1">' +
+          '<a href="#task=' + id + '" data-title class="task-title font-medium break-words underline-offset-4 outline-none hover:underline focus-visible:underline"' + (selected ? ' aria-current="true"' : "") + ">" + esc(t.title) + "</a>" +
+          (meta ? '<p class="mt-0.5 font-mono text-[0.8125rem] text-muted-foreground">' + meta + "</p>" : "") +
+        "</div>" +
+        '<button type="button" data-more aria-haspopup="menu" aria-expanded="false" aria-label="More actions for “' + esc(t.title) + '”" class="grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-more"/></svg></button>' +
+      "</li>";
+    }
+
+    function render() {
+      var html = "", total = 0;
+      SECTIONS.forEach(function (s) {
+        var ids = sectionIds(s[0]);
+        total += ids.length;
+        if (!ids.length) return;
+        html += '<section class="mt-8 first:mt-0" aria-labelledby="sec-' + s[0] + '">' +
+          '<h2 id="sec-' + s[0] + '" tabindex="-1" class="mb-3 flex items-baseline gap-2 font-heading text-xl font-medium outline-none">' + s[1] +
+          ' <span class="font-mono text-xs text-muted-foreground">' + ids.length + '<span class="sr-only"> tasks</span></span></h2>' +
+          '<ul class="task-list divide-y divide-border rounded-2xl border border-border bg-card text-card-foreground" data-section-list="' + s[0] + '">' +
+          ids.map(function (id) { return rowHtml(id, s[0], ids.length); }).join("") + "</ul></section>";
+      });
+      if (!total) {
+        html = '<div class="rounded-2xl border border-border bg-card p-8 text-center"><p class="font-heading text-xl font-medium">No open tasks</p>' +
+          '<p class="mt-1 text-sm text-muted-foreground">Nothing matches this filter.</p></div>';
+      }
+      sectionsEl.innerHTML = html;
+      var parked = Object.keys(tasks).filter(function (id) { return tasks[id].status === "parked"; });
+      document.getElementById("parked-list").innerHTML = parked.map(function (id) { return rowHtml(id, null, 0); }).join("");
+      document.getElementById("parked-count").textContent = parked.length;
+      document.getElementById("tasks-count").textContent = order.filter(function (id) { return tasks[id].status === "open"; }).length;
+    }
+    function rowEl(id) { return document.querySelector('.task-row[data-id="' + id + '"]'); }
+    function focusIn(id, sel) { var r = rowEl(id); var el = r && r.querySelector(sel); if (el) el.focus(); return !!el; }
+    function position(id) { var sec = sectionOf(tasks[id]); var ids = sectionIds(sec); return { sec: sec, n: ids.indexOf(id) + 1, of: ids.length }; }
+
+    // ---------------- Task actions ----------------
+    function commitReorder(id, sec, prevOrder, focusSel) {
+      render();
+      if (selectedId) renderPanel();
+      focusIn(id, focusSel);
+      var p = position(id);
+      announce("“" + tasks[id].title + "” moved to position " + p.n + " of " + p.of + " in " + SECTION_NAME[sec] + ".");
+      save(function () {
+        // Restore this section's previous order only; other sections' changes stay.
+        var prevIds = prevOrder.filter(function (x) { return tasks[x] && visible(tasks[x]) && sectionOf(tasks[x]) === sec; });
+        if (prevIds.length === sectionIds(sec).length) applySectionOrder(sec, prevIds);
+        render();
+        focusIn(id, focusSel);
+        toast("Couldn’t save the new order. It’s back as it was.", { error: true });
+      });
+    }
+
+    function setDone(id, done, keepPlace) {
+      var t = tasks[id];
+      t.status = done ? "done" : "open";
+      if (!done && !keepPlace) toBottom(id); // Reopen goes to the bottom; the immediate Undo keeps its place (FIN-038)
+      render();
+      if (selectedId === id) renderPanel();
+      if (done) {
+        toast("Done: “" + t.title + "”", { action: { label: "Undo", run: function () { setDone(id, false, true); } } });
+      }
+    }
+
+    function quickDue(id, kind, trigger) {
+      var t = tasks[id];
+      var date = kind === "today" ? TODAY : kind === "tomorrow" ? addDays(TODAY, 1) : nextWeekMonday(TODAY);
+      var before = { dueDate: t.dueDate, dueTime: t.dueTime, index: order.indexOf(id) };
+      var secBefore = sectionOf(t);
+      t.dueDate = date;
+      if (kind === "today" && t.dueTime && t.dueTime <= NOW) t.dueTime = null; // A14: a passed time is cleared
+      toBottom(id);
+      render();
+      if (selectedId) renderPanel();
+      var moved = sectionOf(t) !== secBefore;
+      if (trigger === "panel") panelMore.focus();
+      else if (!(moved ? focusIn(id, "[data-title]") : focusIn(id, "[data-more]"))) panelTitle.focus();
+      var words = { today: "today", tomorrow: "tomorrow", nextweek: "next week" }[kind];
+      toast("Due " + words + ", " + fmt(date, LONG), { action: { label: "Undo", run: function () {
+        t.dueDate = before.dueDate; t.dueTime = before.dueTime; render(); if (selectedId) renderPanel();
+        focusIn(id, "[data-title]");
+      } } });
+      save(function () {
+        // Undo only this change: later reorders made while the save was pending are kept.
+        t.dueDate = before.dueDate; t.dueTime = before.dueTime;
+        order = order.filter(function (x) { return x !== id; });
+        order.splice(Math.min(before.index, order.length), 0, id);
+        render();
+        if (selectedId) renderPanel();
+        toast("Couldn’t change the due date. The task keeps " + (before.dueDate ? fmt(before.dueDate, LONG) : "no date") + ".", { error: true });
+      });
+    }
+
+    function moveBy(id, where) {
+      var sec = sectionOf(tasks[id]);
+      var ids = sectionIds(sec), i = ids.indexOf(id), prev = order.slice();
+      ids.splice(i, 1);
+      var j = where === "top" ? 0 : where === "bottom" ? ids.length : where === "up" ? i - 1 : i + 1;
+      ids.splice(j, 0, id);
+      applySectionOrder(sec, ids);
+      commitReorder(id, sec, prev, "[data-more]");
+    }
+
+    function deleteTask(id) {
+      var title = tasks[id].title;
+      delete tasks[id];
+      order = order.filter(function (x) { return x !== id; });
+      if (selectedId === id) closePanel(true);
+      render();
+      toast("Deleted “" + title + "” (prototype skips the confirmation dialog).");
+    }
+
+    // ---------------- Row menu (FIN-037 quick due dates, FIN-038 Move items) ----------------
+    var menuTrigger = null;
+    function menuItems(id) {
+      var t = tasks[id], items = [];
+      if (t.status === "open") {
+        items.push({ heading: "Due" });
+        [["today", "Today", TODAY], ["tomorrow", "Tomorrow", addDays(TODAY, 1)], ["nextweek", "Next week", nextWeekMonday(TODAY)]].forEach(function (q) {
+          // Decision 22: Today stays enabled for a task due today at a passed time (choosing it clears the time).
+          var passedToday = q[0] === "today" && t.dueDate === TODAY && t.dueTime && t.dueTime <= NOW;
+          var current = t.dueDate === q[2] && !passedToday;
+          items.push({
+            label: q[1], caption: fmt(q[2], SHORT) + (current ? " · current" : ""), disabled: current,
+            aria: "Set due date to " + q[1].toLowerCase() + ", " + fmt(q[2], SHORT) + (current ? " (current due date)" : ""),
+            run: function () { quickDue(id, q[0], menuTrigger && menuTrigger.closest("#task-panel") ? "panel" : "row"); },
+          });
+        });
+        items.push({ sep: true });
+        items.push({ label: "Edit", run: function () { toast("Opens the Edit task dialog (see index.html → Edit task)."); } });
+        var ids = sectionIds(sectionOf(t)), i = ids.indexOf(id);
+        if (ids.length > 1 && i > -1) {
+          items.push({ sep: true }, { heading: "Order" });
+          if (i > 0) items.push({ label: "Move to top", run: function () { moveBy(id, "top"); } }, { label: "Move up", run: function () { moveBy(id, "up"); } });
+          if (i < ids.length - 1) items.push({ label: "Move down", run: function () { moveBy(id, "down"); } }, { label: "Move to bottom", run: function () { moveBy(id, "bottom"); } });
+        }
+        items.push({ sep: true });
+        items.push({ label: "Park", run: function () { toast("Opens the Park dialog (revisit date)."); } });
+        items.push({ label: "Let go", run: function () { toast("Opens the Let go dialog (reason)."); } });
+      } else if (t.status === "parked") {
+        items.push({ label: "Edit", run: function () { toast("Opens the Edit task dialog."); } });
+        items.push({ label: "Change revisit date", run: function () { toast("Opens the Park dialog."); } });
+        items.push({ label: "Unpark", run: function () { t.status = "open"; toBottom(id); render(); if (selectedId) renderPanel(); toast("Unparked “" + t.title + "”. It is at the bottom of its section."); } });
+        items.push({ label: "Let go", run: function () { toast("Opens the Let go dialog (reason)."); } });
+      } else {
+        items.push({ label: "Reopen", run: function () { setDone(id, false, false); toast("Reopened “" + t.title + "”. It is at the bottom of its section."); } });
+      }
+      items.push({ sep: true });
+      items.push({ label: "Delete", destructive: true, run: function () { deleteTask(id); } });
+      return items;
+    }
+
+    function openMenu(trigger, id) {
+      closeMenu(false);
+      menuTrigger = trigger;
+      trigger.setAttribute("aria-expanded", "true");
+      menu.setAttribute("aria-label", "Actions for “" + tasks[id].title + "”");
+      menu.innerHTML = menuItems(id).map(function (it, i) {
+        if (it.sep) return '<div role="separator" class="my-1 h-px bg-border"></div>';
+        if (it.heading) return '<p role="presentation" class="px-3 pt-2 pb-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">' + it.heading + "</p>";
+        return '<button type="button" role="menuitem" tabindex="-1" data-i="' + i + '" class="menu-item' + (it.destructive ? " text-destructive" : "") + '"' +
+          (it.disabled ? ' aria-disabled="true"' : "") + (it.aria ? ' aria-label="' + esc(it.aria) + '"' : "") + ">" +
+          "<span>" + it.label + "</span>" + (it.caption ? '<span class="font-mono text-xs text-muted-foreground">' + esc(it.caption) + "</span>" : "") + "</button>";
+      }).join("");
+      var items = menuItems(id);
+      menu.querySelectorAll("[role=menuitem]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var it = items[Number(b.getAttribute("data-i"))];
+          if (it.disabled) return;
+          closeMenu(false);
+          it.run();
+        });
+      });
+      menu.hidden = false;
+      // Position: right-aligned to the trigger, below it if it fits, else above; if neither fits,
+      // use the larger side and scroll inside the menu (like Radix's available-height collision handling).
+      menu.style.maxHeight = "";
+      var r = trigger.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
+      var below = window.innerHeight - r.bottom - 12, above = r.top - 12;
+      var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+      var top;
+      if (h <= below || below >= above) { top = r.bottom + 4; if (h > below) menu.style.maxHeight = below + "px"; }
+      else { var hh = Math.min(h, above); top = r.top - hh - 4; if (h > above) menu.style.maxHeight = above + "px"; }
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
+      var first = enabledItems()[0];
+      if (first) first.focus();
+    }
+    function enabledItems() { return Array.prototype.filter.call(menu.querySelectorAll("[role=menuitem]"), function (b) { return !b.hasAttribute("aria-disabled"); }); }
+    function closeMenu(returnFocus) {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      menu.innerHTML = "";
+      if (menuTrigger) { menuTrigger.setAttribute("aria-expanded", "false"); if (returnFocus && document.body.contains(menuTrigger)) menuTrigger.focus(); }
+    }
+    menu.addEventListener("keydown", function (e) {
+      var items = enabledItems(), i = items.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      else if (e.key === "Home") { e.preventDefault(); items[0].focus(); }
+      else if (e.key === "End") { e.preventDefault(); items[items.length - 1].focus(); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeMenu(true); }
+      else if (e.key === "Tab") { e.preventDefault(); closeMenu(true); }
+    });
+    document.addEventListener("pointerdown", function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && !(menuTrigger && menuTrigger.contains(e.target))) closeMenu(false);
+    });
+    // Close only when the width changes: phone browsers fire height-only resizes as the address bar hides.
+    var lastWidth = window.innerWidth;
+    window.addEventListener("resize", function () { if (window.innerWidth !== lastWidth) { lastWidth = window.innerWidth; closeMenu(false); } });
+
+    // ---------------- Side panel (FIN-036) ----------------
+    function openPanel(id, push) {
+      if (!desktop.matches) {
+        toast("On phones this opens the task page (/finisher/tasks/" + id + "), as before.");
+        return;
+      }
+      var first = !selectedId;
+      selectedId = id;
+      if (push) {
+        if (first) { history.pushState({ task: id }, "", "#task=" + id); pushedPanel = true; }
+        else history.replaceState({ task: id }, "", "#task=" + id); // switching tasks: no extra history entries
+      }
+      page.setAttribute("data-panel", "open");
+      panel.hidden = false;
+      render();
+      var mode = panelMode.value;
+      panelMode.value = "normal";
+      if (mode === "missing" && tasks[id]) { delete tasks[id]; order = order.filter(function (x) { return x !== id; }); render(); }
+      showLoading();
+      panelTitle.focus();
+      setTimeout(function () {
+        if (selectedId !== id) return;
+        if (mode === "error") showError(id); else renderPanel();
+      }, mode === "slow" ? 3000 : 250);
+    }
+    function showLoading() {
+      panelMore.hidden = true;
+      panelTitle.innerHTML = '<span class="sr-only">Loading task…</span><span class="skeleton block h-7 w-3/4" aria-hidden="true"></span>';
+      panelBody.innerHTML = '<div class="space-y-3" aria-hidden="true"><span class="skeleton block h-4 w-1/3"></span><span class="skeleton block h-11 w-full"></span><span class="skeleton block h-4 w-full"></span><span class="skeleton block h-4 w-5/6"></span><span class="skeleton block h-4 w-2/3"></span></div>';
+    }
+    function showError(id) {
+      panelMore.hidden = true;
+      panelTitle.textContent = "Couldn’t load this task";
+      panelBody.innerHTML = '<div role="alert" class="flex gap-3 rounded-lg border border-destructive/40 p-3 text-sm"><svg class="icon mt-0.5 size-4 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg><p class="text-muted-foreground">Check your connection and try again.</p></div>' +
+        '<button type="button" id="panel-retry" class="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground"><svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg> Retry</button>';
+      document.getElementById("panel-retry").addEventListener("click", function () { showLoading(); panelTitle.focus(); setTimeout(renderPanel, 250); });
+    }
+    function renderPanel() {
+      var id = selectedId, t = tasks[id];
+      if (!t) {
+        panelMore.hidden = true;
+        panelTitle.textContent = "This task no longer exists";
+        panelBody.innerHTML = '<p class="text-sm text-muted-foreground">It may have been deleted on another device.</p>';
+        return;
+      }
+      panelMore.hidden = false;
+      panelMore.setAttribute("aria-label", "More actions for “" + t.title + "”");
+      var status = { open: "Open", parked: "Parked", done: "Done" }[t.status];
+      var done = t.status === "done";
+      panelTitle.textContent = t.title;
+      panelBody.innerHTML =
+        '<div class="flex flex-wrap items-center gap-2 text-sm"><span class="rounded-full ' + (t.status === "open" ? "bg-secondary text-secondary-foreground" : "border border-border") + ' px-2.5 py-0.5 text-xs font-medium">' + status + "</span>" +
+        '<span class="font-mono text-[0.8125rem] text-muted-foreground">' + dueHtml(t) + "</span></div>" +
+        '<div class="mt-4 flex flex-wrap items-center gap-2">' +
+          (t.status !== "parked" ? '<button type="button" data-panel-check aria-pressed="' + done + '" class="panel-check inline-flex min-h-11 items-center gap-2 rounded-lg border border-input bg-card px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"><svg class="icon size-4" aria-hidden="true"><use href="#' + (done ? "i-check" : "i-circle") + '"/></svg>' + (done ? "Done" : "Mark done") + "</button>" : "") +
+          (t.status !== "done" ? '<button type="button" data-panel-edit class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground"><svg class="icon size-4" aria-hidden="true"><use href="#i-pencil"/></svg>Edit</button>' : "") +
+        "</div>" +
+        '<dl class="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 border-t border-border pt-4 text-sm">' +
+          '<dt class="text-muted-foreground">Notes</dt><dd class="break-words whitespace-pre-line">' + (t.notes ? esc(t.notes) : "—") + "</dd>" +
+          '<dt class="text-muted-foreground">Due</dt><dd>' + (t.dueDate ? '<time datetime="' + t.dueDate + '">' + fmt(t.dueDate, LONG) + (t.dueTime ? " at " + t.dueTime : "") + "</time>" : "No due date") + "</dd>" +
+          '<dt class="text-muted-foreground">Project</dt><dd class="break-words">' + (t.project ? '<a href="#" class="text-accent-foreground underline underline-offset-4">' + esc(t.project) + "</a>" : "No project") + "</dd>" +
+          '<dt class="text-muted-foreground">Created</dt><dd><time datetime="' + t.created + '">' + fmt(t.created, LONG) + "</time></dd>" +
+          (done ? '<dt class="text-muted-foreground">Done</dt><dd><time datetime="' + TODAY + '">' + fmt(TODAY, LONG) + "</time></dd>" : "") +
+        "</dl>" +
+        '<p class="mt-5 text-xs text-muted-foreground"><a href="#" class="underline underline-offset-4">Open full page</a></p>';
+    }
+    function closePanel(restoreFocus, fromPop) {
+      var id = selectedId;
+      if (!id) return;
+      selectedId = null;
+      panel.hidden = true;
+      page.removeAttribute("data-panel");
+      closeMenu(false);
+      render();
+      if (!fromPop) {
+        if (pushedPanel) { pushedPanel = false; history.back(); }
+        else if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+      }
+      if (restoreFocus && !focusIn(id, "[data-title]")) {
+        var heading = document.querySelector("#sections h2") || document.getElementById("page-title");
+        heading.focus();
+      }
+    }
+    document.getElementById("panel-close").addEventListener("click", function () { closePanel(true); });
+    panelMore.addEventListener("click", function () { if (menu.hidden || menuTrigger !== panelMore) openMenu(panelMore, selectedId); else closeMenu(true); });
+    panel.addEventListener("keydown", function (e) { if (e.key === "Escape" && menu.hidden) { e.preventDefault(); closePanel(true); } });
+    panelBody.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      if (b.hasAttribute("data-panel-check")) {
+        setDone(selectedId, tasks[selectedId].status !== "done", false);
+        var c = panelBody.querySelector("[data-panel-check]"); if (c) c.focus();
+      } else if (b.hasAttribute("data-panel-edit")) toast("Opens the Edit task dialog (see index.html → Edit task). After saving, the panel shows the new values.");
+    });
+    window.addEventListener("popstate", function () {
+      var m = location.hash.match(/task=(\w+)/);
+      if (m) openPanel(m[1], false);
+      else closePanel(true, true);
+    });
+    desktop.addEventListener("change", function (e) {
+      if (!e.matches && selectedId) closePanel(true); // A17
+      var m = location.hash.match(/task=(\w+)/);
+      if (e.matches && !selectedId && m) openPanel(m[1], false); // widening with a task in the URL shows it
+    });
+
+    // ---------------- List clicks ----------------
+    function onListClick(e) {
+      var row = e.target.closest(".task-row");
+      if (!row) return;
+      var id = row.getAttribute("data-id");
+      var title = e.target.closest("[data-title]");
+      if (title) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; // a real link: new tab opens the full page
+        e.preventDefault();
+        if (selectedId === id) { panelTitle.focus(); return; }
+        openPanel(id, true);
+        return;
+      }
+      if (e.target.closest("[data-check]")) { setDone(id, true, false); return; }
+      var more = e.target.closest("[data-more]");
+      if (more) { if (menu.hidden || menuTrigger !== more) openMenu(more, id); else closeMenu(true); }
+    }
+    sectionsEl.addEventListener("click", onListClick);
+    document.getElementById("parked-list").addEventListener("click", onListClick);
+    document.getElementById("project-filter").addEventListener("change", function (e) { filter = e.target.value; render(); });
+
+    // ---------------- Keyboard reorder on the handle (FIN-038) ----------------
+    sectionsEl.addEventListener("keydown", function (e) {
+      var handle = e.target.closest("[data-handle]");
+      if (!handle) return;
+      var id = handle.closest(".task-row").getAttribute("data-id");
+      var t = tasks[id], sec = sectionOf(t);
+      if (!kb) {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          kb = { id: id, sec: sec, prev: order.slice() };
+          render(); focusIn(id, "[data-handle]");
+          var p = position(id);
+          announce("Picked up “" + t.title + "”. Position " + p.n + " of " + p.of + " in " + SECTION_NAME[sec] + ". Use the arrow keys to move, Space to drop, Escape to cancel.");
+        }
+        return;
+      }
+      if (kb.id !== id) return;
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        var ids = sectionIds(sec), i = ids.indexOf(id), j = e.key === "ArrowUp" ? i - 1 : i + 1;
+        if (j < 0 || j >= ids.length) { announce(j < 0 ? "Already at the top of " + SECTION_NAME[sec] + "." : "Already at the bottom of " + SECTION_NAME[sec] + "."); return; }
+        ids.splice(i, 1); ids.splice(j, 0, id);
+        applySectionOrder(sec, ids);
+        render(); focusIn(id, "[data-handle]");
+        announce("Position " + (j + 1) + " of " + ids.length + ".");
+      } else if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        var prev = kb.prev, changed = prev.join() !== order.join();
+        kb = null;
+        if (changed) commitReorder(id, sec, prev, "[data-handle]");
+        else { render(); focusIn(id, "[data-handle]"); announce("“" + t.title + "” dropped. The order did not change."); }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        order = kb.prev; kb = null;
+        render(); focusIn(id, "[data-handle]");
+        announce("Move cancelled. “" + t.title + "” is back in its place.");
+      }
+    });
+    // Leaving the lifted handle (Tab or a click elsewhere) cancels the keyboard move.
+    document.addEventListener("focusin", function (e) {
+      if (!kb) return;
+      var r = e.target.closest && e.target.closest(".task-row");
+      if (r && r.getAttribute("data-id") === kb.id && e.target.hasAttribute("data-handle")) return;
+      var id = kb.id; order = kb.prev; kb = null; render();
+      announce("Move cancelled. “" + tasks[id].title + "” is back in its place.");
+    });
+
+    // ---------------- Pointer drag (mouse, pen, touch) from the handle (FIN-038) ----------------
+    sectionsEl.addEventListener("pointerdown", function (e) {
+      var handle = e.target.closest("[data-handle]");
+      if (!handle || e.button !== 0 || kb) return;
+      e.preventDefault();
+      handle.focus();
+      var row = handle.closest(".task-row"), list = row.parentElement;
+      var rect = row.getBoundingClientRect();
+      var ghost = row.cloneNode(true);
+      ghost.classList.add("drag-ghost");
+      ghost.setAttribute("aria-hidden", "true");
+      ghost.inert = true;
+      ghost.style.width = rect.width + "px";
+      ghost.style.left = rect.left + "px";
+      ghost.style.top = rect.top + "px";
+      document.body.appendChild(ghost);
+      row.classList.add("is-dragging");
+      list.appendChild(indicator);
+      indicator.hidden = false;
+      drag = { id: row.getAttribute("data-id"), list: list, row: row, ghost: ghost, offsetY: e.clientY - rect.top, target: null, y: e.clientY, x: e.clientX };
+      handle.setPointerCapture(e.pointerId);
+      document.body.classList.add("is-reordering");
+      onDragMove(e);
+      autoScroll();
+    });
+    function onDragMove(e) {
+      if (!drag) return;
+      drag.x = e.clientX; drag.y = e.clientY;
+      drag.ghost.style.top = (e.clientY - drag.offsetY) + "px";
+      var lr = drag.list.getBoundingClientRect(), pad = 24;
+      var inside = e.clientX >= lr.left - pad && e.clientX <= lr.right + pad && e.clientY >= lr.top - pad && e.clientY <= lr.bottom + pad;
+      drag.ghost.toggleAttribute("data-invalid", !inside);
+      if (!inside) { indicator.hidden = true; drag.target = null; return; }
+      var others = Array.prototype.filter.call(drag.list.children, function (c) { return c.classList.contains("task-row") && c !== drag.row; });
+      var idx = 0;
+      others.forEach(function (o) { var r = o.getBoundingClientRect(); if (e.clientY > r.top + r.height / 2) idx++; });
+      drag.target = idx;
+      var y = idx === 0 ? (others[0] ? others[0].offsetTop : 0) : others[idx - 1].offsetTop + others[idx - 1].offsetHeight;
+      indicator.hidden = false;
+      indicator.style.top = Math.max(0, y - 1) + "px";
+    }
+    function autoScroll() {
+      if (!drag) return;
+      var edge = 64, dy = 0;
+      if (drag.y < edge) dy = -10; else if (drag.y > window.innerHeight - edge) dy = 10;
+      if (dy) { window.scrollBy(0, dy); onDragMove({ clientX: drag.x, clientY: drag.y }); }
+      requestAnimationFrame(autoScroll);
+    }
+    function endDrag(cancel) {
+      if (!drag) return;
+      var d = drag; drag = null;
+      d.ghost.remove();
+      d.row.classList.remove("is-dragging");
+      indicator.hidden = true;
+      document.body.appendChild(indicator);
+      document.body.classList.remove("is-reordering");
+      var t = tasks[d.id], sec = sectionOf(t);
+      if (cancel || d.target === null) { announce("Move cancelled. “" + t.title + "” is back in its place."); return; }
+      var ids = sectionIds(sec).filter(function (x) { return x !== d.id; });
+      ids.splice(d.target, 0, d.id);
+      var prev = order.slice();
+      applySectionOrder(sec, ids);
+      if (prev.join() === order.join()) return;
+      commitReorder(d.id, sec, prev, "[data-handle]");
+    }
+    sectionsEl.addEventListener("pointermove", onDragMove);
+    sectionsEl.addEventListener("pointerup", function () { endDrag(false); });
+    sectionsEl.addEventListener("pointercancel", function () { endDrag(true); });
+    document.addEventListener("keydown", function (e) { if (drag && e.key === "Escape") { e.preventDefault(); endDrag(true); } });
+
+    // ---------------- Drawer (same behaviour as app-shell) ----------------
+    var sidebar = document.getElementById("sidebar");
+    var backdrop = document.getElementById("drawer-backdrop");
+    var openBtn = document.getElementById("drawer-open");
+    var closeBtn = document.getElementById("drawer-close");
+    var contentColumn = document.getElementById("content-column");
+    function isDrawerOpen() { return sidebar.getAttribute("data-open") === "true"; }
+    function drawerFocusables() { return Array.prototype.filter.call(sidebar.querySelectorAll("a[href], button:not([disabled])"), function (el) { return el.offsetParent !== null; }); }
+    function openDrawer() {
+      sidebar.setAttribute("data-open", "true"); sidebar.setAttribute("role", "dialog"); sidebar.setAttribute("aria-modal", "true");
+      backdrop.hidden = false; contentColumn.inert = true; openBtn.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden"; closeBtn.focus();
+    }
+    function closeDrawer(returnFocus) {
+      sidebar.removeAttribute("data-open"); sidebar.removeAttribute("role"); sidebar.removeAttribute("aria-modal");
+      backdrop.hidden = true; contentColumn.inert = false; openBtn.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = ""; if (returnFocus) openBtn.focus();
+    }
+    openBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", function () { closeDrawer(true); });
+    backdrop.addEventListener("click", function () { closeDrawer(true); });
+    document.addEventListener("keydown", function (e) {
+      if (!isDrawerOpen()) return;
+      if (e.key === "Escape") { e.preventDefault(); closeDrawer(true); return; }
+      if (e.key === "Tab") {
+        var items = drawerFocusables(); if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    desktop.addEventListener("change", function (e) { if (e.matches && isDrawerOpen()) closeDrawer(false); });
+
+    // ---------------- Theme ----------------
+    var themeButtons = document.querySelectorAll("[data-theme-choice]");
+    function syncThemeButtons() {
+      var dark = document.documentElement.classList.contains("dark");
+      themeButtons.forEach(function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-theme-choice") === "dark") === dark)); });
+    }
+    themeButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dark = b.getAttribute("data-theme-choice") === "dark";
+        document.documentElement.classList.toggle("dark", dark);
+        try { localStorage.setItem("ph-theme", dark ? "dark" : "light"); } catch (e) {}
+        syncThemeButtons();
+      });
+    });
+    syncThemeButtons();
+
+    render();
+    // Reload with #task=… reopens the panel (A12).
+    var initial = location.hash.match(/task=(\w+)/);
+    if (initial && desktop.matches) openPanel(initial[1], false);
+    // Review deep link: #menu=t3 opens that row's ⋯ menu straight away.
+    var menuLink = location.hash.match(/menu=(\w+)/);
+    if (menuLink && rowEl(menuLink[1])) {
+      window.addEventListener("load", function () {
+        setTimeout(function () {
+          lastWidth = window.innerWidth;
+          var tr = rowEl(menuLink[1]).querySelector("[data-more]");
+          tr.scrollIntoView({ block: "nearest" });
+          openMenu(tr, menuLink[1]);
+        }, 500);
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

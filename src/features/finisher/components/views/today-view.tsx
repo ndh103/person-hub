@@ -1,13 +1,28 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "@/components/link";
-import { formatDuration } from "../../domain/dates";
+import { cn } from "@/lib/utils";
+import { formatDuration, type LocalDate } from "../../domain/dates";
 import { finisherQueries } from "../../api";
-import type { SessionItem } from "../../types";
+import type { ProjectOption, SessionItem, TaskItem } from "../../types";
 import { AddTaskButton } from "../add-task-button";
 import { CollapsibleSection } from "../collapsible-section";
 import { EmptyState, ListSection, NewProjectLink, RowList } from "../list-parts";
 import { SessionCheck } from "../session-control";
+import { SortableTaskList } from "../sortable-task-list";
+import { useTaskPanel } from "../task-panel-context";
 import { TaskRow } from "../task-row";
+
+/** Overdue or Due today, in the user's order and reorderable (FIN-031, FIN-038). */
+function SortableSection(props: { section: string; tasks: TaskItem[]; today: LocalDate; projects: ProjectOption[] }) {
+  // Start again from the server's list whenever it changes (after any write).
+  return <SortableSectionInner key={props.tasks.map((task) => task.id).join(",")} {...props} />;
+}
+
+function SortableSectionInner({ section, tasks, today, projects }: { section: string; tasks: TaskItem[]; today: LocalDate; projects: ProjectOption[] }) {
+  const [items, setItems] = useState(tasks);
+  return <SortableTaskList section={section} items={items} onItemsChange={setItems} today={today} projects={projects} />;
+}
 
 function SessionRow({ session }: { session: SessionItem }) {
   return (
@@ -32,6 +47,8 @@ function SessionRow({ session }: { session: SessionItem }) {
 export function TodayView() {
   const { data } = useSuspenseQuery(finisherQueries.today());
   const { now } = data;
+  // With the side panel open there is room for one column only (FIN-036).
+  const panelOpen = Boolean(useTaskPanel()?.selectedId);
   const overdueCount = data.overdue.length;
   const revisitTotal = data.revisitDue.tasks + data.revisitDue.projects;
   const nothingToday =
@@ -67,7 +84,7 @@ export function TodayView() {
           <NewProjectLink />
         </EmptyState>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div className={cn("grid gap-6", !panelOpen && "lg:grid-cols-2 lg:items-start")}>
           <ListSection title="Sessions today" id="sessions">
             {data.sessions.length ? (
               <RowList>
@@ -85,20 +102,12 @@ export function TodayView() {
           <div className="flex flex-col gap-6">
             {overdueCount ? (
               <ListSection title="Overdue" id="overdue">
-                <RowList>
-                  {data.overdue.map((task) => (
-                    <TaskRow key={task.id} task={task} today={now.date} projects={data.projects} />
-                  ))}
-                </RowList>
+                <SortableSection section="Overdue" tasks={data.overdue} today={now.date} projects={data.projects} />
               </ListSection>
             ) : null}
             <ListSection title="Due today" id="due-today">
               {data.dueToday.length ? (
-                <RowList>
-                  {data.dueToday.map((task) => (
-                    <TaskRow key={task.id} task={task} today={now.date} projects={data.projects} />
-                  ))}
-                </RowList>
+                <SortableSection section="Due today" tasks={data.dueToday} today={now.date} projects={data.projects} />
               ) : (
                 <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No tasks due today.</p>
               )}

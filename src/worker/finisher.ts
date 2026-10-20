@@ -101,6 +101,15 @@ export const finisher = new Hono<Env>()
   .post("/tasks/:id/actions", idParam, async (c) =>
     c.json(await mutations.taskAction(c.var.finisher, c.req.valid("param").id, await body(c))),
   )
+  // FIN-037 quick due date (only dueDate and dueTime); FIN-038 order. Both idempotent.
+  .put("/tasks/:id/due", idParam, async (c) => {
+    await mutations.setTaskDue(c.var.finisher, c.req.valid("param").id, await body(c));
+    return c.json({ ok: true });
+  })
+  .put("/tasks/:id/position", idParam, async (c) => {
+    await mutations.moveTask(c.var.finisher, c.req.valid("param").id, await body(c));
+    return c.json({ ok: true });
+  })
   .delete("/tasks/:id", idParam, async (c) => {
     await mutations.deleteTask(c.var.finisher, c.req.valid("param").id);
     return c.json({ ok: true });

@@ -218,6 +218,81 @@ describe("writes", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
+  it("moves a task with only the neighbour ids (FIN-038)", async () => {
+    signedIn();
+    rpc.mockResolvedValue({ data: null, error: null });
+    const after = "1b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d11";
+    const response = await call("PUT", `/api/finisher/tasks/${TASK_ID}/position`, {
+      afterId: after,
+      beforeId: null,
+      sortKey: 0.5,
+      user_id: "00000000-0000-4000-8000-00000000000b",
+    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(rpc).toHaveBeenCalledWith("finisher_move_task", { p_task_id: TASK_ID, p_after_id: after, p_before_id: null });
+  });
+
+  it("refuses a move with no neighbour or with itself as one, without a database call", async () => {
+    signedIn();
+    for (const body of [{}, { afterId: TASK_ID }, { beforeId: "x" }]) {
+      const response = await call("PUT", `/api/finisher/tasks/${TASK_ID}/position`, body);
+      expect(response.status).toBe(422);
+      expect(await response.json()).toEqual({ error: "validation", fields: { position: "invalid" } });
+    }
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("maps a stale or foreign move to safe codes", async () => {
+    signedIn();
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PH409", message: "order_changed" } });
+    rpc.mockResolvedValueOnce({ data: null, error: { code: "PH404", message: "not_found" } });
+    const body = { beforeId: "1b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d11" };
+    expect((await call("PUT", `/api/finisher/tasks/${TASK_ID}/position`, body)).status).toBe(409);
+    expect((await call("PUT", `/api/finisher/tasks/${TASK_ID}/position`, body)).status).toBe(404);
+  });
+
+  it("changes only the due date and time (FIN-037); other fields never reach the database", async () => {
+    signedIn();
+    rpc.mockResolvedValue({ data: null, error: null });
+    const response = await call("PUT", `/api/finisher/tasks/${TASK_ID}/due`, {
+      dueDate: "2026-10-21",
+      dueTime: null,
+      title: "",
+      notes: "wipe me",
+    });
+    expect(response.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("finisher_set_task_due", {
+      p_tz: "Europe/London",
+      p_task_id: TASK_ID,
+      p_due_date: "2026-10-21",
+      p_due_time: null,
+    });
+    const invalid = await call("PUT", `/api/finisher/tasks/${TASK_ID}/due`, { dueTime: "09:00" });
+    expect(await invalid.json()).toEqual({ error: "validation", fields: { dueTime: "needs_date" } });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("guards the new writes like the others: foreign origin and form bodies are refused", async () => {
+    signedIn();
+    const foreign = await call("PUT", `/api/finisher/tasks/${TASK_ID}/position`, { beforeId: TASK_ID }, { origin: "https://evil.test" });
+    const form = await call("PUT", `/api/finisher/tasks/${TASK_ID}/due`, "dueDate=2026-10-21", {
+      "content-type": "application/x-www-form-urlencoded",
+    });
+    expect(foreign.status).toBe(403);
+    expect(form.status).toBe(415);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("reopens in the old place only when asked (Undo after Mark done, FIN-021)", async () => {
+    signedIn();
+    rpc.mockResolvedValue({ data: "open", error: null });
+    await call("POST", `/api/finisher/tasks/${TASK_ID}/actions`, { action: "reopen", keepPosition: true });
+    await call("POST", `/api/finisher/tasks/${TASK_ID}/actions`, { action: "reopen" });
+    await call("POST", `/api/finisher/tasks/${TASK_ID}/actions`, { action: "done", keepPosition: true });
+    expect(rpc.mock.calls.map(([, args]) => (args as { p_keep_position: boolean }).p_keep_position)).toEqual([true, false, false]);
+  });
+
   it("marks a session idempotently through one function call", async () => {
     signedIn();
     rpc.mockResolvedValue({ data: "done", error: null });

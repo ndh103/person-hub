@@ -35,6 +35,7 @@ const DB_FIELDS: Record<string, string> = {
   slots: "slots",
   state: "state",
   action: "action",
+  position: "position",
 };
 
 type DbError = { code?: string; message?: string } | null | undefined;

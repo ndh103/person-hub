@@ -6,9 +6,13 @@ import type { LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
 import type { ProjectFilter, ProjectOption, TaskGroupKey, TaskItem, TaskPage } from "../types";
 import { RowList } from "./list-parts";
+import { SortableTaskList } from "./sortable-task-list";
 import { TaskRow } from "./task-row";
 
-/** A task group with "Load more" (50 at a time, FIN-022). */
+/**
+ * A task group with "Load more" (50 at a time, FIN-022). Open groups are in the
+ * user's order and can be reordered (FIN-038); Parked stays sorted by revisit date.
+ */
 export function TaskGroupList(props: {
   group: TaskGroupKey;
   label: string;
@@ -59,11 +63,15 @@ function TaskGroupListInner({
 
   return (
     <div className="flex flex-col gap-2">
-      <RowList label={label}>
-        {items.map((task) => (
-          <TaskRow key={task.id} task={task} today={today} projects={projects} />
-        ))}
-      </RowList>
+      {group === "parked" ? (
+        <RowList label={label}>
+          {items.map((task) => (
+            <TaskRow key={task.id} task={task} today={today} projects={projects} />
+          ))}
+        </RowList>
+      ) : (
+        <SortableTaskList section={label} items={items} onItemsChange={setItems} today={today} projects={projects} />
+      )}
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}

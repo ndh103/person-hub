@@ -10,26 +10,12 @@ import { toast } from "@/components/ui/toast";
 import { FormAlert } from "@/features/auth/components/form-alert";
 import { browserTimeZone, finisherApi } from "../api";
 import { parseTaskInput, LIMITS } from "../domain/validation";
-import {
-  DEFAULT_TIME_ZONE,
-  formatDate,
-  formatWeekdayDate,
-  startOfNextWeek,
-  zonedNow,
-  type LocalDate,
-} from "../domain/dates";
+import { DEFAULT_TIME_ZONE, formatDate, formatWeekdayDate, zonedNow, type LocalDate } from "../domain/dates";
+import { QUICK_DUE_KINDS, QUICK_DUE_LABELS, quickDueDate, type QuickDueKind } from "../domain/quick-due";
 import type { ProjectOption, TaskDetail } from "../types";
 import { DatePicker } from "@/components/forms/date-picker";
 import { focusFirstInvalid, FormField } from "./form-field";
 import { useMutation } from "./use-mutation";
-
-type DueShortcut = "today" | "nextWeek";
-
-const SHORTCUT_LABELS: Record<DueShortcut, string> = { today: "Today", nextWeek: "Next week" };
-
-function shortcutDate(kind: DueShortcut, today: LocalDate): LocalDate {
-  return kind === "today" ? today : startOfNextWeek(today);
-}
 
 type Values = { title: string; notes: string; dueDate: string; dueTime: string; projectId: string };
 
@@ -80,9 +66,9 @@ export function TaskFormDialog({
    * pressed, so a dialog left open past midnight uses the new date. Only the
    * due date changes; nothing is submitted.
    */
-  function applyShortcut(kind: DueShortcut) {
+  function applyShortcut(kind: QuickDueKind) {
     const current = zonedNow(browserTimeZone() ?? DEFAULT_TIME_ZONE).date;
-    const date = shortcutDate(kind, current);
+    const date = quickDueDate(kind, current);
     set("dueDate", date);
     setFieldErrors((errors) => {
       const next = { ...errors };
@@ -162,20 +148,21 @@ export function TaskFormDialog({
                     today={today}
                     clearable
                   />
-                  {/* Stacked below 360px so "Wednesday 14 Oct" never overflows a narrow phone. */}
-                  <div role="group" aria-label="Due date shortcuts" className="grid gap-2 min-[360px]:grid-cols-2">
-                    {(Object.keys(SHORTCUT_LABELS) as DueShortcut[]).map((kind) => {
-                      const date = shortcutDate(kind, today);
+                  {/* Today, Tomorrow, Next week (FIN-034, decision 15). Stacked below 520px, where three
+                      columns would be too narrow for "Wednesday 14 Oct". */}
+                  <div role="group" aria-label="Due date shortcuts" className="grid gap-2 min-[520px]:grid-cols-3">
+                    {QUICK_DUE_KINDS.map((kind) => {
+                      const date = quickDueDate(kind, today);
                       return (
                         <Button
                           key={kind}
                           type="button"
                           variant="outline"
-                          className="h-auto min-h-11 justify-between gap-2 px-3 py-1 text-left leading-tight min-[360px]:flex-col min-[360px]:items-start min-[360px]:justify-center min-[360px]:gap-0 sm:min-h-10"
-                          aria-label={`Set due date to ${SHORTCUT_LABELS[kind].toLowerCase()}, ${formatWeekdayDate(date)}`}
+                          className="h-auto min-h-11 justify-between gap-2 px-3 py-1 text-left leading-tight min-[520px]:flex-col min-[520px]:items-start min-[520px]:justify-center min-[520px]:gap-0 sm:min-h-10"
+                          aria-label={`Set due date to ${QUICK_DUE_LABELS[kind].toLowerCase()}, ${formatWeekdayDate(date)}`}
                           onClick={() => applyShortcut(kind)}
                         >
-                          <span>{SHORTCUT_LABELS[kind]}</span>
+                          <span>{QUICK_DUE_LABELS[kind]}</span>
                           <span className="text-xs font-normal text-muted-foreground">{formatWeekdayDate(date)}</span>
                         </Button>
                       );

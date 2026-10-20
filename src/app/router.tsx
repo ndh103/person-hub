@@ -21,6 +21,7 @@ import { ProjectsView } from "@/features/finisher/components/views/projects-view
 import { TaskView } from "@/features/finisher/components/views/task-view";
 import { TasksView } from "@/features/finisher/components/views/tasks-view";
 import { TodayView } from "@/features/finisher/components/views/today-view";
+import { TaskPanelLayout } from "@/features/finisher/components/task-panel";
 import { DEFAULT_NEXT } from "@/lib/auth/safe-next";
 import { parseConfirmType } from "@/lib/auth/validation";
 import { sessionStatus } from "@/lib/supabase/client";
@@ -42,6 +43,9 @@ export type RouterContext = { queryClient: QueryClient };
 
 /** Query-string values are bounded; anything unexpected is dropped rather than rejected. */
 const optionalText = (max: number) => z.string().max(max).optional().catch(undefined);
+
+// The task open in the laptop side panel (FIN-036, A12). Anything but a UUID is dropped.
+const panelTask = { task: z.uuid().optional().catch(undefined) };
 
 // ---------------------------------------------------------------------------
 // Root: document title from the deepest route that names one
@@ -272,6 +276,7 @@ const todayRoute = createRoute({
   getParentRoute: () => finisherTabs,
   path: "finisher",
   staticData: { title: "Finisher" },
+  validateSearch: z.object(panelTask),
   loader: ({ context }) => context.queryClient.ensureQueryData(finisherQueries.today()),
   pendingComponent: () => <ListSkeleton label="Loading today’s plan…" />,
   errorComponent: FinisherRouteError,
@@ -282,7 +287,7 @@ const tasksRoute = createRoute({
   getParentRoute: () => finisherTabs,
   path: "finisher/tasks",
   staticData: { title: "Tasks · Finisher" },
-  validateSearch: z.object({ project: optionalText(64) }),
+  validateSearch: z.object({ project: optionalText(64), ...panelTask }),
   loaderDeps: ({ search }) => ({ project: search.project }),
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(finisherQueries.tasks(deps.project)),
   pendingComponent: () => <ListSkeleton label="Loading tasks…" />,
@@ -309,8 +314,9 @@ const closedRoute = createRoute({
   validateSearch: z.object({
     type: z.enum(["tasks", "projects"]).optional().catch(undefined),
     outcome: z.enum(["completed", "let_go"]).optional().catch(undefined),
+    ...panelTask,
   }),
-  loaderDeps: ({ search }) => search,
+  loaderDeps: ({ search }) => ({ type: search.type, outcome: search.outcome }),
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(finisherQueries.closed(deps.type, deps.outcome)),
   pendingComponent: () => <ListSkeleton label="Loading closed items…" />,
   errorComponent: FinisherRouteError,
@@ -333,11 +339,16 @@ const projectRoute = createRoute({
   getParentRoute: () => appLayout,
   path: "finisher/projects/$id",
   staticData: { title: "Project · Finisher" },
+  validateSearch: z.object(panelTask),
   loader: ({ context, params }) => context.queryClient.ensureQueryData(finisherQueries.project(params.id)),
   pendingComponent: () => <ListSkeleton label="Loading project…" />,
   errorComponent: FinisherRouteError,
   component: function Project() {
-    return <ProjectView id={projectRoute.useParams({ select: (params) => params.id })} />;
+    return (
+      <TaskPanelLayout>
+        <ProjectView id={projectRoute.useParams({ select: (params) => params.id })} />
+      </TaskPanelLayout>
+    );
   },
 });
 

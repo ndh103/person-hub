@@ -1,7 +1,7 @@
 # Finisher and app shell: implementation notes
 
 - Feature slugs: `finisher`, `app-shell`
-- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified").
+- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified"). Latest change: 2026-10-20 (v4.1 task enhancements), not browser-tested.
 - Date: 2026-10-11
 - Inputs:
   - [requirements/finisher.md](../../requirements/finisher.md) v2 (FIN-001 to FIN-033)
@@ -12,6 +12,78 @@
 - Decisions made here: [ADR-0002: Finisher writes go through database functions](../architecture/decisions/ADR-0002-finisher-rpc-writes.md) (proposed)
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
+
+## Change 2026-10-20: Tomorrow shortcut, side panel, quick due date, task order (v4.1)
+
+Inputs:
+- [requirements/finisher.md](../../requirements/finisher.md) v4.1: FIN-034 (Tomorrow), FIN-036, FIN-037, FIN-038; decisions 15–22.
+- [Design](../../output/designs/finisher/design-notes.md): `task-list.html`, `index.html`.
+- [Architecture](../architecture/finisher.md), [ADR-0005](../architecture/decisions/ADR-0005-finisher-task-order-keys.md), [ADR-0006](../architecture/decisions/ADR-0006-drag-and-drop-library.md).
+
+### Requirement coverage
+
+| ID | Where |
+| --- | --- |
+| FIN-034 Tomorrow | `task-form-dialog.tsx`: three shortcuts (Today, Tomorrow, Next week) from `domain/quick-due.ts`. They stack below 520px and sit in three columns above. |
+| FIN-036 side panel | `components/task-panel.tsx` (`TaskPanelLayout`, `TaskPanel`) and `task-panel-context.ts`. It is used around the tab outlet (`tabs-layout.tsx`) and on the project page (`router.tsx`). <ul><li>`task` search parameter on the Today, Tasks, Closed and project routes; anything but a UUID is dropped.</li><li>History: the first open pushes, switching replaces, and close goes back.</li><li>Title focused on open; Escape closes; focus returns to the row's title, or to the page heading.</li><li>Loading, error with Retry, and not-found states.</li><li>Below 1024px the panel closes.</li><li>The layout widens to `max-w-7xl` while the panel is open (`:has([data-task-panel-open])` in `app-layout.tsx`).</li><li>Today and project pages switch to one column while it is open.</li><li>Selected row: `bg-accent` + inset `--ring` bar + semibold + `aria-current`.</li><li>Modifier clicks still open the full page.</li></ul> |
+| FIN-037 quick due date | The "Due" group in `TaskActionsMenu` (`task-row.tsx`), Open tasks only. Dates and the time rule come from `quickDueChoice()`: the time is kept (A14), and Today clears a passed time and stays enabled (decision 22). An item that would change nothing is disabled "· current". Saving uses `PUT /api/finisher/tasks/:id/due`; the toast offers Undo; if the row moved to another section, focus goes to its title. |
+| FIN-038 order | <ul><li>Migration `20261020120000_finisher_task_order.sql`: `sort_key`, seed, helpers, `finisher_move_task`, `finisher_set_task_due`, and bottom placement in create, update, unpark and reopen.</li><li>`PUT /api/finisher/tasks/:id/position`; `keepPosition` on the reopen action (the check-off Undo sends it).</li><li>Reads order by `sort_key, id`.</li><li>`components/sortable-task-list.tsx` (dnd-kit): one `DndContext` per section; handle-only pointer drag with a 4px activation distance and `touch-action: none`; keyboard sensor; FIN-038 announcements; `DragOverlay` ghost; releasing outside the section cancels.</li><li>The Order group (Move to top, up, down, bottom) is in the row menu.</li><li>Optimistic, with a section revert, an error toast and a refetch on failure.</li><li>Used in Today (Overdue, Due today) and Tasks (Overdue, Today, Upcoming, No date). Parked, Done today and project pages keep plain lists (A13).</li></ul> |
+
+### Decisions and deviations
+
+- **Move algorithm corrected (TA's doc updated).** Keys are unique across all statuses, so the new key goes between the two adjacent keys of any status inside the open neighbours' bounds. The planned version filled the gap from open keys only. A Done task between two open tasks would then collide; a test covers this now.
+- **Drop marker:** dnd-kit's sortable strategy shifts rows and leaves a muted placeholder (`bg-muted`, content at 35% opacity) where the task will land. This replaces the prototype's 2px line, with the same purpose.
+- **`keepPosition`** is honoured only for `reopen`, and ignored for other actions, following the parser's allowlist convention. A non-boolean value is a 422.
+- **The panel's Edit** opens the existing Edit task dialog (A11). The panel's ⋯ sits in its header, as in the design.
+- **Dependencies:** `@dnd-kit/core@6.3.1`, `@dnd-kit/sortable@10.0.0` and `@dnd-kit/utilities@3.2.2`, pinned exactly. There were no peer warnings with React 19.3, and `npm audit --omit=dev` reports 0. The main JS chunk grew by **+62.5 kB minified (+20.5 kB gzip)**, from 1,117.45 to 1,179.98 kB.
+
+### Checks (2026-10-20)
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Pass |
+| `npm run lint` | 0 errors. 6 fast-refresh warnings, all in files this change didn't add (the `router.tsx` warning was already there before it). |
+| `npm test` | **222 passed** in 12 files. |
+| Database tests (`supabase/tests`) | 85 passed, including the new `finisher-order.test.ts` (19). It covers: <ul><li>anonymous callers refused;</li><li>no direct `sort_key` write and no helper access;</li><li>the old 5-argument action call still works;</li><li>a second user cannot move the owner's task, use it as a neighbour, or change its due date;</li><li>between, top and bottom moves; idempotent retry; a filtered move leaves hidden keys alone;</li><li>no collision with a Done task's key;</li><li>bad input, stale view and closed tasks refused;</li><li>a rebalance after 60 inserts in one gap;</li><li>bottom placement for create, unpark and reopen, and Undo keeping the place;</li><li>a date change goes to the bottom, a time-only change does not;</li><li>set-due rules;</li><li>the seed reproduces the pre-v4 order (run on a database migrated up to the previous file, then the new migration).</li></ul> A mutation check confirmed the ownership test fails when the owner filter is removed from the neighbour lookup. |
+| API tests (`api-finisher`) | 6 new: neighbour-only move body, invalid position 422 with no database call, 409 and 404 mapping, set-due passes only date and time, foreign Origin 403 and form body 415 on the new routes, `keepPosition` only for reopen. |
+| Unit (`finisher-v4.test.ts`) | 11: Today, Tomorrow and Next week (Sunday, month and year end); the time rule and "current"; move helpers; neighbours; the new parsers. |
+| `npm run build` | Pass, with the existing chunk-size warning. |
+
+### Not verified
+
+- **No browser run of any of this.** Signed-in screens need a Supabase session, and there is no mock harness in the repo (see [platform.md](platform.md)). Untested in practice:
+  - dragging with a mouse, a touch screen and the keyboard, and dnd-kit's announcements;
+  - the panel's layout at 1024, 1280 and 1536px;
+  - focus return after closing;
+  - Back and reload;
+  - the menu height on phones;
+  - the three-button row at 320px;
+  - dark mode.
+- **No live database.** The migration has not been applied anywhere. PGlite is Postgres 18 and Supabase runs 15 or 17; `scale()`, `hashtextextended` and deferrable unique constraints all exist in 15+.
+
+### Migration and setup
+
+1. Review `supabase/migrations/20261020120000_finisher_task_order.sql`, then apply it **before** deploying the new Worker, after your own authorization. Old Worker code keeps working against it, as tested. Rollback steps are in [the architecture](../architecture/finisher.md#deployment-and-rollback); rolling back loses only the custom order.
+2. `npm install`: the new dnd-kit packages are in the lockfile.
+3. No new environment variables.
+
+### Tester
+
+- **Panel (laptop):** open, switch tasks, Escape, ✕, Back, reload with `?task=`, delete from the panel, Mark done in the panel (it stays open showing Done), resize below 1024px, and Ctrl-click (new tab, full page).
+- **Drag:**
+  - with a mouse, on touch (a swipe on the row must still scroll), and with the keyboard (Space, arrows, Space or Escape) using NVDA or VoiceOver;
+  - drop outside the section;
+  - a section with one task has no handle;
+  - reorder while filtered by project;
+  - the order matches between the Today and Tasks tabs and across two devices.
+- **Quick menu:**
+  - each item on overdue, today, timed and untimed tasks;
+  - the "current" item disabled;
+  - decision 22 ("Call the dentist" at 09:00 after 09:00);
+  - Undo;
+  - focus after the task moves to another section;
+  - Parked tasks have no Due group.
+- **Security (live project):** call `finisher_move_task` and `finisher_set_task_due` through PostgREST as a second account with the owner's ids, and as `anon`.
 
 ## Change 2026-10-13: FIN-035 tab counts and the header date line
 

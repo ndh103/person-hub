@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@/components/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   addDays,
   formatDate,
@@ -17,6 +18,7 @@ import { ListSection, NotFoundState, RowList } from "../list-parts";
 import { ProjectActions } from "../project-actions";
 import { StripCell } from "../session-control";
 import { SlotList } from "../slot-list";
+import { useTaskPanel } from "../task-panel-context";
 import { TaskRow } from "../task-row";
 
 const STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -97,6 +99,7 @@ function Weeks({ project }: { project: ProjectDetail }) {
 /** FIN-024: project details, slots, 7-day strip, weekly rates and tasks. */
 export function ProjectView({ id }: { id: string }) {
   const { data: project } = useSuspenseQuery(finisherQueries.project(id));
+  const panelOpen = Boolean(useTaskPanel()?.selectedId);
   if (!project) return <NotFoundState kind="project" />;
   const today = project.now.date;
   const open = project.status === "active" || project.status === "parked";
@@ -172,7 +175,8 @@ export function ProjectView({ id }: { id: string }) {
         />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+      {/* One column while the task side panel is open (FIN-036). */}
+      <div className={cn("grid gap-8", !panelOpen && "lg:grid-cols-2 lg:items-start")}>
         <div className="flex flex-col gap-8">
           <ListSection title="Weekly slots" id="slots">
             <SlotList projectId={project.id} slots={project.slots} editable={open} />

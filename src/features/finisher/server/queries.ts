@@ -234,9 +234,8 @@ export async function getToday(ctx: FinisherContext): Promise<TodayData> {
       .select(TASK_COLUMNS)
       .eq("status", "open")
       .lte("due_date", now.date)
-      .order("due_date")
-      .order("due_time", { nullsFirst: false })
-      .order("created_at")
+      .order("sort_key") // the user's task order (FIN-038), shared with the Tasks tab
+      .order("id")
       .limit(500),
     ctx.supabase
       .from("finisher_tasks")
@@ -313,25 +312,23 @@ async function taskGroupPage(
       query = query
         .eq("status", "open")
         .or(`due_date.lt.${now.date},and(due_date.eq.${now.date},due_time.lte.${now.time})`)
-        .order("due_date")
-        .order("due_time", { nullsFirst: false });
+        .order("sort_key");
       break;
     case "today":
       query = query
         .eq("status", "open")
         .eq("due_date", now.date)
         .or(`due_time.is.null,due_time.gt.${now.time}`)
-        .order("due_time", { nullsFirst: false });
+        .order("sort_key");
       break;
     case "upcoming":
       query = query
         .eq("status", "open")
         .gt("due_date", now.date)
-        .order("due_date")
-        .order("due_time", { nullsFirst: false });
+        .order("sort_key");
       break;
     case "nodate":
-      query = query.eq("status", "open").is("due_date", null).order("created_at", { ascending: false });
+      query = query.eq("status", "open").is("due_date", null).order("sort_key");
       break;
     case "parked":
       query = query.eq("status", "parked").order("revisit_date");
@@ -500,8 +497,8 @@ export async function getProject(ctx: FinisherContext, projectId: string): Promi
       .eq("project_id", project.id)
       .in("status", ["open", "parked"])
       .order("status")
-      .order("due_date", { nullsFirst: false })
-      .order("created_at")
+      .order("sort_key") // open tasks in the user's order (A13), then parked
+      .order("id")
       .limit(200),
     ctx.supabase
       .from("finisher_tasks")

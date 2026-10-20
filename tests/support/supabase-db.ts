@@ -45,12 +45,24 @@ export type TestDb = {
   as: <T = Record<string, unknown>>(userId: string | null, sql: string, params?: unknown[]) => Promise<T[]>;
 };
 
-export async function createTestDb(): Promise<TestDb> {
+const MIGRATIONS_DIR = join(process.cwd(), "supabase", "migrations");
+
+/** Applies one migration file by name (for tests of a data migration). */
+export async function applyMigration(db: TestDb, file: string): Promise<void> {
+  await db.admin.exec(readFileSync(join(MIGRATIONS_DIR, file), "utf8"));
+}
+
+/**
+ * A fresh database with all migrations applied, or only those that sort
+ * before `options.before` (a migration file name), so a test can add rows
+ * first and then run that migration with applyMigration.
+ */
+export async function createTestDb(options: { before?: string } = {}): Promise<TestDb> {
   const admin = await PGlite.create();
   await admin.exec(BOOTSTRAP);
-  const dir = join(process.cwd(), "supabase", "migrations");
-  for (const file of readdirSync(dir).filter((name) => name.endsWith(".sql")).sort()) {
-    await admin.exec(readFileSync(join(dir, file), "utf8"));
+  for (const file of readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith(".sql")).sort()) {
+    if (options.before && file >= options.before) break;
+    await admin.exec(readFileSync(join(MIGRATIONS_DIR, file), "utf8"));
   }
   await admin.query("insert into auth.users (id, email) values ($1, 'a@example.test'), ($2, 'b@example.test')", [
     USER_A,

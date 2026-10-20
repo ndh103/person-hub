@@ -7,18 +7,31 @@ import { finisherApi } from "../api";
 import { formatDate, formatRelativeDate, type LocalDate } from "../domain/dates";
 import { generalErrorMessage } from "../messages";
 import type { ClosedEntry, ClosedOutcome, ClosedPage, ClosedTabData, ClosedType } from "../types";
+import { cn } from "@/lib/utils";
 import { RowList } from "./list-parts";
+import { isPlainClick, useTaskPanel } from "./task-panel-context";
 
 const OUTCOME_LABEL: Record<ClosedEntry["outcome"], string> = { done: "Done", finished: "Finished", let_go: "Let go" };
 
 function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
+  // Closed tasks open in the laptop side panel too (FIN-036); projects keep their page.
+  const panel = useTaskPanel();
+  const isTask = entry.kind === "task";
+  const selected = isTask && panel?.selectedId === entry.id;
   return (
-    <li className="flex flex-col gap-1 p-4">
+    <li className={cn("flex flex-col gap-1 p-4", selected && "bg-accent shadow-[inset_3px_0_0_var(--ring)]")}>
       <div className="flex flex-wrap items-center gap-2">
         <Link
           to={entry.kind === "task" ? "/finisher/tasks/$id" : "/finisher/projects/$id"}
           params={{ id: entry.id }}
-          className="font-medium break-words underline-offset-4 hover:underline">
+          data-task-title={isTask ? entry.id : undefined}
+          aria-current={selected ? "true" : undefined}
+          onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+            if (!isTask || !panel?.enabled || !isPlainClick(event)) return;
+            event.preventDefault();
+            panel.open(entry.id);
+          }}
+          className={cn("font-medium break-words underline-offset-4 hover:underline", selected && "font-semibold")}>
           {entry.title}
         </Link>
         <Badge variant={entry.outcome === "let_go" ? "outline" : "secondary"}>{OUTCOME_LABEL[entry.outcome]}</Badge>

@@ -1,6 +1,8 @@
 import {
   isUuid,
+  parseDueInput,
   parseMarkInput,
+  parseMoveInput,
   parseNewProject,
   parseProjectAction,
   parseProjectInput,
@@ -73,8 +75,28 @@ export async function taskAction(ctx: FinisherContext, taskId: string, body: Bod
     p_action: input.action,
     p_revisit_date: input.action === "park" ? input.revisitDate : null,
     p_reason: input.action === "let_go" ? input.reason : null,
+    p_keep_position: input.action === "reopen" ? input.keepPosition : false,
   });
   return { status };
+}
+
+/** FIN-037: change only the due date and time of an Open task. */
+export async function setTaskDue(ctx: FinisherContext, taskId: string, body: Body): Promise<void> {
+  const id = requireId(taskId);
+  const input = unwrap(parseDueInput(body, ctx.now.date));
+  await rpc(ctx, "finisher_set_task_due", {
+    p_tz: ctx.timeZone,
+    p_task_id: id,
+    p_due_date: input.dueDate,
+    p_due_time: input.dueTime,
+  });
+}
+
+/** FIN-038: move an Open task between the neighbours the caller sees (ADR-0005). */
+export async function moveTask(ctx: FinisherContext, taskId: string, body: Body): Promise<void> {
+  const id = requireId(taskId);
+  const input = unwrap(parseMoveInput(body, id));
+  await rpc(ctx, "finisher_move_task", { p_task_id: id, p_after_id: input.afterId, p_before_id: input.beforeId });
 }
 
 export async function deleteTask(ctx: FinisherContext, taskId: string): Promise<void> {

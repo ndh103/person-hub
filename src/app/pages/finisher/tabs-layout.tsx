@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { finisherQueries } from "@/features/finisher/api";
 import { AddTaskButton } from "@/features/finisher/components/add-task-button";
 import { FinisherTabs } from "@/features/finisher/components/finisher-tabs";
+import { TaskPanelLayout } from "@/features/finisher/components/task-panel";
 import { formatDate } from "@/lib/dates";
 
 /**
@@ -32,9 +33,10 @@ export function FinisherTabsLayout() {
         {data ? <AddTaskButton today={data.today} projects={data.projects} /> : <Skeleton className="h-11 w-28" />}
       </div>
       <FinisherTabs counts={data?.counts} />
-      <div>
+      {/* Task lists in the tabs open tasks in the laptop side panel (FIN-036). */}
+      <TaskPanelLayout>
         <Outlet />
-      </div>
+      </TaskPanelLayout>
     </section>
   );
 }
