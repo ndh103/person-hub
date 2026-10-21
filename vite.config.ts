@@ -14,4 +14,7 @@ export default defineConfig({
   // Fixed port: it must match the Supabase redirect URLs and Google OAuth
   // origins, so fail rather than silently move to another port.
   server: { port: 3000, strictPort: true },
+  // Never inline fonts as data: URIs: the CSP allows `font-src 'self'` only
+  // (public/_headers). Other small assets keep Vite's default inlining.
+  build: { assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/i.test(file) ? false : undefined) },
 });
