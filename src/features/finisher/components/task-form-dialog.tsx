@@ -51,6 +51,18 @@ export function TaskFormDialog({
   const [announcement, setAnnouncement] = useState("");
   const editing = Boolean(task);
 
+  // Callers open the dialog through the `open` prop, which bypasses handleOpenChange,
+  // and the dialog can outlive a task switch (the laptop panel). Reload the values
+  // from the current task on every open so the form never shows a previous task.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setValues(initialValues(task, defaultProjectId));
+      setAnnouncement("");
+    }
+  }
+
   // A linked project that has since closed stays selectable while editing (assumption A4).
   const options =
     task?.projectId && !projects.some((project) => project.id === task.projectId)
