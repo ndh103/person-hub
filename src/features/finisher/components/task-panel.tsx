@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { finisherQueries } from "../api";
 import { isUuid } from "../domain/validation";
 import { TASK_STATUS_LABEL } from "../messages";
-import { PomodoroBlock, PomodoroWatcher } from "./pomodoro";
+import { PomodoroBlock } from "./pomodoro";
 import { TaskPanelContext, type TaskPanelApi } from "./task-panel-context";
 import { TaskFormDialog } from "./task-form-dialog";
 import { TaskActionsMenu, TaskCheck, TaskDue } from "./task-row";
@@ -97,8 +97,6 @@ export function TaskPanelLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TaskPanelContext.Provider value={api}>
-      {/* Shows a Pomodoro's completion on any page with task lists (FIN-039). */}
-      <PomodoroWatcher />
       <div
         data-task-panel-open={selectedId ? "" : undefined}
         className={cn(

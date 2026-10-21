@@ -257,18 +257,21 @@ A Pomodoro is a 25-minute focus session tied to one task (decision 23). It helps
 **Starting**
 
 - The task's details show a **Pomodoro** block: in the side panel on laptop (FIN-036) and on the task page. For an **Open** task it offers **Start Pomodoro · 25 min** (A18). Parked, Done, and Let go tasks show their counts (FIN-040) but no Start.
-- Given no session is running, when the user chooses Start, then a session starts at once. The start time is set by the server, and the block shows the running state. A polite announcement says "Pomodoro started for 'title'. 25 minutes."
-- **One at a time.** Only one session runs at a time for the user, across all tasks and devices. Given a session is running for task X, the details of another task Y offer **Switch to this task** instead of Start. It asks "Stop the Pomodoro for 'X' and start one for 'Y'? The stopped session won't count." Confirming stops X (not counted) and starts Y in one step.
+- Given no session is running, when the user chooses Start, then a session starts at once. The start time is set by the server, and the focus popup opens (below).
+- **One at a time.** Only one session runs at a time for the user, across all tasks and devices. While one runs, the focus popup covers the app, so no other session can be started (the API's `replace` option for switching remains, unused by the UI since 2026-10-21).
 
 **Running**
 
-- The block shows the time left as mm:ss, counting down, with a progress bar and the task title. The countdown is worked out from the server's start time, so it is the same after a reload, after navigating away, and on another device.
-- **Stop** asks "Stop this Pomodoro? It won't be counted." Confirming abandons the session (decision 24). There is no pause.
+- While a session runs, a modal **focus popup** covers every signed-in page (Home, Events, Finisher), including after a reload, after navigating, and when the session was started on another device (decision 28). It shows "Focus", the task title, "Stay with this one task. Everything else can wait.", the time left as mm:ss counting down, and a progress bar. The countdown is worked out from the server's start time, so it is the same everywhere. Escape and clicks outside do not close it; while it is open the browser tab title starts with "⏱ Focus".
+- The only ways out, each confirmed with **Keep going** focused first:
+  - **Stop** asks "Stop this Pomodoro? It won't be counted." Confirming abandons the session (decision 24). There is no pause.
+  - **Mark task done** (when the task still exists) asks "Mark the task done and end the Pomodoro?" and says the session won't count, since only full sessions do. Confirming stops the session, then marks the task Done (FIN-021).
+- Behind the popup, the task's Pomodoro block shows "Running: mm:ss left" with no buttons.
 
 **Completing**
 
 - When 25 minutes have passed without Stop, the session is **completed** and counts (FIN-040). This holds even if the app was closed at that moment: only Stop abandons a session (A20). Nothing else changes, and the task's status is untouched.
-- If the app is open in the browser at that moment, on any Finisher page, then:
+- If the app is open in the browser at that moment, on any signed-in page, then the focus popup closes and:
   - a modal popup titled "Pomodoro complete" says "You focused on 'title' for 25 minutes. That's N Pomodoros today." It suggests a 5-minute break, or a longer 15 to 30 minute break after every fourth session today (decision 27). The user must close it (**Take a break**, which gets the initial focus, or Escape) before doing anything else; it also offers **Mark task done** (FIN-021). While it is open, the browser tab title starts with "✓ Pomodoro complete";
   - a short chime plays (decision 25). Browsers may block sound after a reload until the user clicks something; the message still shows.
   - The counts update without a reload.
@@ -281,8 +284,8 @@ A Pomodoro is a 25-minute focus session tied to one task (decision 23). It helps
 
 **Accessibility**
 
-- The countdown has the timer role. It is not announced every second; the start, stop, and completion are announced politely.
-- Start, Stop, and Switch are real buttons at least 44px tall. Dialogs follow FIN-018. The progress bar is not the only cue: the time left is always shown as text.
+- The countdown has the timer role. It is not announced every second; the focus and completion popups are modal dialogs whose titles are announced, and Stop is announced politely.
+- Start, Stop, and Mark task done are real buttons at least 44px tall. Dialogs follow FIN-018, except that the focus popup does not close on Escape (decision 28). The progress bar is not the only cue: the time left is always shown as text.
 
 ### FIN-040 Pomodoro summary (Must)
 
@@ -454,6 +457,7 @@ From the user, 2026-10-20 (Pomodoro):
 25. When a session ends, the open app shows a modal popup and plays a short chime. There are no browser notifications.
 26. Completed sessions are summarised on the Today tab, in the Finisher header, and per task in its details (today and total).
 27. The completion popup suggests a break (5 minutes; 15 to 30 minutes after every fourth session today). It is a suggestion only: there is no break timer (2026-10-21).
+28. A running session blocks the app with a focus popup on every signed-in page. Only Stop or Mark task done (both confirmed, neither counted) end it early; there is no minimise (2026-10-21).
 
 ## Assumptions (reversible proposed defaults)
 

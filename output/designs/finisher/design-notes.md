@@ -245,6 +245,8 @@ It sits under the Mark done / Edit actions and above the facts, separated by a r
 | Parked, Done, Let go | No Start; counts only. |
 | Always | "Pomodoros: 2 today · 9 total" (mono meta). |
 
+- **Superseded in the app (2026-10-21, requirements decision 28):** while a session runs, a blocking focus popup on every signed-in page holds the countdown, Stop and Mark task done; the block only shows "Running: mm:ss left", and Switch is gone from the UI.
+
 - **Confirmations** (`AlertDialog`):
   - Stop: "Stop this Pomodoro? It won't be counted."
   - Switch: "Stop the Pomodoro for 'X' and start one for 'Y'? The stopped session won't count."

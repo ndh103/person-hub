@@ -8,7 +8,7 @@ import { finisherQueries } from "../../api";
 import { TASK_STATUS_LABEL } from "../../messages";
 import type { TaskDetail } from "../../types";
 import { NotFoundState } from "../list-parts";
-import { PomodoroBlock, PomodoroWatcher } from "../pomodoro";
+import { PomodoroBlock } from "../pomodoro";
 import { TaskActionsMenu, TaskCheck, TaskDue } from "../task-row";
 
 /** A task's facts (FIN-020), shared by the task page and the laptop side panel (FIN-036). */
@@ -94,7 +94,6 @@ export function TaskView({ id }: { id: string }) {
       <div className="-mt-5">
         <PomodoroBlock task={task} />
       </div>
-      <PomodoroWatcher />
       <TaskFacts task={task} />
     </article>
   );

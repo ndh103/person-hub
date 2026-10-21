@@ -25,7 +25,7 @@ import { isPlainClick } from "./task-panel-context";
 import { useFinisherRefresh } from "./use-refresh";
 
 /** Time left, counting down from the server's end instant. */
-function Countdown({ active, offsetMs, size }: { active: PomodoroActive; offsetMs: number; size: "large" | "inline" }) {
+function Countdown({ active, offsetMs, size }: { active: PomodoroActive; offsetMs: number; size: "focus" | "inline" }) {
   const now = useSecondTick() + offsetMs;
   const left = formatCountdown(remainingMs(active.endsAt, now));
   if (size === "inline") return <span className="font-mono tabular-nums">{left}</span>;
@@ -33,7 +33,7 @@ function Countdown({ active, offsetMs, size }: { active: PomodoroActive; offsetM
   return (
     <>
       {/* role="timer" is not live: the time is not announced every second. */}
-      <p role="timer" className="mt-1 font-mono text-4xl tabular-nums">
+      <p role="timer" className="text-center font-mono text-6xl tabular-nums sm:text-7xl">
         <span className="sr-only">Time left: </span>
         {left}
       </p>
@@ -49,25 +49,22 @@ function Countdown({ active, offsetMs, size }: { active: PomodoroActive; offsetM
 
 /**
  * FIN-039: the Pomodoro block in a task's details (side panel and task page).
- * Start on an Open task; while running, a countdown and Stop; while another
- * task's session runs, Switch. The counts are completed sessions (FIN-040).
+ * Start on an Open task. While a session runs, the focus popup covers the
+ * page (PomodoroFocusDialog), so the block only says so. The counts are
+ * completed sessions (FIN-040).
  */
 export function PomodoroBlock({ task }: { task: TaskDetail }) {
   const headingId = useId();
   const { summary, offsetMs } = usePomodoro();
   const refresh = useFinisherRefresh();
-  const [dialog, setDialog] = useState<"stop" | "switch" | null>(null);
   const [busy, setBusy] = useState(false);
-  const [announcement, setAnnouncement] = useState("");
   const active = summary?.active ?? null;
-  const mine = active !== null && active.taskId === task.id;
 
-  async function start(replace: boolean) {
+  async function start() {
     unlockChime(); // a user gesture: lets the chime play when the session ends
     setBusy(true);
-    const result = await finisherApi<{ id: string }>("POST", `/api/finisher/tasks/${task.id}/pomodoros`, replace ? { replace: true } : {});
+    const result = await finisherApi<{ id: string }>("POST", `/api/finisher/tasks/${task.id}/pomodoros`, {});
     setBusy(false);
-    setDialog(null);
     if (!result.ok) {
       const running = result.error === "not_allowed";
       toast.add({
@@ -75,31 +72,9 @@ export function PomodoroBlock({ task }: { task: TaskDetail }) {
         description: running ? "It may have been started on another device." : generalErrorMessage(result.error),
         type: "error",
       });
-      void refresh();
-      return;
     }
-    setAnnouncement(`Pomodoro started for “${task.title}”. ${POMODORO_MINUTES} minutes.`);
+    // On success the refreshed summary opens the focus popup, which takes the focus.
     await refresh();
-    document.querySelector<HTMLElement>("[data-pomodoro-stop]")?.focus();
-  }
-
-  async function stop() {
-    if (!active) return;
-    setBusy(true);
-    const result = await finisherApi("POST", `/api/finisher/pomodoros/${active.id}/stop`, {});
-    setBusy(false);
-    setDialog(null);
-    if (result.ok) {
-      setAnnouncement("Pomodoro stopped. It wasn’t counted.");
-      toast.add({ title: "Pomodoro stopped. It wasn’t counted." });
-    } else if (result.error === "not_allowed") {
-      // The 25 minutes had already passed: it counts (FIN-039).
-      toast.add({ title: "This Pomodoro had already finished. It counted.", type: "success" });
-    } else {
-      toast.add({ title: "Couldn’t stop the Pomodoro", description: generalErrorMessage(result.error), type: "error" });
-    }
-    await refresh();
-    document.querySelector<HTMLElement>("[data-pomodoro-start]")?.focus();
   }
 
   return (
@@ -107,26 +82,13 @@ export function PomodoroBlock({ task }: { task: TaskDetail }) {
       <h3 id={headingId} className="text-sm font-medium">
         Pomodoro
       </h3>
-      {!summary ? null : mine && active ? (
-        <>
-          <Countdown active={active} offsetMs={offsetMs} size="large" />
-          <Button data-pomodoro-stop variant="outline" className="mt-3 h-11" disabled={busy} onClick={() => setDialog("stop")}>
-            Stop
-          </Button>
-        </>
-      ) : active ? (
-        <>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A Pomodoro is running for “{active.taskTitle ?? "another task"}”: <Countdown active={active} offsetMs={offsetMs} size="inline" /> left.
-          </p>
-          {task.status === "open" ? (
-            <Button variant="outline" className="mt-3 h-11" disabled={busy} onClick={() => setDialog("switch")}>
-              Switch to this task
-            </Button>
-          ) : null}
-        </>
+      {!summary ? null : active ? (
+        <p className="mt-1 text-sm text-muted-foreground">
+          {active.taskId === task.id ? "Running" : `Running for “${active.taskTitle ?? "another task"}”`}:{" "}
+          <Countdown active={active} offsetMs={offsetMs} size="inline" /> left.
+        </p>
       ) : task.status === "open" ? (
-        <Button data-pomodoro-start className="mt-2 h-11 px-4" disabled={busy} onClick={() => void start(false)}>
+        <Button data-pomodoro-start className="mt-2 h-11 px-4" disabled={busy} onClick={() => void start()}>
           {busy ? <Spinner data-icon="inline-start" aria-hidden="true" /> : <TimerIcon data-icon="inline-start" />}
           Start Pomodoro · {POMODORO_MINUTES} min
         </Button>
@@ -134,30 +96,6 @@ export function PomodoroBlock({ task }: { task: TaskDetail }) {
       <p className="mt-3 font-mono text-[0.8125rem] text-muted-foreground">
         Pomodoros: {task.pomodoros.today} today · {task.pomodoros.total} total
       </p>
-      <p className="sr-only" role="status">
-        {announcement}
-      </p>
-
-      <AlertDialog open={dialog !== null} onOpenChange={(open) => (open ? undefined : setDialog(null))}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{dialog === "switch" ? "Switch to this task?" : "Stop this Pomodoro?"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {dialog === "switch"
-                ? `Stop the Pomodoro for “${active?.taskTitle ?? "another task"}” and start one for “${task.title}”? The stopped session won’t count.`
-                : "It won’t be counted."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            {/* First in the footer, so it gets the initial focus: Enter never abandons a session by accident. */}
-            <AlertDialogCancel className="h-11">Keep going</AlertDialogCancel>
-            <Button className="h-11" disabled={busy} onClick={() => void (dialog === "switch" ? start(true) : stop())}>
-              {busy ? <Spinner data-icon="inline-start" aria-hidden="true" /> : null}
-              {dialog === "switch" ? "Stop and start" : "Stop Pomodoro"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </section>
   );
 }
@@ -209,13 +147,16 @@ export function PomodoroHeader() {
 }
 
 /** A session that just completed, kept after the refresh clears it from the summary. */
-type Completed = { taskId: string | null; taskTitle: string | null; todayBefore: number };
+type Completed = { id: string; taskId: string | null; taskTitle: string | null; todayBefore: number };
 
 /**
- * Shows the end of a session while the app is open (FIN-039): a modal popup
- * that suggests a break and offers "Mark task done", a chime, and fresh
- * counts. It writes nothing: the server already treats the session as
- * completed once its time is up (ADR-0007).
+ * The Pomodoro popups, mounted once for every signed-in page (FIN-039):
+ * - while a session runs, the focus popup covers the app, also after a
+ *   reload or when the session was started on another device;
+ * - when it ends, a chime, fresh counts and the completion popup, which
+ *   suggests a break and offers "Mark task done". The end writes nothing: the
+ *   server already treats the session as completed once its time is up
+ *   (ADR-0007).
  */
 export function PomodoroWatcher() {
   const { summary, offsetMs } = usePomodoro();
@@ -224,14 +165,28 @@ export function PomodoroWatcher() {
   return (
     <>
       {active ? (
-        <CompletionTimer
-          key={active.id}
-          active={active}
-          offsetMs={offsetMs}
-          onComplete={() =>
-            setCompleted({ taskId: active.taskId, taskTitle: active.taskTitle, todayBefore: summary?.today.completed ?? 0 })
-          }
-        />
+        <>
+          <CompletionTimer
+            key={active.id}
+            active={active}
+            offsetMs={offsetMs}
+            onComplete={() =>
+              setCompleted({
+                id: active.id,
+                taskId: active.taskId,
+                taskTitle: active.taskTitle,
+                todayBefore: summary?.today.completed ?? 0,
+              })
+            }
+          />
+          {/* Gone once the time is up, before the refresh clears the session. */}
+          <PomodoroFocusDialog
+            key={active.id}
+            active={active}
+            offsetMs={offsetMs}
+            ended={completed?.id === active.id || announcedCompletions.has(active.id)}
+          />
+        </>
       ) : null}
       <PomodoroCompleteDialog
         completed={completed}
@@ -260,7 +215,108 @@ function CompletionTimer({ active, offsetMs, onComplete }: { active: PomodoroAct
   return null;
 }
 
-const COMPLETE_TITLE_PREFIX = "✓ Pomodoro complete · ";
+/** Prefixes the browser tab title while `on`, so a background tab shows it too. */
+function useTitlePrefix(prefix: string, on: boolean) {
+  useEffect(() => {
+    if (!on) return;
+    const previous = document.title;
+    document.title = prefix + previous;
+    return () => {
+      if (document.title.startsWith(prefix)) document.title = previous;
+    };
+  }, [prefix, on]);
+}
+
+/**
+ * The focus popup while a session runs (FIN-039, decision 28). It blocks the
+ * whole app on purpose: the only ways out are Stop and Mark task done, each
+ * confirmed, and neither counts the session. Escape and outside clicks do
+ * nothing.
+ */
+function PomodoroFocusDialog({ active, offsetMs, ended }: { active: PomodoroActive; offsetMs: number; ended: boolean }) {
+  const refresh = useFinisherRefresh();
+  const [confirm, setConfirm] = useState<"stop" | "done" | null>(null);
+  const [busy, setBusy] = useState(false);
+  const open = !ended;
+  const title = active.taskTitle ?? "your task";
+  useTitlePrefix("⏱ Focus · ", open);
+
+  /** Ends the session early; false when that failed and nothing changed. */
+  async function stopSession(): Promise<boolean> {
+    const result = await finisherApi("POST", `/api/finisher/pomodoros/${active.id}/stop`, {});
+    if (result.ok) return true;
+    if (result.error === "not_allowed") {
+      // The 25 minutes had already passed: it counts (FIN-039).
+      toast.add({ title: "This Pomodoro had already finished. It counted.", type: "success" });
+      return true;
+    }
+    toast.add({ title: "Couldn’t stop the Pomodoro", description: generalErrorMessage(result.error), type: "error" });
+    return false;
+  }
+
+  async function run() {
+    const action = confirm;
+    setBusy(true);
+    const stopped = await stopSession();
+    if (stopped && action === "done" && active.taskId) await markDone(active.taskId, refresh);
+    else if (stopped) toast.add({ title: "Pomodoro stopped. It wasn’t counted." });
+    setBusy(false);
+    setConfirm(null);
+    await refresh();
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={() => undefined}>
+      <AlertDialogContent
+        overlayClassName="bg-black/60 supports-backdrop-filter:backdrop-blur-sm"
+        className="max-w-[calc(100vw-2rem)]! gap-6 p-6 sm:max-w-md! sm:p-8"
+      >
+        <AlertDialogHeader className="place-items-center! text-center!">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+            <TimerIcon aria-hidden="true" className="size-4" />
+            Focus
+          </p>
+          <AlertDialogTitle className="text-2xl text-balance wrap-break-word">{title}</AlertDialogTitle>
+          <AlertDialogDescription>Stay with this one task. Everything else can wait.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <div>
+          <Countdown active={active} offsetMs={offsetMs} size="focus" />
+        </div>
+        <AlertDialogFooter className="sm:justify-center">
+          <Button variant="outline" className="h-11" disabled={busy} onClick={() => setConfirm("stop")}>
+            Stop
+          </Button>
+          {active.taskId ? (
+            <Button variant="outline" className="h-11" disabled={busy} onClick={() => setConfirm("done")}>
+              Mark task done
+            </Button>
+          ) : null}
+        </AlertDialogFooter>
+
+        <AlertDialog open={confirm !== null} onOpenChange={(next) => (next ? undefined : setConfirm(null))}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{confirm === "done" ? "Mark the task done and end the Pomodoro?" : "Stop this Pomodoro?"}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirm === "done"
+                  ? `“${title}” will be marked done. This session won’t count: only full sessions do.`
+                  : "It won’t be counted."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              {/* First in the footer, so it gets the initial focus: Enter never abandons a session by accident. */}
+              <AlertDialogCancel className="h-11">Keep going</AlertDialogCancel>
+              <Button className="h-11" disabled={busy} onClick={() => void run()}>
+                {busy ? <Spinner data-icon="inline-start" aria-hidden="true" /> : null}
+                {confirm === "done" ? "Mark done" : "Stop Pomodoro"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
 
 /**
  * The completion popup. Modal on purpose: the user closes it before going on,
@@ -281,15 +337,7 @@ function PomodoroCompleteDialog({
   const open = completed !== null;
   const rest = breakSuggestion(completedToday);
 
-  // Marks the browser tab too, for when the app is in a background tab.
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.title;
-    document.title = COMPLETE_TITLE_PREFIX + previous;
-    return () => {
-      if (document.title.startsWith(COMPLETE_TITLE_PREFIX)) document.title = previous;
-    };
-  }, [open]);
+  useTitlePrefix("✓ Pomodoro complete · ", open);
 
   async function done(taskId: string) {
     setBusy(true);

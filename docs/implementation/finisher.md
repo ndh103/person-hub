@@ -24,7 +24,7 @@ Inputs:
 
 | ID | Where |
 | --- | --- |
-| FIN-039 | <ul><li>**Migration** `20261021120000_finisher_pomodoros.sql`:<ul><li>the `finisher_pomodoros` table (owner SELECT only) and `unique (id, user_id)` on `finisher_tasks`, which the composite foreign key needs;</li><li>`finisher_start_pomodoro` (Open tasks only; one running session under a per-user lock; `p_replace` for Switch) and `finisher_stop_pomodoro`;</li><li>`finisher_delete_task` now abandons a running session first.</li></ul></li><li>**Routes:** `POST /api/finisher/tasks/:id/pomodoros` (`{ replace? }`) and `POST /api/finisher/pomodoros/:id/stop`.</li><li>**UI:** `components/pomodoro.tsx`, `PomodoroBlock` in the side panel and on the task page: Start, a countdown with `role="timer"`, a progress bar, Stop and Switch behind an `AlertDialog` whose Cancel ("Keep going") gets the initial focus, and polite announcements.</li><li>**Completion:** `PomodoroWatcher` (in `TaskPanelLayout` and on the task page) shows "Pomodoro complete" with **Mark task done**, plays the chime and refreshes, once per session.</li><li>**Clock and chime:** in `pomodoro-clock.ts`, a shared one-second ticker; the server-clock offset comes from `serverNow`; a Web Audio chime unlocked on the Start click.</li></ul> |
+| FIN-039 | <ul><li>**Migration** `20261021120000_finisher_pomodoros.sql`:<ul><li>the `finisher_pomodoros` table (owner SELECT only) and `unique (id, user_id)` on `finisher_tasks`, which the composite foreign key needs;</li><li>`finisher_start_pomodoro` (Open tasks only; one running session under a per-user lock; `p_replace` for Switch) and `finisher_stop_pomodoro`;</li><li>`finisher_delete_task` now abandons a running session first.</li></ul></li><li>**Routes:** `POST /api/finisher/tasks/:id/pomodoros` (`{ replace? }`) and `POST /api/finisher/pomodoros/:id/stop`.</li><li>**UI:** `components/pomodoro.tsx`, `PomodoroBlock` in the side panel and on the task page: Start, a countdown with `role="timer"`, a progress bar, Stop and Switch behind an `AlertDialog` whose Cancel ("Keep going") gets the initial focus, and polite announcements.</li><li>**Focus and completion (2026-10-21):** `PomodoroWatcher`, mounted once in `AppLayout` so it covers every signed-in page, shows the modal focus popup while a session runs (Stop and Mark task done, both confirmed; Escape ignored) and, at the end, plays the chime, refreshes and shows the "Pomodoro complete" popup with a break suggestion and **Mark task done**, once per session. `PomodoroBlock` keeps Start and the counts; the Switch dialog was removed from the UI.</li><li>**Clock and chime:** in `pomodoro-clock.ts`, a shared one-second ticker; the server-clock offset comes from `serverNow`; a Web Audio chime unlocked on the Start click.</li></ul> |
 | FIN-040 | <ul><li>`GET /basics` adds `pomodoro { active, today, serverNow }` (`server/pomodoros.ts`). "Today" counts sessions that ended since local midnight (`zonedToUtc`).</li><li>`GET /tasks/:id` adds `pomodoros { today, total }`.</li><li>`PomodoroHeader` in the Finisher header shows the count pill and a running chip that opens the panel on laptop or the task page on phone.</li><li>The Today summary line adds "N Pomodoros today · M min".</li></ul> |
 
 ### Decisions and deviations
@@ -52,7 +52,7 @@ Inputs:
 - **No browser run.** This needs a Supabase session, as before. Untested in practice:
   - the real countdown and the chime;
   - completion while the app is open and while it is closed;
-  - the Switch dialog;
+  - the focus popup (blocking, Escape ignored, nested Stop / Mark task done confirmations) and the completion popup;
   - the header chip at 320px;
   - dark mode;
   - a screen reader on the timer.
@@ -62,7 +62,7 @@ Inputs:
 ### Tester
 
 - Start a session from the panel and from the task page. Reload mid-session, open it on a second device, and check the countdown matches.
-- Switch from another task (the first session is not counted). Stop (not counted).
+- After Start, the focus popup covers the page; Escape and outside clicks do nothing; reload on Events or Home and it is back. Stop (confirmed, not counted). Mark task done (confirmed: task Done, session not counted).
 - Let a session finish with the tab open: the modal popup (break suggestion, longer after the fourth today; **Take a break** focused; Escape closes; tab title marked and restored), **Mark task done**, the chime (after a click since load) and the counts.
 - Let one finish with the tab closed: the count still rises.
 - Header chip: on laptop it opens the panel; on phone, the task page. Check 320px wrapping and dark mode.

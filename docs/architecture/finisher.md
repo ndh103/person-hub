@@ -261,7 +261,7 @@ These use the existing write guards (`requireUser`, the foreign-`Origin` refusal
 ### SPA
 
 - **The clock hook** (`use-pomodoro-clock.ts`) takes the `basics.pomodoro` active session and the offset `serverNow − Date.now()` at fetch time. It ticks every second and derives the time left from timestamps.
-- **`PomodoroWatcher`** is mounted once by `TaskPanelLayout` (the Finisher tabs and the project page). It fires the completion message, the chime and a refresh once per session id. It doesn't write.
+- **`PomodoroWatcher`** is mounted once by `AppLayout` (every signed-in page, since 2026-10-21). While a session runs it shows the blocking focus popup; at the end it fires the chime, a refresh and the completion popup once per session id. It doesn't write; the popup's Stop and Mark task done use the existing routes. Side effect: Home and Events also load `GET /api/finisher/basics` (one small cached query). The UI no longer uses `replace`; the API keeps it.
 - **Chime:** Web Audio oscillators (`components/chime.ts`), unlocked on the Start click. There is no audio file, and the CSP is unchanged because Web Audio needs no `media-src`.
 
 ### Tests

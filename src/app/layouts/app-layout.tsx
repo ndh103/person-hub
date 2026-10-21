@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PomodoroWatcher } from "@/features/finisher/components/pomodoro";
 
 /**
  * Signed-in shell (SHELL-001/002, AUTH-007). The route's beforeLoad sends
@@ -42,6 +43,8 @@ export function AppLayout({ account }: { account: string | null }) {
           </SidebarInset>
         </SidebarProvider>
         <RouteFocus />
+        {/* Pomodoro focus and completion popups on every signed-in page (FIN-039). */}
+        <PomodoroWatcher />
       </Toaster>
     </TooltipProvider>
   );
