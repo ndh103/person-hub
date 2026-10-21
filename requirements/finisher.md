@@ -38,7 +38,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 - Streaks (decided: weekly rate only).
 - Task checklists or sub-steps (decided: tasks stay simple).
 - Active-item limit, Waiting room, next step, 10-minute timer, staleness indicator, Finish → Event (retired from v1). The Pomodoro (FIN-039) is new scope from 2026-10-20, not a return of the retired 10-minute timer.
-- For Pomodoros: breaks and long breaks, pause, lengths other than 25 minutes, browser or push notifications, and history or charts beyond today and per-task totals.
+- For Pomodoros: break timers (the completion popup only suggests a break, decision 27), pause, lengths other than 25 minutes, browser or push notifications, and history or charts beyond today and per-task totals.
 - Recurring tasks, other than project slots.
 - Reminders, notifications, calendar sync, email, push.
 - Monthly or custom recurrence; slots repeat weekly only.
@@ -269,7 +269,7 @@ A Pomodoro is a 25-minute focus session tied to one task (decision 23). It helps
 
 - When 25 minutes have passed without Stop, the session is **completed** and counts (FIN-040). This holds even if the app was closed at that moment: only Stop abandons a session (A20). Nothing else changes, and the task's status is untouched.
 - If the app is open in the browser at that moment, on any Finisher page, then:
-  - a message says "Pomodoro complete: 'title'", with a **Mark task done** action (FIN-021) when the task is still Open or Parked;
+  - a modal popup titled "Pomodoro complete" says "You focused on 'title' for 25 minutes. That's N Pomodoros today." It suggests a 5-minute break, or a longer 15 to 30 minute break after every fourth session today (decision 27). The user must close it (**Take a break**, which gets the initial focus, or Escape) before doing anything else; it also offers **Mark task done** (FIN-021). While it is open, the browser tab title starts with "✓ Pomodoro complete";
   - a short chime plays (decision 25). Browsers may block sound after a reload until the user clicks something; the message still shows.
   - The counts update without a reload.
 - There are no browser or push notifications (decision 25; brief).
@@ -451,8 +451,9 @@ From the user, 2026-10-20 (Pomodoro):
 
 23. A Pomodoro session is a fixed 25 minutes, started from a task's details.
 24. There is no pause. Stopping early abandons the session, and it is not counted.
-25. When a session ends, the open app shows a message and plays a short chime. There are no browser notifications.
+25. When a session ends, the open app shows a modal popup and plays a short chime. There are no browser notifications.
 26. Completed sessions are summarised on the Today tab, in the Finisher header, and per task in its details (today and total).
+27. The completion popup suggests a break (5 minutes; 15 to 30 minutes after every fourth session today). It is a suggestion only: there is no break timer (2026-10-21).
 
 ## Assumptions (reversible proposed defaults)
 

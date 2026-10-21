@@ -250,7 +250,7 @@ It sits under the Mark done / Edit actions and above the facts, separated by a r
   - Switch: "Stop the Pomodoro for 'X' and start one for 'Y'? The stopped session won't count."
   - Cancel is labelled **Keep going** and gets the initial focus, so Enter doesn't abandon a session by accident.
 - **Completion:**
-  - a toast "Pomodoro complete: 'title'" with **Mark task done**;
+  - a toast "Pomodoro complete: 'title'" with **Mark task done**; superseded in the app (2026-10-21) by a modal popup with a break suggestion (requirements decision 27);
   - a polite announcement;
   - a two-note chime (880 and 1319 Hz sine, about 0.8 s, gain 0.2) built with Web Audio, with no audio file;
   - the counts update.

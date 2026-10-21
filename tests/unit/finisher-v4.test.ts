@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCountdown, formatPomodoroSummary, pomodoroProgress, remainingMs } from "@/features/finisher/domain/pomodoro";
+import { breakSuggestion, formatCountdown, formatPomodoroSummary, pomodoroProgress, remainingMs } from "@/features/finisher/domain/pomodoro";
 import { quickDueChoice, quickDueDate } from "@/features/finisher/domain/quick-due";
 import { availableMoves, moveBy, moveToIndex, neighbours } from "@/features/finisher/domain/task-order";
 import { parseDueInput, parseMoveInput, parseTaskAction } from "@/features/finisher/domain/validation";
@@ -137,6 +137,16 @@ describe("Pomodoro countdown (FIN-039, FIN-040)", () => {
     expect(formatPomodoroSummary(0, 0)).toBe("No Pomodoros yet today");
     expect(formatPomodoroSummary(1, 25)).toBe("1 Pomodoro today · 25 min");
     expect(formatPomodoroSummary(3, 75)).toBe("3 Pomodoros today · 75 min");
+  });
+
+  it("suggests a short break, and a longer one after every fourth session today", () => {
+    expect(breakSuggestion(1).long).toBe(false);
+    expect(breakSuggestion(1).text).toContain("5-minute break");
+    expect(breakSuggestion(4).long).toBe(true);
+    expect(breakSuggestion(5).long).toBe(false);
+    expect(breakSuggestion(8).long).toBe(true);
+    // Counts not loaded yet: the short break.
+    expect(breakSuggestion(0).long).toBe(false);
   });
 });
 

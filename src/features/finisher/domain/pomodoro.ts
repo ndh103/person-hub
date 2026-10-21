@@ -29,3 +29,14 @@ export function formatPomodoroSummary(completed: number, minutes: number): strin
   if (completed === 0) return "No Pomodoros yet today";
   return `${completed} ${completed === 1 ? "Pomodoro" : "Pomodoros"} today · ${minutes} min`;
 }
+
+/**
+ * The rest suggested when a session completes (FIN-039). A suggestion only:
+ * there is no break timer. Every fourth session today earns a longer break.
+ */
+export function breakSuggestion(completedToday: number): { long: boolean; text: string } {
+  if (completedToday > 0 && completedToday % 4 === 0) {
+    return { long: true, text: "That’s four in a row. Take a longer break, 15 to 30 minutes, before the next one." };
+  }
+  return { long: false, text: "Take a 5-minute break: stand up, stretch, get some water and rest your eyes." };
+}

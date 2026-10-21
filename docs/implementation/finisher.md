@@ -63,7 +63,7 @@ Inputs:
 
 - Start a session from the panel and from the task page. Reload mid-session, open it on a second device, and check the countdown matches.
 - Switch from another task (the first session is not counted). Stop (not counted).
-- Let a session finish with the tab open: the message, **Mark task done**, the chime (after a click since load) and the counts.
+- Let a session finish with the tab open: the modal popup (break suggestion, longer after the fourth today; **Take a break** focused; Escape closes; tab title marked and restored), **Mark task done**, the chime (after a click since load) and the counts.
 - Let one finish with the tab closed: the count still rises.
 - Header chip: on laptop it opens the panel; on phone, the task page. Check 320px wrapping and dark mode.
 - On a live project, call `finisher_start_pomodoro` and `finisher_stop_pomodoro` through PostgREST as a second account and as `anon`.

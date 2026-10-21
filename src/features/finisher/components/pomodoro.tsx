@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { TimerIcon } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { CircleCheckIcon, TimerIcon } from "lucide-react";
+import { useEffect, useEffectEvent, useId, useState } from "react";
 import { Link } from "@/components/link";
 import {
   AlertDialog,
@@ -9,6 +9,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { finisherApi } from "../api";
-import { formatCountdown, pomodoroProgress, POMODORO_MINUTES, remainingMs } from "../domain/pomodoro";
+import { breakSuggestion, formatCountdown, pomodoroProgress, POMODORO_MINUTES, remainingMs } from "../domain/pomodoro";
 import { generalErrorMessage } from "../messages";
 import type { PomodoroActive, TaskDetail } from "../types";
 import { announcedCompletions, playChime, unlockChime, usePomodoro, useSecondTick } from "./pomodoro-clock";
@@ -207,36 +208,124 @@ export function PomodoroHeader() {
   );
 }
 
+/** A session that just completed, kept after the refresh clears it from the summary. */
+type Completed = { taskId: string | null; taskTitle: string | null; todayBefore: number };
+
 /**
- * Shows the end of a session while the app is open (FIN-039): a message with
- * "Mark task done", a chime, and fresh counts. It writes nothing: the server
- * already treats the session as completed once its time is up (ADR-0007).
+ * Shows the end of a session while the app is open (FIN-039): a modal popup
+ * that suggests a break and offers "Mark task done", a chime, and fresh
+ * counts. It writes nothing: the server already treats the session as
+ * completed once its time is up (ADR-0007).
  */
 export function PomodoroWatcher() {
   const { summary, offsetMs } = usePomodoro();
+  const [completed, setCompleted] = useState<Completed | null>(null);
   const active = summary?.active ?? null;
-  return active ? <CompletionTimer key={active.id} active={active} offsetMs={offsetMs} /> : null;
+  return (
+    <>
+      {active ? (
+        <CompletionTimer
+          key={active.id}
+          active={active}
+          offsetMs={offsetMs}
+          onComplete={() =>
+            setCompleted({ taskId: active.taskId, taskTitle: active.taskTitle, todayBefore: summary?.today.completed ?? 0 })
+          }
+        />
+      ) : null}
+      <PomodoroCompleteDialog
+        completed={completed}
+        // The refreshed count includes this session; until it arrives, add it ourselves.
+        completedToday={Math.max(summary?.today.completed ?? 0, (completed?.todayBefore ?? 0) + 1)}
+        onClose={() => setCompleted(null)}
+      />
+    </>
+  );
 }
 
-function CompletionTimer({ active, offsetMs }: { active: PomodoroActive; offsetMs: number }) {
+function CompletionTimer({ active, offsetMs, onComplete }: { active: PomodoroActive; offsetMs: number; onComplete: () => void }) {
   const refresh = useFinisherRefresh();
+  const report = useEffectEvent(onComplete);
   useEffect(() => {
     const delay = Math.max(0, Date.parse(active.endsAt) - (Date.now() + offsetMs)) + 250;
     const handle = setTimeout(() => {
       if (announcedCompletions.has(active.id)) return;
       announcedCompletions.add(active.id);
       playChime();
-      const taskId = active.taskId;
-      toast.add({
-        title: `Pomodoro complete: “${active.taskTitle ?? "your task"}”`,
-        type: "success",
-        actionProps: taskId ? { children: "Mark task done", onClick: () => void markDone(taskId, refresh) } : undefined,
-      });
+      report();
       void refresh();
     }, delay);
     return () => clearTimeout(handle);
   }, [active, offsetMs, refresh]);
   return null;
+}
+
+const COMPLETE_TITLE_PREFIX = "✓ Pomodoro complete · ";
+
+/**
+ * The completion popup. Modal on purpose: the user closes it before going on,
+ * so the end of a session is not missed. "Take a break" is first in the
+ * footer and gets the initial focus, so Enter only closes it.
+ */
+function PomodoroCompleteDialog({
+  completed,
+  completedToday,
+  onClose,
+}: {
+  completed: Completed | null;
+  completedToday: number;
+  onClose: () => void;
+}) {
+  const refresh = useFinisherRefresh();
+  const [busy, setBusy] = useState(false);
+  const open = completed !== null;
+  const rest = breakSuggestion(completedToday);
+
+  // Marks the browser tab too, for when the app is in a background tab.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.title;
+    document.title = COMPLETE_TITLE_PREFIX + previous;
+    return () => {
+      if (document.title.startsWith(COMPLETE_TITLE_PREFIX)) document.title = previous;
+    };
+  }, [open]);
+
+  async function done(taskId: string) {
+    setBusy(true);
+    await markDone(taskId, refresh);
+    setBusy(false);
+    onClose();
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => (next ? undefined : onClose())}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogMedia className="bg-primary/10 text-primary">
+            <CircleCheckIcon aria-hidden="true" />
+          </AlertDialogMedia>
+          <AlertDialogTitle>Pomodoro complete</AlertDialogTitle>
+          <AlertDialogDescription>
+            You focused on “{completed?.taskTitle ?? "your task"}” for {POMODORO_MINUTES} minutes. That’s {completedToday}{" "}
+            {completedToday === 1 ? "Pomodoro" : "Pomodoros"} today.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">{rest.text}</p>
+        <AlertDialogFooter>
+          <AlertDialogCancel variant="default" className="h-11">
+            Take a break
+          </AlertDialogCancel>
+          {completed?.taskId ? (
+            <Button variant="outline" className="h-11" disabled={busy} onClick={() => void done(completed.taskId!)}>
+              {busy ? <Spinner data-icon="inline-start" aria-hidden="true" /> : null}
+              Mark task done
+            </Button>
+          ) : null}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 async function markDone(taskId: string, refresh: () => Promise<unknown>) {
