@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
 import { RowList } from "./list-parts";
 import { isPlainClick, useTaskPanel } from "./task-panel-context";
 
-const OUTCOME_LABEL: Record<ClosedEntry["outcome"], string> = { done: "Done", finished: "Finished", let_go: "Let go" };
+const OUTCOME_LABEL: Record<ClosedEntry["outcome"], string> = { done: "Done", finished: "Finished", delegated: "Delegated", let_go: "Let go" };
+const NOTE_LABEL: Record<ClosedEntry["outcome"], string> = { done: "Reflection: ", finished: "Reflection: ", delegated: "Delegated to: ", let_go: "Reason: " };
 
 function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
   // Closed tasks open in the laptop side panel too (FIN-036); projects keep their page.
@@ -34,7 +35,7 @@ function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
           className={cn("font-medium break-words underline-offset-4 hover:underline", selected && "font-semibold")}>
           {entry.title}
         </Link>
-        <Badge variant={entry.outcome === "let_go" ? "outline" : "secondary"}>{OUTCOME_LABEL[entry.outcome]}</Badge>
+        <Badge variant={entry.outcome === "let_go" || entry.outcome === "delegated" ? "outline" : "secondary"}>{OUTCOME_LABEL[entry.outcome]}</Badge>
       </div>
       <p className="font-mono text-[0.8125rem] text-muted-foreground">
         {entry.kind === "task" ? "Task" : "Project"} · closed{" "}
@@ -45,7 +46,7 @@ function ClosedRow({ entry, today }: { entry: ClosedEntry; today: LocalDate }) {
       </p>
       {entry.note ? (
         <p className="text-sm break-words">
-          <span className="text-muted-foreground">{entry.outcome === "let_go" ? "Reason: " : "Reflection: "}</span>
+          <span className="text-muted-foreground">{NOTE_LABEL[entry.outcome]}</span>
           {entry.note}
         </p>
       ) : null}

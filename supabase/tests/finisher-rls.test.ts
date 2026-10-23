@@ -217,6 +217,66 @@ describe("task lifecycle and validation", () => {
   });
 });
 
+describe("delegated tasks (FIN-041)", () => {
+  const act = (userId: string, id: string, action: string, reason: string | null = null) =>
+    db.as(userId, "select public.finisher_task_action('UTC', $1, $2, null, $3)", [id, action, reason]);
+  const rowOf = async (id: string) =>
+    (
+      await db.admin.query<{ status: string; close_note: string | null; closed_at: string | null; revisit_date: string | null }>(
+        "select status, close_note, closed_at, revisit_date from public.finisher_tasks where id = $1",
+        [id],
+      )
+    ).rows[0];
+
+  it("delegates Open and Parked tasks, keeps the name, and reopens like Done", async () => {
+    const open = await createTask(USER_A);
+    expect(await sqlState(act(USER_A, open, "delegate", "   "))).toBe("PH422");
+    expect(await sqlState(act(USER_A, open, "delegate", "x".repeat(101)))).toBe("PH422");
+    await act(USER_A, open, "delegate", "  Minh ");
+    expect(await rowOf(open)).toMatchObject({ status: "delegated", close_note: "Minh", revisit_date: null });
+    expect((await rowOf(open)).closed_at).not.toBeNull();
+    // Closed: no second close, no edit, no Mark done.
+    expect(await sqlState(act(USER_A, open, "delegate", "Lan"))).toBe("PH409");
+    expect(await sqlState(act(USER_A, open, "done"))).toBe("PH409");
+    expect(await sqlState(db.as(USER_A, "select public.finisher_update_task('UTC', $1, 'x', null, null, null, null)", [open]))).toBe(
+      "PH409",
+    );
+    await act(USER_A, open, "reopen");
+    expect(await rowOf(open)).toEqual({ status: "open", close_note: null, closed_at: null, revisit_date: null });
+
+    const parked = await createTask(USER_A);
+    await db.as(USER_A, "select public.finisher_task_action('UTC', $1, 'park', $2::date)", [parked, utcDate(3)]);
+    await act(USER_A, parked, "delegate", "Lan");
+    expect(await rowOf(parked)).toMatchObject({ status: "delegated", close_note: "Lan", revisit_date: null });
+
+    const done = await createTask(USER_A);
+    await act(USER_A, done, "done");
+    expect(await sqlState(act(USER_A, done, "delegate", "Minh"))).toBe("PH409");
+  });
+
+  it("only the owner can delegate; another user and anonymous callers are refused", async () => {
+    const id = await createTask(USER_A);
+    expect(await sqlState(act(USER_B, id, "delegate", "Minh"))).toBe("PH404");
+    expect(await sqlState(db.as(null, "select public.finisher_task_action('UTC', $1, 'delegate', null, 'Minh')", [id]))).toBe("42501");
+    expect((await rowOf(id)).status).toBe("open");
+    // Delegated tasks stay private like any other row.
+    await act(USER_A, id, "delegate", "Minh");
+    expect(await db.as(USER_B, "select id from public.finisher_tasks where id = $1", [id])).toEqual([]);
+  });
+
+  it("the table keeps a delegated task closed and named, even for direct writes", async () => {
+    const id = await createTask(USER_A);
+    const set = (sql: string) => sqlState(db.admin.query(`update public.finisher_tasks set ${sql} where id = $1`, [id]));
+    expect(await set("status = 'delegated', close_note = 'Minh'")).toBe("23514"); // no closed_at
+    expect(await set("status = 'delegated', closed_at = now()")).toBe("23514"); // no name
+    expect(await set("status = 'done', closed_at = now(), close_note = 'Minh'")).toBe("23514"); // note only for let_go/delegated
+    expect(await set("status = 'handed_off', closed_at = now(), close_note = 'Minh'")).toBe("23514");
+    expect(await set("status = 'delegated', closed_at = now(), close_note = 'Minh'")).toBe("ok");
+    // Users still have no direct write access (ADR-0002).
+    expect(await sqlState(db.as(USER_A, "update public.finisher_tasks set close_note = 'Lan' where id = $1", [id]))).toBe("42501");
+  });
+});
+
 describe("projects, periods and deletion", () => {
   it("follows the project lifecycle table", async () => {
     const id = await createProject(USER_A);

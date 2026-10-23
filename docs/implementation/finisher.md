@@ -1,7 +1,7 @@
 # Finisher and app shell: implementation notes
 
 - Feature slugs: `finisher`, `app-shell`
-- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified"). Latest change: 2026-10-20 (v4.1 task enhancements), not browser-tested.
+- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified"). Latest change: 2026-10-23 (v5.1 delegate a task), not browser-tested.
 - Date: 2026-10-11
 - Inputs:
   - [requirements/finisher.md](../../requirements/finisher.md) v2 (FIN-001 to FIN-033)
@@ -12,6 +12,40 @@
 - Decisions made here: [ADR-0002: Finisher writes go through database functions](../architecture/decisions/ADR-0002-finisher-rpc-writes.md) (proposed)
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
+
+## Change 2026-10-23: delegate a task (v5.1)
+
+Inputs:
+- [requirements/finisher.md](../../requirements/finisher.md) v5.1: FIN-041; decisions 29–31; updates to FIN-030, FIN-031, FIN-032.
+- [Architecture](../architecture/finisher.md#delegated-tasks-fin-041).
+- Design: no mockup. The Delegate dialog follows the Let go dialog (not yet designed either); see the [design notes](../../output/designs/finisher/design-notes.md#delegate-fin-041).
+
+### What was built
+
+| ID | Where |
+| --- | --- |
+| FIN-041 data | `supabase/migrations/20261023120000_finisher_task_delegate.sql`: `delegated` status, named constraints, `delegate` in `finisher_task_action` |
+| FIN-041 API | `domain/validation.ts` (`delegate`, `LIMITS.delegatedTo`), `server/mutations.ts`, `server/errors.ts` |
+| FIN-041 UI | `DelegateDialog` in `lifecycle-dialogs.tsx`; "Delegate…" in `TaskActionsMenu`; Delegated badge on task rows; no check-off on the task page and panel; "Delegated to" in task facts |
+| FIN-031 | `getToday` includes delegated tasks in Done today |
+| FIN-032 | `getClosed` `outcome=delegated`, `tasksDelegated` count; Delegated filter, summary and badge in `closed-view.tsx` and `closed-list.tsx` |
+
+### Decisions and deviations
+
+- The name is stored in `close_note` (see architecture). `TaskDetail.reason` and `ClosedEntry.note` carry it; the UI labels it by status.
+- A running Pomodoro is not stopped by Delegate, the same as Let go today.
+
+### Checks (2026-10-23)
+
+- `npm run typecheck`: passed.
+- `npm run lint`: 0 errors (6 existing fast-refresh warnings in untouched files).
+- `npm test`: 13 files, 246 tests passed, including new delegate tests in `tests/unit/finisher-domain.test.ts`, `tests/unit/api-finisher.test.ts` and `supabase/tests/finisher-rls.test.ts` (owner, another user, anonymous, and direct-write constraint checks against the in-process Postgres).
+- `npm run build`: passed.
+
+### Not verified
+
+- Not run against a real Supabase project, and the migration is not applied anywhere.
+- Not tested in a browser (dialog focus, 320px layout, screen-reader announcements).
 
 ## Change 2026-10-20: Pomodoro sessions and summary (v5.0)
 

@@ -44,7 +44,7 @@ export function TaskFacts({ task, className }: { task: TaskDetail; className?: s
       </dd>
       {task.closedOn ? (
         <>
-          <dt className="text-muted-foreground">{task.status === "done" ? "Done" : "Closed"}</dt>
+          <dt className="text-muted-foreground">{task.status === "done" ? "Done" : task.status === "delegated" ? "Delegated" : "Closed"}</dt>
           <dd>
             <time dateTime={task.closedOn}>{formatDate(task.closedOn)}</time>
           </dd>
@@ -52,7 +52,7 @@ export function TaskFacts({ task, className }: { task: TaskDetail; className?: s
       ) : null}
       {task.reason ? (
         <>
-          <dt className="text-muted-foreground">Reason for letting go</dt>
+          <dt className="text-muted-foreground">{task.status === "delegated" ? "Delegated to" : "Reason for letting go"}</dt>
           <dd className="break-words">{task.reason}</dd>
         </>
       ) : null}
@@ -60,7 +60,7 @@ export function TaskFacts({ task, className }: { task: TaskDetail; className?: s
   );
 }
 
-/** FIN-020: a task's details. Done and Let go tasks are read-only apart from Reopen and Delete. */
+/** FIN-020: a task's details. Done, Delegated and Let go tasks are read-only apart from Reopen and Delete. */
 export function TaskView({ id }: { id: string }) {
   const { data } = useSuspenseQuery(finisherQueries.task(id));
   if (!data) return <NotFoundState kind="task" />;
@@ -76,7 +76,7 @@ export function TaskView({ id }: { id: string }) {
         Tasks
       </Link>
       <div className="flex items-start gap-3">
-        {task.status !== "let_go" ? <TaskCheck task={task} /> : null}
+        {task.status !== "let_go" && task.status !== "delegated" ? <TaskCheck task={task} /> : null}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <h1 id="task-title" tabIndex={-1} className="font-heading text-xl font-medium sm:text-2xl break-words outline-none">

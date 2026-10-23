@@ -31,6 +31,7 @@ const DB_FIELDS: Record<string, string> = {
   duration: "durationMinutes",
   revisit_date: "revisitDate",
   reason: "reason",
+  delegated_to: "delegatedTo",
   reflection: "reflection",
   slots: "slots",
   state: "state",

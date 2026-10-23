@@ -205,7 +205,7 @@ function TaskPanel({ id, onClose }: { id: string; onClose: () => void }) {
             </span>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {task.status !== "let_go" ? <TaskCheck task={task} variant="labelled" /> : null}
+            {task.status !== "let_go" && task.status !== "delegated" ? <TaskCheck task={task} variant="labelled" /> : null}
             {task.status === "open" || task.status === "parked" ? (
               <Button variant="outline" className="h-11" onClick={() => setEditing(true)}>
                 <PencilIcon data-icon="inline-start" />

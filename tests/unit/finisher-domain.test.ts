@@ -235,6 +235,16 @@ describe("input validation (Fields and validation)", () => {
     expect(parseTaskAction({ action: "park", revisitDate: "2027-10-12" }, today).ok).toBe(false);
     expect(parseTaskAction({ action: "let_go", reason: "  " }, today)).toMatchObject({ errors: { reason: "required" } });
     expect(parseTaskAction({ action: "finish" }, today)).toMatchObject({ errors: { action: "invalid" } });
+    // FIN-041: delegating needs who it was handed to, trimmed, at most 100 characters.
+    expect(parseTaskAction({ action: "delegate", delegatedTo: "  Minh " }, today)).toEqual({
+      ok: true,
+      value: { action: "delegate", delegatedTo: "Minh" },
+    });
+    expect(parseTaskAction({ action: "delegate" }, today)).toMatchObject({ errors: { delegatedTo: "required" } });
+    expect(parseTaskAction({ action: "delegate", delegatedTo: "x".repeat(101) }, today)).toMatchObject({
+      errors: { delegatedTo: "too_long" },
+    });
+    expect(parseTaskAction({ action: "delegate", delegatedTo: 42 }, today).ok).toBe(false);
     expect(parseProjectAction({ action: "finish" }, today)).toEqual({ ok: true, value: { action: "finish", reflection: null } });
   });
 

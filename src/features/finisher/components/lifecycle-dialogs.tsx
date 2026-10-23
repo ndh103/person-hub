@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
@@ -146,6 +147,61 @@ export function LetGoDialog({ open, onOpenChange, kind, id, title }: DialogProps
               Keep it
             </Button>
             <PendingButton pending={pending}>Let go</PendingButton>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** FIN-041: hand a task to someone else. It closes like Done, but is kept apart in Closed. */
+export function DelegateDialog({ open, onOpenChange, id, title }: Omit<DialogProps, "kind">) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [delegatedTo, setDelegatedTo] = useState("");
+  const { run, pending, fieldErrors, setFieldErrors, formError, reset } = useMutation();
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!delegatedTo.trim()) {
+      setFieldErrors({ delegatedTo: "required" });
+      focusFirstInvalid(formRef.current);
+      return;
+    }
+    const result = await run(() => finisherApi("POST", actionPath("task", id), { action: "delegate", delegatedTo }));
+    if (!result.ok) return focusFirstInvalid(formRef.current);
+    toast.add({ title: `Delegated “${title}”`, description: `Handed to ${delegatedTo.trim()}.`, type: "success" });
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => (reset(), onOpenChange(next))}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delegate “{title}”?</DialogTitle>
+          <DialogDescription>
+            It’s off your list, as if it were done. It moves to Closed as Delegated, and you can reopen it later.
+          </DialogDescription>
+        </DialogHeader>
+        <form ref={formRef} onSubmit={onSubmit} noValidate>
+          <FieldGroup>
+            {formError ? <FormAlert tone="error">{formError}</FormAlert> : null}
+            <FormField name="delegatedTo" label="Delegated to" errors={fieldErrors} description="Who is taking it on.">
+              {(props) => (
+                <Input
+                  {...props}
+                  autoComplete="off"
+                  maxLength={LIMITS.delegatedTo}
+                  value={delegatedTo}
+                  onChange={(event) => setDelegatedTo(event.target.value)}
+                />
+              )}
+            </FormField>
+          </FieldGroup>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" className="h-11" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <PendingButton pending={pending}>Delegate</PendingButton>
           </DialogFooter>
         </form>
       </DialogContent>

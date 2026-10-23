@@ -293,6 +293,23 @@ describe("writes", () => {
     expect(rpc.mock.calls.map(([, args]) => (args as { p_keep_position: boolean }).p_keep_position)).toEqual([true, false, false]);
   });
 
+  it("delegates with the name in p_reason and nothing else from the body (FIN-041)", async () => {
+    signedIn();
+    rpc.mockResolvedValue({ data: "delegated", error: null });
+    const response = await call("POST", `/api/finisher/tasks/${TASK_ID}/actions`, {
+      action: "delegate",
+      delegatedTo: " Minh ",
+      reason: "ignored",
+      user_id: "00000000-0000-4000-8000-00000000000b",
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "delegated" });
+    expect(rpc).toHaveBeenCalledWith("finisher_task_action", expect.objectContaining({ p_action: "delegate", p_reason: "Minh" }));
+    const missing = await call("POST", `/api/finisher/tasks/${TASK_ID}/actions`, { action: "delegate" });
+    expect(await missing.json()).toEqual({ error: "validation", fields: { delegatedTo: "required" } });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("starts a Pomodoro with only `replace`; the owner and the time come from the server (FIN-039)", async () => {
     signedIn();
     rpc.mockResolvedValue({ data: "8b0b2a8e-0d6f-4a53-9a43-1f2e4b8c9d99", error: null });

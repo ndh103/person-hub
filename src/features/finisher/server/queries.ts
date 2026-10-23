@@ -241,7 +241,7 @@ export async function getToday(ctx: FinisherContext): Promise<TodayData> {
     ctx.supabase
       .from("finisher_tasks")
       .select(TASK_COLUMNS)
-      .eq("status", "done")
+      .in("status", ["done", "delegated"]) // delegating counts as finishing (FIN-041)
       .gte("closed_at", dayStart)
       .order("closed_at", { ascending: false })
       .limit(100),
@@ -508,7 +508,7 @@ export async function getProject(ctx: FinisherContext, projectId: string): Promi
       .from("finisher_tasks")
       .select(TASK_COLUMNS)
       .eq("project_id", project.id)
-      .in("status", ["done", "let_go"])
+      .in("status", ["done", "delegated", "let_go"])
       .order("closed_at", { ascending: false })
       .limit(50),
   ]);
@@ -580,7 +580,7 @@ export function parseClosedType(value: unknown): ClosedType {
 }
 
 export function parseClosedOutcome(value: unknown): ClosedOutcome {
-  return value === "completed" || value === "let_go" ? value : "all";
+  return value === "completed" || value === "delegated" || value === "let_go" ? value : "all";
 }
 
 /** Cursor = closed_at of the last entry shown. Anything unparsable starts from the top. */
@@ -601,8 +601,10 @@ export async function getClosed(ctx: FinisherContext, typeValue: unknown, outcom
   const outcome = parseClosedOutcome(outcomeValue);
   const cursor = parseClosedCursor(cursorValue);
   const wantTasks = type !== "projects";
-  const wantProjects = type !== "tasks";
-  const taskStatuses = outcome === "completed" ? ["done"] : outcome === "let_go" ? ["let_go"] : ["done", "let_go"];
+  // Only tasks can be delegated (FIN-041).
+  const wantProjects = type !== "tasks" && outcome !== "delegated";
+  const wants = (status: "completed" | "delegated" | "let_go") => outcome === "all" || outcome === status;
+  const taskStatuses = outcome === "all" ? ["done", "delegated", "let_go"] : [outcome === "completed" ? "done" : outcome];
   const projectStatuses = outcome === "completed" ? ["finished"] : outcome === "let_go" ? ["let_go"] : ["finished", "let_go"];
 
   const withCursor = <Q extends { lt: (column: string, value: string) => Q }>(query: Q) =>
@@ -630,10 +632,11 @@ export async function getClosed(ctx: FinisherContext, typeValue: unknown, outcom
           .limit(CLOSED_PAGE_SIZE + 1)
       : Promise.resolve({ data: [], error: null }),
     Promise.all([
-      wantTasks && outcome !== "let_go" ? countRows(ctx, "finisher_tasks", "done") : 0,
-      wantTasks && outcome !== "completed" ? countRows(ctx, "finisher_tasks", "let_go") : 0,
-      wantProjects && outcome !== "let_go" ? countRows(ctx, "finisher_projects", "finished") : 0,
-      wantProjects && outcome !== "completed" ? countRows(ctx, "finisher_projects", "let_go") : 0,
+      wantTasks && wants("completed") ? countRows(ctx, "finisher_tasks", "done") : 0,
+      wantTasks && wants("delegated") ? countRows(ctx, "finisher_tasks", "delegated") : 0,
+      wantTasks && wants("let_go") ? countRows(ctx, "finisher_tasks", "let_go") : 0,
+      wantProjects && wants("completed") ? countRows(ctx, "finisher_projects", "finished") : 0,
+      wantProjects && wants("let_go") ? countRows(ctx, "finisher_projects", "let_go") : 0,
     ]),
   ]);
 
@@ -666,7 +669,7 @@ export async function getClosed(ctx: FinisherContext, typeValue: unknown, outcom
       kind,
       id: row.id,
       title: row.title,
-      outcome: row.status === "let_go" ? "let_go" : kind === "task" ? "done" : "finished",
+      outcome: row.status === "let_go" || row.status === "delegated" ? row.status : kind === "task" ? "done" : "finished",
       closedAt: row.closed_at,
       closedOn,
       note: row.close_note,
@@ -675,8 +678,8 @@ export async function getClosed(ctx: FinisherContext, typeValue: unknown, outcom
     };
   });
 
-  const [tasksDone, tasksLetGo, projectsFinished, projectsLetGo] = counts;
-  const closedCounts: ClosedCounts = { tasksDone, tasksLetGo, projectsFinished, projectsLetGo };
+  const [tasksDone, tasksDelegated, tasksLetGo, projectsFinished, projectsLetGo] = counts;
+  const closedCounts: ClosedCounts = { tasksDone, tasksDelegated, tasksLetGo, projectsFinished, projectsLetGo };
   return {
     now: ctx.now,
     type,

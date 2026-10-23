@@ -4,8 +4,8 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 5.0 (2026-10-20). Adds FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26. v4.1 (same day) recorded design-review decisions 21–22; v4.0 added FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
-- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), and 2026-10-20 ("for web version, i don't need to open a task detail in a separate page… a quick menu item to quickly assign a task to: Today, Tomorrow, and Next Week… the Tomorrow button (next to Today button)… drag and drop to rearrange the order of tasks in each section"), plus answers to clarifying questions.
+- Version: 5.1 (2026-10-23). Adds FIN-041 (delegate a task) and decisions 29–31. v5.0 (2026-10-20) added FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26. v4.1 (same day) recorded design-review decisions 21–22; v4.0 added FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
+- Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), 2026-10-23 ("with a Task, i want the ability to delegate it to other… considered same as the task has been done, but it should be marked as Delegated"), and 2026-10-20 ("for web version, i don't need to open a task detail in a separate page… a quick menu item to quickly assign a task to: Today, Tomorrow, and Next Week… the Tomorrow button (next to Today button)… drag and drop to rearrange the order of tasks in each section"), plus answers to clarifying questions.
 - Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts, and the Tasks list with side panel, drag order and quick due-date menu](../output/designs/finisher/design-notes.md) (`index.html`, `task-list.html`; other screens not yet designed). Architecture: [docs/architecture/finisher.md](../docs/architecture/finisher.md) (v4 task enhancements and v5 Pomodoro; ADR-0005 order keys, ADR-0006 drag library, ADR-0007 Pomodoro sessions). Test report: not yet created.
 
 ## Goal and target user
@@ -23,7 +23,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 ### In scope
 
-- Tasks: create, edit, due date with optional time (with Today, Tomorrow, and Next week shortcuts), optional link to a project, mark done, park, let go, reopen, delete.
+- Tasks: create, edit, due date with optional time (with Today, Tomorrow, and Next week shortcuts), optional link to a project, mark done, delegate (FIN-041), park, let go, reopen, delete.
 - Task details in a side panel next to the list on laptop (FIN-036); quick rescheduling to Today, Tomorrow, or Next week from a task's menu (FIN-037); the user's own order of open tasks, changed by drag and drop (FIN-038).
 - Pomodoro focus sessions of 25 minutes started from a task's details (FIN-039), and counts of completed sessions today and per task (FIN-040).
 - Projects: create, edit, a goal and a "Done when", optional target date, weekly slots, finish, park, let go, reopen, delete.
@@ -49,7 +49,7 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 | Term | Meaning |
 | --- | --- |
-| Task | A single thing to do. Statuses: Open, Parked, Done, Let go. |
+| Task | A single thing to do. Statuses: Open, Parked, Done, Delegated, Let go. |
 | Project | A longer goal. Statuses: Active, Parked, Finished, Let go. |
 | Slot | A weekly recurring time block in a project: an activity name, days of the week, a duration, and an optional start time. |
 | Session | One slot on one local date when the project is Active. States: Done, Skipped, Unmarked, and Missed (Unmarked once the 7-day marking window has passed). |
@@ -60,12 +60,13 @@ Target user: the authenticated account owner, on phone and laptop browsers. All 
 
 **Task**
 
-| From \ Action | Mark done | Park | Unpark | Let go | Reopen | Delete |
-| --- | --- | --- | --- | --- | --- | --- |
-| Open | → Done | → Parked | – | → Let go | – | yes |
-| Parked | → Done | change date | → Open | → Let go | – | yes |
-| Done | – | – | – | – | → Open | yes |
-| Let go | – | – | – | – | → Open | yes |
+| From \ Action | Mark done | Delegate | Park | Unpark | Let go | Reopen | Delete |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Open | → Done | → Delegated | → Parked | – | → Let go | – | yes |
+| Parked | → Done | → Delegated | change date | → Open | → Let go | – | yes |
+| Done | – | – | – | – | – | → Open | yes |
+| Delegated | – | – | – | – | – | → Open | yes |
+| Let go | – | – | – | – | – | → Open | yes |
 
 **Project**
 
@@ -99,6 +100,7 @@ All text is trimmed. Limits are enforced on the server. The server sets status, 
 | Slot | Start time | No | Local time HH:mm |
 | Slot | Count per project | – | 0–20 slots |
 | Park | Revisit date | Yes when parking | Local date, from tomorrow up to 365 days ahead |
+| Delegate | Delegated to | Yes | 1–100 characters |
 | Let go | Reason | Yes | 1–500 characters |
 | Finish | Reflection | No | ≤ 1000 characters |
 
@@ -130,7 +132,7 @@ The Today tab shows, in this order:
 1. **Sessions today** from Active projects: timed slots first (sorted by start time), then untimed slots. Each session shows the activity, the project title, the duration, and the start time if set.
 2. **Overdue tasks**: open tasks whose due moment has passed, in the user's task order (FIN-038).
 3. **Due today**: open tasks due today, in the user's task order (FIN-038). A due time is still shown on each task but no longer decides its position (decision 18).
-4. **Done today**: sessions marked Done today and tasks completed today, collapsed by default, so items do not vanish when checked off.
+4. **Done today**: sessions marked Done today and tasks completed or delegated today (delegated ones labelled Delegated, FIN-041), collapsed by default, so items do not vanish when checked off.
 
 - Given an unmarked session today, when the user taps its check-off control, then it becomes Done immediately (an optimistic update that is reverted with an error message if saving fails). A secondary action marks it Skipped. Tapping a Done or Skipped session again returns it to Unmarked.
 - Given an open task in Today, when the user checks it off, then it becomes Done (FIN-021).
@@ -359,6 +361,18 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 - The wording presents letting go as a valid, deliberate decision ("You decided this no longer deserves your energy"), not as a failure. Closed lists show Let go items separately from Done and Finished items.
 - A missing reason shows a field error.
 
+### FIN-041 Delegate a task (Must)
+
+A delegated task has been handed to someone else. For the user it counts as finished, like Done, but it stays recognisable as Delegated when they review closed work (decisions 29–31).
+
+- Given an Open or Parked task, when the user chooses **Delegate…** from its ⋯ menu and enters who it was handed to, then the status becomes Delegated, the closed time is recorded, and any revisit date is cleared. A success message confirms it.
+- "Delegated to" is required (1–100 characters, trimmed). A missing value shows the field error "Say who you handed this to."
+- Delegate is offered wherever an Open or Parked task has a ⋯ menu: the Today and Tasks tabs, a project page, the task page and the side panel (FIN-036). Projects cannot be delegated.
+- A delegated task leaves the Tasks tab and the Today lists. There is no Delegated section in the Tasks tab (decision 29). It is not counted on the Today or Tasks tabs (FIN-035).
+- It appears in **Done today** on the day it was delegated (FIN-031), labelled Delegated, in a project's closed tasks (FIN-024), and in the Closed tab under its own **Delegated** outcome (FIN-032).
+- Its details show the status Delegated, the date it was delegated, and "Delegated to". It has no check-off control and is read-only, except for Reopen (FIN-030) and Delete (FIN-016).
+- Only the owner can delegate their own tasks (FIN-017). The name is personal data: it is not logged.
+
 ### FIN-013 Park and revisit (Must)
 
 - An Open task or an Active project can be parked with a revisit date. Parking an item that is already parked changes its revisit date.
@@ -368,12 +382,12 @@ The project page shows: title, goal, Done when, target date, status, its slots, 
 
 ### FIN-030 Reopen (Should)
 
-- A Done or Let go task can be reopened to Open. A Finished or Let go project can be reopened to Active, after confirmation. Reopening clears the closed time and the reason or reflection on the item. Past session records and rates are kept.
+- A Done, Delegated, or Let go task can be reopened to Open. A Finished or Let go project can be reopened to Active, after confirmation. Reopening clears the closed time and the reason, reflection, or delegate name on the item. Past session records and rates are kept.
 
 ### FIN-032 Closed tab (Must)
 
-- The tab lists closed tasks and projects, most recently closed first. It has filters for type (Tasks, Projects) and outcome (Done or Finished, Let go).
-- Each entry shows its title, type, outcome, and closed date. Projects also show their duration from start to close in calendar days and their overall session count (Done of scheduled). Entries show a reflection or reason when one exists.
+- The tab lists closed tasks and projects, most recently closed first. It has filters for type (Tasks, Projects) and outcome (Done or Finished, Delegated, Let go). "Done or finished" means work the user did themselves; the Delegated filter shows tasks only (FIN-041).
+- Each entry shows its title, type, outcome, and closed date. Projects also show their duration from start to close in calendar days and their overall session count (Done of scheduled). Entries show a reflection or reason when one exists, and delegated tasks show "Delegated to".
 - Summary counts are shown for the current filter. There is no percentage "success rate" (assumption A6).
 - 20 entries load at a time, with "Load more".
 - Empty state: "Your finished work will appear here."
@@ -459,6 +473,12 @@ From the user, 2026-10-20 (Pomodoro):
 27. The completion popup suggests a break (5 minutes; 15 to 30 minutes after every fourth session today). It is a suggestion only: there is no break timer (2026-10-21).
 28. A running session blocks the app with a focus popup on every signed-in page. Only Stop or Mark task done (both confirmed, neither counted) end it early; there is no minimise (2026-10-21).
 
+From the user, 2026-10-23 (delegation):
+
+29. A task can be delegated. It counts as done, but it is marked Delegated, and the Tasks tab has no Delegated section.
+30. Delegating records who the task was handed to (required).
+31. The Closed tab has its own Delegated outcome filter, separate from Done or finished.
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -491,6 +511,11 @@ From the user, 2026-10-20 (Pomodoro):
 
 ## Change notes
 
+- **2026-10-23, v5.1.** Added FIN-041 (delegate a task) and decisions 29–31. The task lifecycle gains the Delegated status; FIN-030, FIN-031 and FIN-032 are updated. **Affects:**
+  - the database (status and close-note constraints, the `delegate` action in `finisher_task_action`);
+  - `POST /api/finisher/tasks/:id/actions` (`{ action: "delegate", delegatedTo }`) and `GET /api/finisher/closed` (`outcome=delegated`, `counts.tasksDelegated`);
+  - the task menu, task page, side panel, Today's Done list and the Closed tab;
+  - tests (validation, the API, and database lifecycle, ownership and constraints).
 - **2026-10-20, v5.0.** Added FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26, and assumptions A18–A20. FIN-018 notes the timer in the header on phones. The retired 10-minute timer (FIN-008) is not revived. **Affects:**
   - the Finisher design (the Pomodoro block in the panel and on the task page, the header pill, the Today line);
   - architecture (a new `finisher_pomodoros` table, start and stop functions, ADR-0007);

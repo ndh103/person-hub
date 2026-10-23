@@ -2,7 +2,13 @@ import type { FieldErrorCode } from "./domain/validation";
 import { LIMITS } from "./domain/validation";
 import type { TaskStatus } from "./types";
 
-export const TASK_STATUS_LABEL: Record<TaskStatus, string> = { open: "Open", parked: "Parked", done: "Done", let_go: "Let go" };
+export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
+  open: "Open",
+  parked: "Parked",
+  done: "Done",
+  let_go: "Let go",
+  delegated: "Delegated",
+};
 
 /** Error codes returned by /api/finisher/*. */
 export type FinisherApiErrorCode =
@@ -31,6 +37,7 @@ const FIELD_LABELS: Record<string, string> = {
   startTime: "Start time",
   revisitDate: "Revisit date",
   reason: "Reason",
+  delegatedTo: "Delegated to",
   reflection: "Reflection",
   slots: "Slots",
 };
@@ -42,6 +49,7 @@ const MAX_BY_FIELD: Record<string, number> = {
   doneWhen: LIMITS.doneWhen,
   activity: LIMITS.activity,
   reason: LIMITS.reason,
+  delegatedTo: LIMITS.delegatedTo,
   reflection: LIMITS.reflection,
 };
 
@@ -63,6 +71,8 @@ export function fieldErrorMessage(field: string, code: FieldErrorCode | undefine
   }
   if (name === "slots" && code === "too_many") return `A project can have at most ${LIMITS.slots} slots.`;
   if (name === "reason" && code === "required") return "Say briefly why you’re letting this go.";
+  if (name === "delegatedTo" && code === "required") return "Say who you handed this to.";
+  if (name === "delegatedTo" && code === "required") return "Say who you handed this to.";
 
   switch (code) {
     case "required":

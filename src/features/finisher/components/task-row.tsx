@@ -29,7 +29,7 @@ import { QUICK_DUE_KINDS, QUICK_DUE_LABELS, quickDueChoice, type QuickDueChoice 
 import type { MoveTarget } from "../domain/task-order";
 import { generalErrorMessage } from "../messages";
 import type { ProjectOption, TaskDetail, TaskItem } from "../types";
-import { DeleteDialog, LetGoDialog, ParkDialog } from "./lifecycle-dialogs";
+import { DelegateDialog, DeleteDialog, LetGoDialog, ParkDialog } from "./lifecycle-dialogs";
 import { isPlainClick, useTaskPanel } from "./task-panel-context";
 import { TaskFormDialog } from "./task-form-dialog";
 import { useFinisherRefresh } from "./use-refresh";
@@ -178,7 +178,7 @@ function QuickDueItems({ task, onChoose }: { task: TaskItem; onChoose: (choice: 
   );
 }
 
-type OpenDialog = "edit" | "park" | "letgo" | "delete" | null;
+type OpenDialog = "edit" | "park" | "delegate" | "letgo" | "delete" | null;
 
 /** Per-item menu with secondary actions (FIN-018), quick due dates (FIN-037) and Move items (FIN-038). */
 export function TaskActionsMenu({
@@ -302,6 +302,11 @@ export function TaskActionsMenu({
               </DropdownMenuItem>
             ) : null}
             {open ? (
+              <DropdownMenuItem className="min-h-11" onClick={() => setDialog("delegate")}>
+                Delegate…
+              </DropdownMenuItem>
+            ) : null}
+            {open ? (
               <DropdownMenuItem className="min-h-11" onClick={() => setDialog("letgo")}>
                 Let go
               </DropdownMenuItem>
@@ -338,6 +343,7 @@ export function TaskActionsMenu({
         today={today}
         current={task.status === "parked" ? task.revisitDate : null}
       />
+      <DelegateDialog open={dialog === "delegate"} onOpenChange={(next) => setDialog(next ? "delegate" : null)} id={task.id} title={task.title} />
       <LetGoDialog open={dialog === "letgo"} onOpenChange={(next) => setDialog(next ? "letgo" : null)} kind="task" id={task.id} title={task.title} />
       <DeleteDialog
         open={dialog === "delete"}
@@ -425,7 +431,8 @@ export function TaskRow({
         >
           {task.title}
         </Link>
-        <p className="flex flex-wrap gap-x-2 font-mono text-[0.8125rem] text-muted-foreground">
+        <p className="flex flex-wrap items-center gap-x-2 font-mono text-[0.8125rem] text-muted-foreground">
+          {task.status === "delegated" ? <Badge variant="outline">Delegated</Badge> : null}
           <TaskDue task={task} today={today} />
           {showProject && task.projectTitle && task.projectId ? (
             <span className="min-w-0 break-words">

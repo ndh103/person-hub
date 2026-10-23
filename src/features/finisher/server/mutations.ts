@@ -75,7 +75,7 @@ export async function taskAction(ctx: FinisherContext, taskId: string, body: Bod
     p_task_id: id,
     p_action: input.action,
     p_revisit_date: input.action === "park" ? input.revisitDate : null,
-    p_reason: input.action === "let_go" ? input.reason : null,
+    p_reason: input.action === "let_go" ? input.reason : input.action === "delegate" ? input.delegatedTo : null,
     p_keep_position: input.action === "reopen" ? input.keepPosition : false,
   });
   return { status };

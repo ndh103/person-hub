@@ -313,7 +313,7 @@ const closedRoute = createRoute({
   staticData: { title: "Closed · Finisher" },
   validateSearch: z.object({
     type: z.enum(["tasks", "projects"]).optional().catch(undefined),
-    outcome: z.enum(["completed", "let_go"]).optional().catch(undefined),
+    outcome: z.enum(["completed", "delegated", "let_go"]).optional().catch(undefined),
     ...panelTask,
   }),
   loaderDeps: ({ search }) => ({ type: search.type, outcome: search.outcome }),

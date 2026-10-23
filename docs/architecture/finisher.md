@@ -276,6 +276,17 @@ These use the existing write guards (`requireUser`, the foreign-`Origin` refusal
 - **API:** the allowlist, the guards and the error mapping on the new routes; `basics` and the task's `pomodoros` fields.
 - **Unit:** the time left, the clock-offset handling, and once-only completion.
 
+## Delegated tasks (FIN-041)
+
+Added 2026-10-23 for requirements v5.1 (FIN-041, decisions 29–31). Migration: `supabase/migrations/20261023120000_finisher_task_delegate.sql`.
+
+- **Status:** `delegated` is a closed task status next to `done` and `let_go`. It sets `closed_at`, clears `revisit_date`, and is reopened to `open` at the bottom of its section, like `done`.
+- **Name storage:** the delegate's name goes in the existing `close_note` column (1–100 characters for this status), as the Let go reason does. Projects already use `close_note` for two meanings, and the status decides the label. A separate column would add an API field and a constraint without a current need.
+- **Constraints:** the unnamed status, closed-time and note checks from the first migration are dropped by definition and re-added with names (`finisher_tasks_status_check`, `finisher_tasks_closed_check`, `finisher_tasks_note_check`). They now require `closed_at` and `close_note` for `delegated`, so direct writes cannot create a half-closed row.
+- **Write path:** `finisher_task_action` gains `delegate` (from `open` or `parked`; `p_reason` carries the name, field `delegated_to`). The signature is unchanged, so grants stay. There are no policy changes: users still have SELECT only (ADR-0002).
+- **API:** `POST /api/finisher/tasks/:id/actions` takes `{ action: "delegate", delegatedTo }`; validation errors use the field `delegatedTo`. `GET /api/finisher/closed` takes `outcome=delegated` (tasks only) and returns `counts.tasksDelegated`. `GET /api/finisher/today` includes tasks delegated today in `doneTasks`; project detail includes them in `closedTasks`.
+- **Rollback:** reopen or delete delegated tasks first, then restore the previous function and constraints. The old checks reject `delegated` rows.
+
 ## Threats and controls
 
 | Threat | Control |

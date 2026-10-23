@@ -5,7 +5,7 @@ import type { SessionState, WeekSummary } from "./domain/schedule";
  * Narrow view models the server hands to pages and API clients. They carry
  * only what the UI shows: no user IDs, no internal history rows.
  */
-export type TaskStatus = "open" | "parked" | "done" | "let_go";
+export type TaskStatus = "open" | "parked" | "done" | "let_go" | "delegated";
 export type ProjectStatus = "active" | "parked" | "finished" | "let_go";
 
 export type TaskItem = {
@@ -157,13 +157,13 @@ export type ProjectDetail = {
 };
 
 export type ClosedType = "all" | "tasks" | "projects";
-export type ClosedOutcome = "all" | "completed" | "let_go";
+export type ClosedOutcome = "all" | "completed" | "delegated" | "let_go";
 
 export type ClosedEntry = {
   kind: "task" | "project";
   id: string;
   title: string;
-  outcome: "done" | "finished" | "let_go";
+  outcome: "done" | "finished" | "delegated" | "let_go";
   closedAt: string;
   closedOn: LocalDate;
   note: string | null;
@@ -171,7 +171,13 @@ export type ClosedEntry = {
   sessions: { done: number; scheduled: number } | null;
 };
 
-export type ClosedCounts = { tasksDone: number; tasksLetGo: number; projectsFinished: number; projectsLetGo: number };
+export type ClosedCounts = {
+  tasksDone: number;
+  tasksDelegated: number;
+  tasksLetGo: number;
+  projectsFinished: number;
+  projectsLetGo: number;
+};
 
 export type ClosedPage = { items: ClosedEntry[]; nextCursor: string | null };
 

@@ -15,6 +15,7 @@ const TYPES: { value: ClosedType; label: string }[] = [
 const OUTCOMES: { value: ClosedOutcome; label: string }[] = [
   { value: "all", label: "Any outcome" },
   { value: "completed", label: "Done or finished" },
+  { value: "delegated", label: "Delegated" },
   { value: "let_go", label: "Let go" },
 ];
 
@@ -61,13 +62,16 @@ function FilterLinks<T extends string>({
 /** Counts for the current filter only; no success percentage (assumption A6). */
 function Summary({ counts, type, outcome }: { counts: ClosedCounts; type: ClosedType; outcome: ClosedOutcome }) {
   const parts: string[] = [];
+  const wants = (value: Exclude<ClosedOutcome, "all">) => outcome === "all" || outcome === value;
   if (type !== "projects") {
-    if (outcome !== "let_go") parts.push(`${counts.tasksDone} tasks done`);
-    if (outcome !== "completed") parts.push(`${counts.tasksLetGo} tasks let go`);
+    if (wants("completed")) parts.push(`${counts.tasksDone} tasks done`);
+    if (wants("delegated")) parts.push(`${counts.tasksDelegated} tasks delegated`);
+    if (wants("let_go")) parts.push(`${counts.tasksLetGo} tasks let go`);
   }
-  if (type !== "tasks") {
-    if (outcome !== "let_go") parts.push(`${counts.projectsFinished} projects finished`);
-    if (outcome !== "completed") parts.push(`${counts.projectsLetGo} projects let go`);
+  // Projects can't be delegated (FIN-041).
+  if (type !== "tasks" && outcome !== "delegated") {
+    if (wants("completed")) parts.push(`${counts.projectsFinished} projects finished`);
+    if (wants("let_go")) parts.push(`${counts.projectsLetGo} projects let go`);
   }
   return <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>;
 }
@@ -87,7 +91,7 @@ export function ClosedView({ type, outcome }: ClosedSearch) {
       ) : (
         <EmptyState
           title="Your finished work will appear here."
-          description="Tasks you complete, projects you finish, and things you decide to let go are kept here."
+          description="Tasks you complete or delegate, projects you finish, and things you decide to let go are kept here."
         />
       )}
     </div>

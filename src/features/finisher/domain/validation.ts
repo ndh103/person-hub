@@ -19,6 +19,7 @@ export const LIMITS = {
   doneWhen: 300,
   activity: 80,
   reason: 500,
+  delegatedTo: 100,
   reflection: 1000,
   slots: 20,
   minDuration: 5,
@@ -243,7 +244,7 @@ function parkDate(c: Collector, raw: unknown, today: LocalDate): LocalDate | nul
   return date;
 }
 
-export const TASK_ACTIONS = ["done", "park", "unpark", "let_go", "reopen"] as const;
+export const TASK_ACTIONS = ["done", "park", "unpark", "let_go", "delegate", "reopen"] as const;
 export type TaskAction = (typeof TASK_ACTIONS)[number];
 
 export type TaskActionInput =
@@ -251,7 +252,9 @@ export type TaskActionInput =
   /** keepPosition: the immediate Undo after Mark done returns the task to its place (FIN-021, FIN-038). */
   | { action: "reopen"; keepPosition: boolean }
   | { action: "park"; revisitDate: LocalDate }
-  | { action: "let_go"; reason: string };
+  | { action: "let_go"; reason: string }
+  /** FIN-041: who the task was handed to. */
+  | { action: "delegate"; delegatedTo: string };
 
 export function parseTaskAction(raw: Record<string, unknown>, today: LocalDate): Parsed<TaskActionInput> {
   const c: Collector = { errors: {} };
@@ -263,6 +266,10 @@ export function parseTaskAction(raw: Record<string, unknown>, today: LocalDate):
   if (action === "let_go") {
     const reason = text(c, raw.reason, "reason", LIMITS.reason, true);
     return done(c, { action, reason: reason ?? "" });
+  }
+  if (action === "delegate") {
+    const delegatedTo = text(c, raw.delegatedTo, "delegatedTo", LIMITS.delegatedTo, true);
+    return done(c, { action, delegatedTo: delegatedTo ?? "" });
   }
   if (action === "reopen") {
     if (raw.keepPosition !== undefined && typeof raw.keepPosition !== "boolean") c.errors.keepPosition = "invalid";
