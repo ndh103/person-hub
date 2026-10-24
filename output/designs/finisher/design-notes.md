@@ -523,7 +523,7 @@ The first script was rerun with no new failures (the same two harness artefacts 
 
 ### v6.3: weekend hidden by default (2026-10-24)
 
-The app hides Saturday and Sunday unless **Show weekend** is on (decision 41, A34). The toggle sits beside Show done in the summary row and shows the number of hidden items. It is forced on when today is a weekend day. With five days, the columns use a 9rem minimum. The mockup (`week-planner.html`) still shows all seven days and was not updated.
+The app hides Saturday and Sunday unless **Show weekend** is on (decision 41, A34). The toggle sits beside Show done in the summary row and shows the number of hidden items. It always follows the user's choice, including at weekends. Carried-over cards keep check-off and title on one row on laptop. With five days, the columns use a 9rem minimum. The mockup (`week-planner.html`) still shows all seven days and was not updated.
 
 ### v6.2: Today tab removed (2026-10-24)
 

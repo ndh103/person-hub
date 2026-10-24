@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { browserTimeZone, finisherQueries } from "../../api";
 import { addDays, DEFAULT_TIME_ZONE, formatWeekdayDate, startOfWeek, zonedNow, type LocalDate } from "../../domain/dates";
-import { formatWeekRange, isWeekendDay, summarizeBoard, weekendItemCount, weekLabel, weekLimits } from "../../domain/week";
+import { formatWeekRange, summarizeBoard, weekendItemCount, weekLabel, weekLimits } from "../../domain/week";
 import { WeekBoard } from "./week-board";
 import { WeekReview } from "./week-review";
 
@@ -162,10 +162,8 @@ function PlanPane({
   onShowWeekendChange: (value: boolean) => void;
 }) {
   const { data } = useSuspenseQuery(finisherQueries.week(start));
-  // On a Saturday or Sunday of the week shown, the weekend is always shown, so today is never hidden (A34).
-  const forced = isWeekendDay(data.now.date) && data.now.date >= data.weekStart && data.now.date <= addDays(data.weekStart, 6);
-  const weekendShown = showWeekend || forced;
-  const hiddenItems = weekendShown ? 0 : weekendItemCount(data.days);
+  // The toggle alone decides; while it is off, the count says what is hidden (A34).
+  const hiddenItems = showWeekend ? 0 : weekendItemCount(data.days);
   const weekEnd = addDays(data.weekStart, 6);
   // Every open task due in the week counts as planned, including those shown as carried over.
   const carriedInWeek = (data.carried?.items ?? []).filter((task) => task.dueDate && task.dueDate >= data.weekStart && task.dueDate <= weekEnd);
@@ -184,9 +182,8 @@ function PlanPane({
         <div className="flex flex-wrap items-center gap-x-4">
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <Checkbox
-              checked={weekendShown}
-              disabled={forced}
-              aria-describedby={forced ? "weekend-forced" : hiddenItems ? "weekend-hidden" : undefined}
+              checked={showWeekend}
+              aria-describedby={hiddenItems ? "weekend-hidden" : undefined}
               onCheckedChange={(checked) => onShowWeekendChange(checked === true)}
             />
             Show weekend
@@ -196,11 +193,6 @@ function PlanPane({
                 <span className="sr-only"> {hiddenItems === 1 ? "item" : "items"} on Saturday and Sunday</span>)
               </span>
             ) : null}
-            {forced ? (
-              <span id="weekend-forced" className="sr-only">
-                Shown because today is a weekend day.
-              </span>
-            ) : null}
           </label>
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <Checkbox checked={showDone} onCheckedChange={(checked) => onShowDoneChange(checked === true)} />
@@ -208,7 +200,7 @@ function PlanPane({
           </label>
         </div>
       </div>
-      <WeekBoard key={data.weekStart} data={data} showDone={showDone} showWeekend={weekendShown} />
+      <WeekBoard key={data.weekStart} data={data} showDone={showDone} showWeekend={showWeekend} />
     </div>
   );
 }

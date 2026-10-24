@@ -21,6 +21,9 @@
   - The board and the phone day strip show five days, with wider minimum columns (9rem) while the weekend is hidden.
   - Helpers: `isWeekendDay` and `weekendItemCount` in `domain/week.ts`.
 - **Checks:** typecheck passed; lint 0 errors, 6 warnings (unchanged); 286 tests passed; build passed. The generated CSS was checked for the `has`/`not-has` rules. Not checked in a browser.
+- **Fixes after the user's report (same day):**
+  - **Show weekend didn't respond:** it was forced on and disabled on weekend days (the report came on a Saturday). It now always follows the toggle (A34 revised).
+  - **Carried-over layout:** on laptop, the check-off and title sat on separate lines because the cards used the stacked layout meant for narrow day columns. Carried-over cards now use the one-row layout (`ROW_GRID`) at every width.
 
 ## Change 2026-10-24: Week tab, Today tab removed (v6.2)
 

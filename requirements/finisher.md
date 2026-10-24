@@ -397,7 +397,7 @@ The Plan view is a board with an **Unplanned** list and one column per day, Mond
 - **Weekend (decision 41):** Saturday and Sunday are hidden by default, so the board shows Monday to Friday.
   - A **Show weekend** toggle beside Show done shows them. It is remembered in this browser (A34).
   - While they are hidden, the toggle shows how many tasks and sessions are on them, for example "Show weekend (2)".
-  - On a Saturday or Sunday of the week shown, the weekend is always shown, so today is never hidden.
+  - The toggle alone decides, including on a Saturday or Sunday. On phones, the day strip then starts on Monday.
   - Hiding changes only what is shown: weekend items still count in the week summary, still appear in the review, and Move to day… still offers Saturday and Sunday.
 - Each day's header shows the short weekday and date ("Mon 26 Oct") and how much is still to do that day, for example "3 to do". That count is Open tasks plus unmarked sessions in the marking window or later. Today's column says "Today" in text and is highlighted, not by colour alone. Days before today are shown as past.
 - **Order within a day (decision 39):**
@@ -694,7 +694,7 @@ From the user, 2026-10-24 (later):
 - A30. The weekly note is limited to 2000 characters of plain text, with no formatting.
 - A31. Times stay in the 24-hour "10:00" format used elsewhere in the app, although the user wrote "10 AM". A 12-hour display would be a hub-wide setting.
 - A32. The Set time… hour buttons run from 06:00 to 21:00; any other time uses the Other time field.
-- A34. Show weekend is remembered per browser (a display preference, not personal data). It is forced on when today is a weekend day in the week shown, and it shows the number of hidden weekend items.
+- A34. Show weekend is remembered per browser (a display preference, not personal data), and it shows the number of hidden weekend items. It is never forced on: a version that forced it on during the weekend made the toggle unusable then (user report, 2026-10-24).
 - A33. With the Today tab gone, the "due for revisit" count (FIN-013) becomes a notice on the current week's Week tab, linking to the Parked groups.
 
 ## Open questions

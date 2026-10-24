@@ -24,8 +24,12 @@ import { useWeekPlan } from "./week-plan-context";
  * details, ⋯. In the narrow laptop columns the controls get their own row, so
  * the title can use the full width (design notes, Week planner).
  */
-const CARD_GRID =
-  "grid grid-cols-[auto_minmax(0,1fr)_auto] [grid-template-areas:'check_title_more'_'check_meta_more'] items-start gap-x-2 lg:grid-cols-[auto_auto_minmax(0,1fr)_auto] lg:[grid-template-areas:'handle_check_._more'_'title_title_title_title'_'meta_meta_meta_meta'] lg:gap-x-0.5";
+const ROW_GRID =
+  "grid grid-cols-[auto_minmax(0,1fr)_auto] [grid-template-areas:'check_title_more'_'check_meta_more'] items-start gap-x-2";
+const CARD_GRID = `${ROW_GRID} lg:grid-cols-[auto_auto_minmax(0,1fr)_auto] lg:[grid-template-areas:'handle_check_._more'_'title_title_title_title'_'meta_meta_meta_meta'] lg:gap-x-0.5`;
+/** Title and details padding in the stacked laptop layout only. */
+const STACKED_TEXT = "lg:px-1";
+const STACKED_TITLE = "lg:px-1 lg:pt-1";
 
 /** An Open, Done or Delegated task on a day, in Unplanned or in Carried over. */
 export function PlanTaskCard({ task, carried = false, actions }: { task: TaskItem; carried?: boolean; actions?: React.ReactNode }) {
@@ -61,7 +65,7 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
         selected && "bg-accent shadow-[inset_3px_0_0_var(--ring)]",
       )}
     >
-      <div className={CARD_GRID}>
+      <div className={carried ? ROW_GRID : CARD_GRID}>
         {draggable ? (
           <button
             ref={setActivatorNodeRef}
@@ -96,14 +100,15 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
             panel.open(task.id);
           }}
           className={cn(
-            "pt-2 text-sm font-medium break-words underline-offset-4 outline-none [grid-area:title] hover:underline focus-visible:underline lg:px-1 lg:pt-1",
+            "pt-2 text-sm font-medium break-words underline-offset-4 outline-none [grid-area:title] hover:underline focus-visible:underline",
+            !carried && STACKED_TITLE,
             selected && "font-semibold",
             !open && "text-muted-foreground line-through decoration-input",
           )}
         >
           {task.title}
         </Link>
-        <TaskMeta task={task} carried={carried} />
+        <TaskMeta task={task} carried={carried} className={carried ? undefined : STACKED_TEXT} />
         <div className="[grid-area:more] lg:-mr-1">
           <TaskActionsMenu task={task} today={plan.today} projects={plan.projects} planItems={planItems} triggerProps={{ "data-focus": "more" }} />
         </div>
@@ -113,7 +118,7 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
   );
 }
 
-function TaskMeta({ task, carried }: { task: TaskItem; carried: boolean }) {
+function TaskMeta({ task, carried, className }: { task: TaskItem; carried: boolean; className?: string }) {
   const parts: React.ReactNode[] = [];
   if (carried && task.dueDate) {
     parts.push(
@@ -135,7 +140,7 @@ function TaskMeta({ task, carried }: { task: TaskItem; carried: boolean }) {
   if (task.projectTitle) parts.push(<span key="project" className="break-words">{task.projectTitle}</span>);
   if (!parts.length) return null;
   return (
-    <p className="font-mono text-xs text-muted-foreground [grid-area:meta] lg:px-1">
+    <p className={cn("font-mono text-xs text-muted-foreground [grid-area:meta]", className)}>
       {parts.map((part, index) => (
         <span key={index}>
           {index ? " · " : ""}
@@ -201,7 +206,8 @@ export function PlanSessionCard({ session }: { session: SessionItem }) {
         </div>
         <p
           className={cn(
-            "flex items-start gap-1 pt-2 text-sm font-medium break-words [grid-area:title] lg:px-1 lg:pt-1",
+            "flex items-start gap-1 pt-2 text-sm font-medium break-words [grid-area:title]",
+            STACKED_TITLE,
             marked && "text-muted-foreground line-through decoration-input",
           )}
         >
@@ -211,7 +217,7 @@ export function PlanSessionCard({ session }: { session: SessionItem }) {
             {session.activity}
           </span>
         </p>
-        <p className="font-mono text-xs text-muted-foreground [grid-area:meta] lg:px-1">
+        <p className={cn("font-mono text-xs text-muted-foreground [grid-area:meta]", STACKED_TEXT)}>
           {formatDuration(session.durationMinutes)}
           {session.startTime ? ` · ${session.startTime}` : ""}
           {STATE_WORD[shown] ? ` · ${STATE_WORD[shown]}` : ""}
