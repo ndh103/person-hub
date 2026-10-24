@@ -7,11 +7,13 @@ import {
   formatDayShort,
   formatWeekRange,
   hourBlock,
+  isWeekendDay,
   orderDayItems,
   parseWeekStart,
   SET_TIME_HOURS,
   summarizeBoard,
   timeAfterMove,
+  weekendItemCount,
   weekLabel,
 } from "@/features/finisher/domain/week";
 import type { FinisherContext } from "@/features/finisher/server/context";
@@ -47,6 +49,14 @@ describe("week dates and labels (FIN-042)", () => {
     expect(weekLabel("2026-11-09", NOW.date)).toBeNull();
     // On Sunday the week is still the one that started on Monday (A2).
     expect(weekLabel(MONDAY, "2026-11-01")).toBe("This week");
+  });
+});
+
+describe("weekend (decision 41, A34)", () => {
+  it("knows Saturday and Sunday, and counts what is on them", () => {
+    expect(["2026-10-30", "2026-10-31", "2026-11-01"].map(isWeekendDay)).toEqual([false, true, true]);
+    const day = (date: string, items: number) => ({ date, open: Array(items).fill(0), finished: [], sessions: [] });
+    expect(weekendItemCount([day("2026-10-30", 4), day("2026-10-31", 1), { ...day("2026-11-01", 1), sessions: [0] }])).toBe(3);
   });
 });
 

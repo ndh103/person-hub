@@ -13,6 +13,15 @@
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
 
+## Change 2026-10-24: wider Week page, weekend hidden by default (v6.3)
+
+- **Width:** `app-layout.tsx` gives a page marked `data-wide-page` (the Week view) the full content width with `px-5`/`py-6` on laptop, instead of `max-w-5xl` with `px-12`/`py-14`. The side-panel widening rule doesn't apply to such a page. This was in the design (the Week tab drops `max-w-5xl`) but was missed in v6.2. Other pages are unchanged.
+- **Weekend (decision 41, A34):**
+  - **Show weekend** sits next to Show done, which moved from the header to the summary row of the Plan view. It is off by default and kept in `localStorage` under `ph-week-weekend` (with try/catch). It shows the count of hidden weekend items, and it is forced on and disabled when today is a weekend day of the week shown.
+  - The board and the phone day strip show five days, with wider minimum columns (9rem) while the weekend is hidden.
+  - Helpers: `isWeekendDay` and `weekendItemCount` in `domain/week.ts`.
+- **Checks:** typecheck passed; lint 0 errors, 6 warnings (unchanged); 286 tests passed; build passed. The generated CSS was checked for the `has`/`not-has` rules. Not checked in a browser.
+
 ## Change 2026-10-24: Week tab, Today tab removed (v6.2)
 
 Inputs:

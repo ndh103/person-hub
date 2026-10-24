@@ -4,7 +4,7 @@
 
 - Feature slug: `finisher`
 - Status: `ready`
-- Version: 6.2 (2026-10-24). Removes the Today tab: Week is the first tab and the Finisher home (decision 40, FIN-031 retired). v6.1 (same day), after the user answered Q6–Q9, added: decisions 36–39, FIN-048 (set a task's time on the board), time ordering within a day (FIN-043, FIN-045), and the weekly note and Pomodoros by day in the review (FIN-047). v6.0 (same day) added the **Week** tab: FIN-042 to FIN-047 (week navigation, week board, planning a task onto a day, sessions on the board, carry over, weekly review), decisions 33–35, and assumptions A21–A29. v5.1 (2026-10-23) added FIN-041 (delegate a task) and decisions 29–31. v5.0 (2026-10-20) added FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26. v4.1 (same day) recorded design-review decisions 21–22; v4.0 added FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
+- Version: 6.3 (2026-10-24). The weekend is hidden on the board by default, with a Show weekend toggle (decision 41, A34). v6.2 (same day): Removes the Today tab: Week is the first tab and the Finisher home (decision 40, FIN-031 retired). v6.1 (same day), after the user answered Q6–Q9, added: decisions 36–39, FIN-048 (set a task's time on the board), time ordering within a day (FIN-043, FIN-045), and the weekly note and Pomodoros by day in the review (FIN-047). v6.0 (same day) added the **Week** tab: FIN-042 to FIN-047 (week navigation, week board, planning a task onto a day, sessions on the board, carry over, weekly review), decisions 33–35, and assumptions A21–A29. v5.1 (2026-10-23) added FIN-041 (delegate a task) and decisions 29–31. v5.0 (2026-10-20) added FIN-039 (Pomodoro session on a task) and FIN-040 (Pomodoro summary), decisions 23–26. v4.1 (same day) recorded design-review decisions 21–22; v4.0 added FIN-036 (task side panel on laptop), FIN-037 (quick due-date menu), FIN-038 (drag-and-drop task order), and a Tomorrow shortcut in FIN-034, and changes the task sort rules in FIN-022 and FIN-031. Builds on v3.2 (2026-10-13, tab counts); see Change notes.
 - Source: the user's requests on 2026-10-09 (brainstorm: "I want to become a finisher") 2026-10-10 ("Habit Tracker will be replaced by Finisher… short tasks… bigger Projects with slots in my timetable… Finisher is the first menu item, Events next"), 2026-10-12 ("in the add new task dialog, under Due date, I want to quick assign the Due Date to Today, or Next Week"), 2026-10-23 ("with a Task, i want the ability to delegate it to other… considered same as the task has been done, but it should be marked as Delegated"), and 2026-10-20 ("for web version, i don't need to open a task detail in a separate page… a quick menu item to quickly assign a task to: Today, Tomorrow, and Next Week… the Tomorrow button (next to Today button)… drag and drop to rearrange the order of tasks in each section"), and 2026-10-24 ("i want to have a Week planner section where I can plan Tasks for a week"), plus answers to clarifying questions.
 - Related: [project brief](../docs/project-brief.md), [app shell design](../output/designs/app-shell/design-notes.md), security baseline in [CLAUDE.md](../CLAUDE.md#security-baseline). Finisher design: [task form with due-date shortcuts, and the Tasks list with side panel, drag order and quick due-date menu](../output/designs/finisher/design-notes.md) (`index.html`, `task-list.html`; other screens not yet designed); the Week tab in [`week-planner.html`](../output/designs/finisher/week-planner.html) (FIN-042 to FIN-048, draft). Architecture: [docs/architecture/finisher.md](../docs/architecture/finisher.md) (v4 task enhancements and v5 Pomodoro; ADR-0005 order keys, ADR-0006 drag library, ADR-0007 Pomodoro sessions, ADR-0008 Week tab). Implementation: [docs/implementation/finisher.md](../docs/implementation/finisher.md) (v6.2 built 2026-10-24). Test report: not yet created.
 
@@ -394,6 +394,11 @@ The Plan view is a board with an **Unplanned** list and one column per day, Mond
 
 **Day columns**
 
+- **Weekend (decision 41):** Saturday and Sunday are hidden by default, so the board shows Monday to Friday.
+  - A **Show weekend** toggle beside Show done shows them. It is remembered in this browser (A34).
+  - While they are hidden, the toggle shows how many tasks and sessions are on them, for example "Show weekend (2)".
+  - On a Saturday or Sunday of the week shown, the weekend is always shown, so today is never hidden.
+  - Hiding changes only what is shown: weekend items still count in the week summary, still appear in the review, and Move to day… still offers Saturday and Sunday.
 - Each day's header shows the short weekday and date ("Mon 26 Oct") and how much is still to do that day, for example "3 to do". That count is Open tasks plus unmarked sessions in the marking window or later. Today's column says "Today" in text and is highlighted, not by colour alone. Days before today are shown as past.
 - **Order within a day (decision 39):**
   1. **Timed items** (Open tasks with a due time, and sessions with a start time; FIN-045), together, in time order, for example a 07:30 session, then a 10:00 task, then a 15:00 task. When a task and a session share a time, the session comes first; tasks with the same time follow the user's task order (FIN-038).
@@ -654,6 +659,7 @@ From the user, 2026-10-24 (answers to Q6–Q9):
 From the user, 2026-10-24 (later):
 
 40. The **Today** tab is removed. **Week** is the first tab and the Finisher home: Week, Tasks, Projects, Closed.
+41. The board hides Saturday and Sunday by default; a toggle shows them.
 
 ## Assumptions (reversible proposed defaults)
 
@@ -688,6 +694,7 @@ From the user, 2026-10-24 (later):
 - A30. The weekly note is limited to 2000 characters of plain text, with no formatting.
 - A31. Times stay in the 24-hour "10:00" format used elsewhere in the app, although the user wrote "10 AM". A 12-hour display would be a hub-wide setting.
 - A32. The Set time… hour buttons run from 06:00 to 21:00; any other time uses the Other time field.
+- A34. Show weekend is remembered per browser (a display preference, not personal data). It is forced on when today is a weekend day in the week shown, and it shows the number of hidden weekend items.
 - A33. With the Today tab gone, the "due for revisit" count (FIN-013) becomes a notice on the current week's Week tab, linking to the Parked groups.
 
 ## Open questions
@@ -702,6 +709,7 @@ From the user, 2026-10-24 (later):
 
 ## Change notes
 
+- **2026-10-24, v6.3.** Decision 41 and A34: the weekend is hidden by default with a Show weekend toggle (FIN-043). **Affects:** `week-view.tsx` and `week-board.tsx`; no API or schema change. The Week page also now uses the full content width with less padding, as the design specified.
 - **2026-10-24, v6.2.** Removed the **Today** tab (decision 40). Week is the first tab and the Finisher home.
   - FIN-031 is retired, with a table of where each part went.
   - Updated: FIN-001 (tab order, default, old URL opens Week), FIN-035 (no Today count), FIN-021, FIN-036, FIN-037, FIN-038 (drag reorder on the Tasks tab only), FIN-040 (no Today line), FIN-041, FIN-013 (revisit notice on the Week tab, A33), FIN-018, FIN-042, FIN-043, FIN-045, and FIN-048.

@@ -6,19 +6,41 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { browserTimeZone, finisherQueries } from "../../api";
 import { addDays, DEFAULT_TIME_ZONE, formatWeekdayDate, startOfWeek, zonedNow, type LocalDate } from "../../domain/dates";
-import { formatWeekRange, summarizeBoard, weekLabel, weekLimits } from "../../domain/week";
+import { formatWeekRange, isWeekendDay, summarizeBoard, weekendItemCount, weekLabel, weekLimits } from "../../domain/week";
 import { WeekBoard } from "./week-board";
 import { WeekReview } from "./week-review";
 
 export type WeekSearch = { week?: LocalDate; view?: "plan" | "review" };
 
+const WEEKEND_KEY = "ph-week-weekend";
+
+/** Show weekend is a per-browser convenience (A34), not personal data; storage may be unavailable. */
+function readShowWeekend(): boolean {
+  try {
+    return localStorage.getItem(WEEKEND_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeShowWeekend(value: boolean) {
+  try {
+    if (value) localStorage.setItem(WEEKEND_KEY, "1");
+    else localStorage.removeItem(WEEKEND_KEY);
+  } catch {
+    // Not remembered; the toggle still works for this visit.
+  }
+}
+
 /**
  * The Week tab, Finisher's home (FIN-042, decision 40): week navigation, the
- * Plan and Review views, and Show done. The week and view live in the URL
- * (A21); the current week has no `week` parameter, so /finisher always opens it.
+ * Plan and Review views, Show done and Show weekend. The week and view live in
+ * the URL (A21); the current week has no `week` parameter, so /finisher always
+ * opens it. The page uses the full content width (data-wide-page).
  */
 export function WeekView({ search, onNavigate }: { search: WeekSearch; onNavigate: (next: WeekSearch) => void }) {
   const [showDone, setShowDone] = useState(true); // decision 36: on by default
+  const [showWeekend, setShowWeekend] = useState(readShowWeekend); // decision 41: off by default
   const today = zonedNow(browserTimeZone() ?? DEFAULT_TIME_ZONE).date;
   const thisWeek = startOfWeek(today);
   const start = search.week ?? thisWeek;
@@ -33,7 +55,7 @@ export function WeekView({ search, onNavigate }: { search: WeekSearch; onNavigat
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-wide-page="" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 items-center gap-1">
           <Button
@@ -69,12 +91,6 @@ export function WeekView({ search, onNavigate }: { search: WeekSearch; onNavigat
           ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {view === "plan" ? (
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <Checkbox checked={showDone} onCheckedChange={(checked) => setShowDone(checked === true)} />
-              Show done
-            </label>
-          ) : null}
           <div role="group" aria-label="View" className="inline-grid grid-cols-2 gap-1 rounded-xl border bg-card p-1">
             <Button
               variant="ghost"
@@ -116,15 +132,40 @@ export function WeekView({ search, onNavigate }: { search: WeekSearch; onNavigat
             onShowPlan={() => onNavigate({ week: search.week, view: undefined })}
           />
         ) : (
-          <PlanPane start={search.week} showDone={showDone} />
+          <PlanPane
+            start={search.week}
+            showDone={showDone}
+            onShowDoneChange={setShowDone}
+            showWeekend={showWeekend}
+            onShowWeekendChange={(value) => {
+              setShowWeekend(value);
+              writeShowWeekend(value);
+            }}
+          />
         )}
       </Suspense>
     </div>
   );
 }
 
-function PlanPane({ start, showDone }: { start: LocalDate | undefined; showDone: boolean }) {
+function PlanPane({
+  start,
+  showDone,
+  onShowDoneChange,
+  showWeekend,
+  onShowWeekendChange,
+}: {
+  start: LocalDate | undefined;
+  showDone: boolean;
+  onShowDoneChange: (value: boolean) => void;
+  showWeekend: boolean;
+  onShowWeekendChange: (value: boolean) => void;
+}) {
   const { data } = useSuspenseQuery(finisherQueries.week(start));
+  // On a Saturday or Sunday of the week shown, the weekend is always shown, so today is never hidden (A34).
+  const forced = isWeekendDay(data.now.date) && data.now.date >= data.weekStart && data.now.date <= addDays(data.weekStart, 6);
+  const weekendShown = showWeekend || forced;
+  const hiddenItems = weekendShown ? 0 : weekendItemCount(data.days);
   const weekEnd = addDays(data.weekStart, 6);
   // Every open task due in the week counts as planned, including those shown as carried over.
   const carriedInWeek = (data.carried?.items ?? []).filter((task) => task.dueDate && task.dueDate >= data.weekStart && task.dueDate <= weekEnd);
@@ -134,12 +175,40 @@ function PlanPane({ start, showDone }: { start: LocalDate | undefined; showDone:
     sessions: data.days.flatMap((day) => day.sessions),
   });
   return (
-    <div className="flex flex-col gap-4">
-      <p className="font-mono text-[0.8125rem] text-muted-foreground">
-        {summary.planned} {summary.planned === 1 ? "task" : "tasks"} planned · {summary.done} done ·{" "}
-        {summary.sessionsScheduled ? `Sessions ${summary.sessionsDone} of ${summary.sessionsScheduled} done` : "No sessions scheduled"}
-      </p>
-      <WeekBoard key={data.weekStart} data={data} showDone={showDone} />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p className="font-mono text-[0.8125rem] text-muted-foreground">
+          {summary.planned} {summary.planned === 1 ? "task" : "tasks"} planned · {summary.done} done ·{" "}
+          {summary.sessionsScheduled ? `Sessions ${summary.sessionsDone} of ${summary.sessionsScheduled} done` : "No sessions scheduled"}
+        </p>
+        <div className="flex flex-wrap items-center gap-x-4">
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <Checkbox
+              checked={weekendShown}
+              disabled={forced}
+              aria-describedby={forced ? "weekend-forced" : hiddenItems ? "weekend-hidden" : undefined}
+              onCheckedChange={(checked) => onShowWeekendChange(checked === true)}
+            />
+            Show weekend
+            {hiddenItems ? (
+              <span id="weekend-hidden" className="font-mono text-xs text-muted-foreground">
+                ({hiddenItems}
+                <span className="sr-only"> {hiddenItems === 1 ? "item" : "items"} on Saturday and Sunday</span>)
+              </span>
+            ) : null}
+            {forced ? (
+              <span id="weekend-forced" className="sr-only">
+                Shown because today is a weekend day.
+              </span>
+            ) : null}
+          </label>
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <Checkbox checked={showDone} onCheckedChange={(checked) => onShowDoneChange(checked === true)} />
+            Show done
+          </label>
+        </div>
+      </div>
+      <WeekBoard key={data.weekStart} data={data} showDone={showDone} showWeekend={weekendShown} />
     </div>
   );
 }

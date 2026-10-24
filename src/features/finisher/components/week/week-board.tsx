@@ -37,7 +37,7 @@ import {
   type LocalDate,
   type LocalTime,
 } from "../../domain/dates";
-import { canPlanOn, dayToDoCount, formatDayShort, orderDayItems, timeAfterMove, type PlanTarget } from "../../domain/week";
+import { canPlanOn, dayToDoCount, formatDayShort, isWeekendDay, orderDayItems, timeAfterMove, type PlanTarget } from "../../domain/week";
 import { generalErrorMessage } from "../../messages";
 import type { DueChangesResult, TaskItem, WeekData } from "../../types";
 import { AddTaskButton } from "../add-task-button";
@@ -129,7 +129,7 @@ const columnCoordinates: KeyboardCoordinateGetter = (event, { context: { active,
  * overrides, are saved through the due-date endpoints, and are put back with
  * an error message if saving fails. Undo restores the previous date and time.
  */
-export function WeekBoard({ data, showDone }: { data: WeekData; showDone: boolean }) {
+export function WeekBoard({ data, showDone, showWeekend }: { data: WeekData; showDone: boolean; showWeekend: boolean }) {
   const refresh = useFinisherRefresh();
   const mobile = useIsMobile();
   const reduceMotion = useReducedMotion();
@@ -146,8 +146,10 @@ export function WeekBoard({ data, showDone }: { data: WeekData; showDone: boolea
   const [shown, setShown] = useState({ unplanned: PAGE, carried: PAGE });
 
   const placed = useMemo(() => placeTasks(data, overrides, current), [data, overrides, current]);
-  const dates = data.days.map((day) => day.date);
-  const selectedDay = pickedDay && dates.includes(pickedDay) ? pickedDay : current ? today : data.weekStart;
+  // Saturday and Sunday are hidden unless Show weekend is on (decision 41). Their tasks still count and can be moved there.
+  const visibleDays = showWeekend ? data.days : data.days.filter((day) => !isWeekendDay(day.date));
+  const dates = visibleDays.map((day) => day.date);
+  const selectedDay = pickedDay && dates.includes(pickedDay) ? pickedDay : current && dates.includes(today) ? today : dates[0];
   // With the side panel open, Unplanned folds away so the seven days stay readable (design notes).
   const unplannedCollapsed = !unplannedOpen || Boolean(panel?.selectedId);
 
@@ -360,8 +362,8 @@ export function WeekBoard({ data, showDone }: { data: WeekData; showDone: boolea
           ) : null}
 
           {/* Phone: one day at a time (FIN-043). */}
-          <div role="group" aria-label="Choose a day" className="grid grid-cols-7 gap-1 lg:hidden">
-            {data.days.map((day) => {
+          <div role="group" aria-label="Choose a day" className={cn("grid gap-1 lg:hidden", showWeekend ? "grid-cols-7" : "grid-cols-5")}>
+            {visibleDays.map((day) => {
               const count = dayToDoCount({ open: placed.days.get(day.date) ?? [], sessions: day.sessions }, today);
               const isToday = day.date === today;
               return (
@@ -395,7 +397,13 @@ export function WeekBoard({ data, showDone }: { data: WeekData; showDone: boolea
             <div
               className={cn(
                 "flex flex-col gap-6 lg:grid lg:gap-1.5",
-                unplannedCollapsed ? "lg:grid-cols-[3rem_repeat(7,minmax(7.5rem,1fr))]" : "lg:grid-cols-[13rem_repeat(7,minmax(7.5rem,1fr))]",
+                showWeekend
+                  ? unplannedCollapsed
+                    ? "lg:grid-cols-[3rem_repeat(7,minmax(7.5rem,1fr))]"
+                    : "lg:grid-cols-[13rem_repeat(7,minmax(7.5rem,1fr))]"
+                  : unplannedCollapsed
+                    ? "lg:grid-cols-[3rem_repeat(5,minmax(9rem,1fr))]"
+                    : "lg:grid-cols-[13rem_repeat(5,minmax(9rem,1fr))]",
               )}
             >
               <DropColumn
@@ -454,7 +462,7 @@ export function WeekBoard({ data, showDone }: { data: WeekData; showDone: boolea
                 </div>
               </DropColumn>
 
-              {data.days.map((day) => {
+              {visibleDays.map((day) => {
                 const open = placed.days.get(day.date) ?? [];
                 const entries = orderDayItems(day.sessions, open);
                 const finished = showDone ? day.finished : [];

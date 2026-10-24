@@ -58,6 +58,16 @@ export function formatDayShort(date: LocalDate): string {
   return `${weekdayShort(isoWeekday(date))} ${formatDayMonth(date)}`;
 }
 
+/** Saturday or Sunday: hidden on the board unless Show weekend is on (decision 41). */
+export function isWeekendDay(date: LocalDate): boolean {
+  return isoWeekday(date) >= 6;
+}
+
+/** Tasks and sessions on Saturday and Sunday, shown next to "Show weekend" while it is off (A34). */
+export function weekendItemCount(days: { date: LocalDate; open: unknown[]; finished: unknown[]; sessions: unknown[] }[]): number {
+  return days.filter((day) => isWeekendDay(day.date)).reduce((sum, day) => sum + day.open.length + day.finished.length + day.sessions.length, 0);
+}
+
 /** "This week", "Next week", "Last week", or null for other weeks. */
 export function weekLabel(start: LocalDate, today: LocalDate): string | null {
   const current = startOfWeek(today);

@@ -521,6 +521,10 @@ Verified:
 
 The first script was rerun with no new failures (the same two harness artefacts as before). Screenshots: the Set time sheet at 375px, and last week's review at 1100px.
 
+### v6.3: weekend hidden by default (2026-10-24)
+
+The app hides Saturday and Sunday unless **Show weekend** is on (decision 41, A34). The toggle sits beside Show done in the summary row and shows the number of hidden items. It is forced on when today is a weekend day. With five days, the columns use a 9rem minimum. The mockup (`week-planner.html`) still shows all seven days and was not updated.
+
 ### v6.2: Today tab removed (2026-10-24)
 
 - The tab row is now **Week · Tasks · Projects · Closed** (decision 40), in `week-planner.html` and `task-list.html`. The app-shell reference and `index.html` were not changed. Week has no count (A22).

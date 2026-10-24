@@ -35,8 +35,9 @@ export function AppLayout({ account }: { account: string | null }) {
           >
             <AppTopBar />
             <div className="flex-1 rounded-t-2xl bg-background text-foreground lg:rounded-2xl lg:shadow-elev-raised lg:ring-1 lg:ring-sidebar-border">
-              {/* Wider while the Finisher task side panel is open, so the list keeps its room (FIN-036). */}
-              <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14 lg:has-[[data-task-panel-open]]:max-w-7xl lg:has-[[data-task-panel-open]]:px-8">
+              {/* Wider while the Finisher task side panel is open, so the list keeps its room (FIN-036).
+                  A page marked data-wide-page (the Week board) uses the full width with less padding. */}
+              <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-12 lg:py-14 lg:not-has-[[data-wide-page]]:has-[[data-task-panel-open]]:max-w-7xl lg:not-has-[[data-wide-page]]:has-[[data-task-panel-open]]:px-8 lg:has-[[data-wide-page]]:max-w-none lg:has-[[data-wide-page]]:px-5 lg:has-[[data-wide-page]]:py-6">
                 <Outlet />
               </div>
             </div>
