@@ -14,7 +14,7 @@ import { TASK_STATUS_LABEL } from "../messages";
 import { PomodoroBlock } from "./pomodoro";
 import { TaskPanelContext, type TaskPanelApi } from "./task-panel-context";
 import { TaskFormDialog } from "./task-form-dialog";
-import { TaskActionsMenu, TaskCheck, TaskDue } from "./task-row";
+import { DelegateButton, TaskActionsMenu, TaskCheck, TaskDue } from "./task-row";
 import { TaskFacts } from "./views/task-view";
 
 /**
@@ -206,6 +206,7 @@ function TaskPanel({ id, onClose }: { id: string; onClose: () => void }) {
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {task.status !== "let_go" && task.status !== "delegated" ? <TaskCheck task={task} variant="labelled" /> : null}
+            <DelegateButton task={task} />
             {task.status === "open" || task.status === "parked" ? (
               <Button variant="outline" className="h-11" onClick={() => setEditing(true)}>
                 <PencilIcon data-icon="inline-start" />

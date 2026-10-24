@@ -367,7 +367,7 @@ A delegated task has been handed to someone else. For the user it counts as fini
 
 - Given an Open or Parked task, when the user chooses **Delegate…** from its ⋯ menu and enters who it was handed to, then the status becomes Delegated, the closed time is recorded, and any revisit date is cleared. A success message confirms it.
 - "Delegated to" is required (1–100 characters, trimmed). A missing value shows the field error "Say who you handed this to."
-- Delegate is offered wherever an Open or Parked task has a ⋯ menu: the Today and Tasks tabs, a project page, the task page and the side panel (FIN-036). Projects cannot be delegated.
+- Delegate is offered wherever an Open or Parked task has a ⋯ menu: the Today and Tasks tabs, a project page, the task page and the side panel (FIN-036). The side panel also has a **Delegate** button beside Mark done, and the task page has one under the title, both opening the same dialog (decision 32). Projects cannot be delegated.
 - A delegated task leaves the Tasks tab and the Today lists. There is no Delegated section in the Tasks tab (decision 29). It is not counted on the Today or Tasks tabs (FIN-035).
 - It appears in **Done today** on the day it was delegated (FIN-031), labelled Delegated, in a project's closed tasks (FIN-024), and in the Closed tab under its own **Delegated** outcome (FIN-032).
 - Its details show the status Delegated, the date it was delegated, and "Delegated to". It has no check-off control and is read-only, except for Reopen (FIN-030) and Delete (FIN-016).
@@ -478,6 +478,7 @@ From the user, 2026-10-23 (delegation):
 29. A task can be delegated. It counts as done, but it is marked Delegated, and the Tasks tab has no Delegated section.
 30. Delegating records who the task was handed to (required).
 31. The Closed tab has its own Delegated outcome filter, separate from Done or finished.
+32. A task's details have a Delegate button beside Mark done, for a quick decision.
 
 ## Assumptions (reversible proposed defaults)
 

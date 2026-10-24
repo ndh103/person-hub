@@ -9,7 +9,7 @@ import { TASK_STATUS_LABEL } from "../../messages";
 import type { TaskDetail } from "../../types";
 import { NotFoundState } from "../list-parts";
 import { PomodoroBlock } from "../pomodoro";
-import { TaskActionsMenu, TaskCheck, TaskDue } from "../task-row";
+import { DelegateButton, TaskActionsMenu, TaskCheck, TaskDue } from "../task-row";
 
 /** A task's facts (FIN-020), shared by the task page and the laptop side panel (FIN-036). */
 export function TaskFacts({ task, className }: { task: TaskDetail; className?: string }) {
@@ -91,6 +91,11 @@ export function TaskView({ id }: { id: string }) {
         <TaskActionsMenu task={task} today={todayDate} projects={projects} editTask={task} deleteRedirect="/finisher/tasks" />
       </div>
 
+      {task.status === "open" || task.status === "parked" ? (
+        <div className="-mt-2 flex flex-wrap gap-2 sm:pl-10">
+          <DelegateButton task={task} />
+        </div>
+      ) : null}
       <div className="-mt-5">
         <PomodoroBlock task={task} />
       </div>

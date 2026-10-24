@@ -360,6 +360,7 @@ Resolved 2026-10-20 by the user: the drag handle stays, on phones too (decision 
 Added 2026-10-23 as a note, with no mockup. Requirements v5.1, decisions 29–31.
 
 - **Menu:** Open and Parked tasks show **Delegate…** just before Let go.
+- **Details button:** the side panel shows an outline **Delegate** button (forward icon, 44px tall) right after Mark done; the task page shows it under the title, aligned with the title text. Both open the dialog below.
 - **Dialog:** the title is “Delegate ‘title’?”, with the description “It’s off your list, as if it were done. It moves to Closed as Delegated, and you can reopen it later.” It has one required text field, **Delegated to** (100 characters), and the buttons Cancel and **Delegate**. The layout is the same as the Let go dialog, which is not yet designed either.
 - **Rows:** a delegated task shows an outline “Delegated” badge before its date line and has no check-off circle (Today’s Done list, project closed tasks).
 - **Closed tab:** the outcome filters are Any outcome · Done or finished · **Delegated** · Let go. A delegated entry shows the outline badge “Delegated” and “Delegated to: name”.

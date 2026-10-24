@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Link } from "@/components/link";
-import { CheckIcon, CircleIcon, MoreHorizontalIcon } from "lucide-react";
+import { CheckIcon, CircleIcon, ForwardIcon, MoreHorizontalIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,7 +134,23 @@ export function TaskCheck({ task, variant = "icon" }: { task: TaskItem; variant?
   );
 }
 
-const QUICK_DUE_WORDS = { today: "today", tomorrow: "tomorrow", nextWeek: "next week" } as const;
+/** FIN-041: the details' quick Delegate button, beside Mark done. Offered for Open and Parked tasks. */
+export function DelegateButton({ task }: { task: TaskItem }) {
+  const [open, setOpen] = useState(false);
+  if (task.status !== "open" && task.status !== "parked") return null;
+  return (
+    <>
+      <Button type="button" variant="outline" className="h-11" onClick={() => setOpen(true)}>
+        <ForwardIcon data-icon="inline-start" />
+        Delegate
+        <span className="sr-only"> — {task.title}</span>
+      </Button>
+      <DelegateDialog open={open} onOpenChange={setOpen} id={task.id} title={task.title} />
+    </>
+  );
+}
+
+const QUICK_DUE_WORDS ={ today: "today", tomorrow: "tomorrow", nextWeek: "next week" } as const;
 
 const MOVE_LABELS: Record<MoveTarget, string> = {
   top: "Move to top",
