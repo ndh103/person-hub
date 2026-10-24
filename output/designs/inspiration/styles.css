@@ -1,0 +1,53 @@
+/*
+ * Inspiration — custom styles that Tailwind utilities do not express cleanly.
+ * Colors come only from ../_foundation/theme.css variables.
+ * Shell styles (sidebar, drawer, nav-link, focus ring, icon) are reused from ../app-shell/styles.css.
+ */
+
+/* Dialogs (map to shadcn/ui Dialog and AlertDialog), as in the Events reference. */
+.insp-dialog {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  overflow-y: auto;
+}
+.insp-dialog.insp-dialog-sm { width: min(26rem, calc(100vw - 2rem)); }
+.insp-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+
+/* Cards: the whole card is the link; focus ring follows the foundation ring token. */
+.insp-card:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }
+.insp-card:hover { border-color: var(--ring); }
+
+/* Thumbnails: uniform 4:3 crop in the grid (INS-002); full image fitted, never cropped, on detail (INS-005). */
+.insp-thumb { aspect-ratio: 4 / 3; background-size: cover; background-position: center; }
+.insp-full { aspect-ratio: 3 / 2; max-height: 70dvh; border-radius: var(--radius); background-size: contain; background-repeat: no-repeat; background-position: center; background-color: var(--muted); }
+.insp-mini { width: 2.75rem; height: 2.75rem; flex-shrink: 0; border-radius: calc(var(--radius) - 2px); background-size: cover; }
+
+/* Synthetic fixture "photos": gradients of foundation tokens only (no real images). */
+.insp-fixture-1 { background-image: linear-gradient(135deg, var(--primary), var(--accent) 60%, var(--muted)); }
+.insp-fixture-2 { background-image: radial-gradient(circle at 30% 30%, var(--accent), var(--secondary) 55%, var(--border)); }
+
+/* Tag chips; as buttons on the detail view they apply the tag filter (INS-008). */
+.insp-tag { display: inline-flex; align-items: center; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); padding: 0.125rem 0.5rem; font-size: 0.75rem; font-family: var(--font-mono, monospace); }
+.insp-tag-btn { min-height: 2.75rem; padding-inline: 0.75rem; }
+.insp-tag-btn:hover { background: var(--accent); color: var(--accent-foreground); }
+
+/* Plain text keeps line breaks and wraps long words; article text gets a reading measure. */
+.insp-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.insp-reading { max-width: 68ch; }
+.insp-break { overflow-wrap: anywhere; }
+
+.insp-skeleton { background: var(--muted); border-radius: var(--radius); animation: insp-pulse 1.4s ease-in-out infinite; }
+@keyframes insp-pulse { 50% { opacity: 0.55; } }
+.insp-spin { animation: insp-spin 0.9s linear infinite; }
+@keyframes insp-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .insp-skeleton, .insp-spin { animation: none; }
+}

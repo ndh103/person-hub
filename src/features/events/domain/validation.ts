@@ -1,4 +1,5 @@
 import { isLocalDate, type LocalDate } from "@/lib/dates";
+import { cleanText, codePoints, isSafeLink, normalizeLink } from "@/lib/text";
 
 /**
  * Input parsing for Events writes ("Fields and validation" in
@@ -27,44 +28,14 @@ export type EventInput = {
 };
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-const SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
-// Whitespace or control characters never belong in a stored link.
-// eslint-disable-next-line no-control-regex
-const UNSAFE_LINK_CHARS = /[\s\u0000-\u001f\u007f]/;
 
-/** Code points, like Postgres char_length. */
-export function codePoints(value: string): number {
-  return [...value].length;
-}
-
-/** Trim and NFC-normalize, so stored text matches the database rule and exact search (A13). */
-export function cleanText(value: string): string {
-  return value.trim().normalize("NFC");
-}
+// Shared with Inspiration; re-exported so Events callers keep one import.
+export { cleanText, codePoints, isSafeLink, normalizeLink };
 
 /** "7:45" → "07:45" (lenient typing in the form); anything else is returned trimmed. */
 export function padTime(value: string): string {
   const trimmed = value.trim();
   return /^\d:[0-5]\d$/.test(trimmed) ? `0${trimmed}` : trimmed;
-}
-
-/** Adds https:// when the user left out the scheme (A4). Empty stays empty. */
-export function normalizeLink(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  return SCHEME_RE.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
-
-/** True for an absolute http(s) URL with a host: the only links ever stored or made clickable. */
-export function isSafeLink(value: string): boolean {
-  if (value.length > LIMITS.link || UNSAFE_LINK_CHARS.test(value)) return false;
-  if (!/^https?:\/\/[^/?#]+/i.test(value)) return false;
-  try {
-    const url = new URL(value);
-    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname !== "";
-  } catch {
-    return false;
-  }
 }
 
 /** Each parser returns the clean value, or undefined after recording a field error. */

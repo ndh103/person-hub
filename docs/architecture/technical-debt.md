@@ -22,3 +22,21 @@ Concrete debt only. Each entry names its impact, reason, mitigation, owner role 
 - **Mitigation if needed:** a paged `GET /api/finisher/week/lists/:list?offset=` endpoint (reusing `taskGroupPage`), plus a server-side "move all carried" that doesn't need the ids.
 - **Owner:** Technical Architect, then Developer.
 - **Revisit when:** a user reaches the limit, or the week read takes more than about 500 ms at p95.
+
+## TD-INS-1: Inspiration can leave orphaned image files
+
+- Added: 2026-10-24 ([ADR-0009](decisions/ADR-0009-inspiration-image-storage.md))
+- **Impact:** an image uploaded but never saved (tab closed or network lost between the upload and the create), or a Storage failure after an entry is deleted, leaves up to two objects in the owner's folder. They are private to the owner, but count towards the 1 GB free storage and are not shown in the usage figure.
+- **Reason:** the bytes go straight from the browser to Storage (ADR-0009), so the upload and the database row cannot be one transaction. Explicit cancel cleanup covers the normal paths.
+- **Mitigation if needed:** a "clean up" action (or a sweep run on create) that lists the caller's folders and removes keys with no entry and older than a day; or a scheduled Worker with a narrowly scoped elevated key (needs its own ADR).
+- **Owner:** Technical Architect, then Developer.
+- **Revisit when:** the Storage dashboard shows noticeably more used space than the sum of users' usage figures.
+
+## TD-INS-2: Image storage is capped by the free plan's 1 GB for the whole project
+
+- Added: 2026-10-24 ([ADR-0009](decisions/ADR-0009-inspiration-image-storage.md))
+- **Impact:** at roughly 0.3–0.8 MB per stored image plus thumbnail, the project holds about 1,500–3,000 images in total. Uploads fail once the project quota is reached. The 800 MB warning (INS-009) is per user and advisory.
+- **Reason:** staying on free plans (user decision 2).
+- **Mitigation if needed:** lower the stored size (1600 px), move images to Cloudflare R2 (10 GB free, needs a card), or upgrade Supabase.
+- **Owner:** Technical Architect.
+- **Revisit when:** total Storage use passes 800 MB, or uncached egress passes 4 GB in a month.

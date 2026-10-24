@@ -1,7 +1,7 @@
-import { CalendarIcon, FlagIcon, HomeIcon, type LucideIcon } from "lucide-react";
+import { CalendarIcon, FlagIcon, HomeIcon, SparklesIcon, type LucideIcon } from "lucide-react";
 
 /** Top-level destinations; the router checks these paths exist. */
-type AppPath = "/home" | "/finisher" | "/events";
+type AppPath = "/home" | "/finisher" | "/events" | "/inspiration";
 
 export type HubApp = {
   id: string;
@@ -22,7 +22,7 @@ export const HOME_LINK: HubApp = {
 
 /**
  * One registry for the sidebar and the Home cards (design note), in
- * navigation order: Finisher first, then Events (FIN-001).
+ * navigation order: Finisher first, then Events (FIN-001), then Inspiration (INS-001).
  */
 export const HUB_APPS: HubApp[] = [
   {
@@ -38,6 +38,13 @@ export const HUB_APPS: HubApp[] = [
     href: "/events",
     icon: CalendarIcon,
     description: "Record moments in your life, like buying a new TV.",
+  },
+  {
+    id: "inspiration",
+    label: "Inspiration",
+    href: "/inspiration",
+    icon: SparklesIcon,
+    description: "Keep articles and images that inspired you.",
   },
 ];
 

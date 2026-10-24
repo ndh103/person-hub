@@ -2,7 +2,7 @@
 
 ## Purpose and current scope
 
-Build a private personal hub accessible from phone and laptop browsers, containing separate apps in a shared shell. Initial apps are Finisher (tasks and projects to follow through on; first in the navigation) and Events (record life events, such as buying a TV). Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities. Use a sidebar on larger screens and an accessible collapsible navigation drawer on phones.
+Build a private personal hub accessible from phone and laptop browsers, containing separate apps in a shared shell. Initial apps are Finisher (tasks and projects to follow through on; first in the navigation) Events (record life events, such as buying a TV), and Inspiration (saved articles and images, added 2026-10-24; images in a private Supabase Storage bucket, see ADR-0009). Habit Tracker was dropped on 2026-10-10; Finisher project sessions cover recurring activities. Use a sidebar on larger screens and an accessible collapsible navigation drawer on phones.
 
 The application exists (auth, shell, Finisher). Do not create a live database or deploy simply because these instructions exist. Implement when the user requests implementation. Read [the project brief](docs/project-brief.md) for confirmed choices and unresolved product questions.
 
@@ -19,7 +19,7 @@ Decided in [ADR-0003](docs/architecture/decisions/ADR-0003-spa-and-worker-api.md
 
 Default application data flow: browser (TanStack Query) -> Hono route in the Worker (`src/worker`) -> feature service/data access layer (`src/features/*/server`) -> Supabase using the caller's access token and RLS. Supabase Auth runs in the browser (`src/lib/supabase/client.ts`); the browser sends the access token as `Authorization: Bearer`. Application data reads and writes belong behind the API, never direct from browser code. Browser code must not import Worker or server modules, and the Worker must not import browser modules (ESLint enforces both). Explain changes to this boundary in an architecture decision.
 
-Keep Finisher and Events as separate feature modules. Share the shell, navigation, authentication, common UI, and infrastructure. Prefer a modular monolith over separate services until a concrete need justifies more complexity.
+Keep Finisher, Events and Inspiration as separate feature modules. Share the shell, navigation, authentication, common UI, and infrastructure. Prefer a modular monolith over separate services until a concrete need justifies more complexity.
 
 ## Agent roles and skill routing
 

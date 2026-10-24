@@ -12,6 +12,7 @@ import { useCallback, useEffect } from "react";
 import { z } from "zod";
 import { finishGoogleSignIn, confirmEmailLink } from "@/features/auth/api";
 import type { EventsFilter } from "@/features/events/api";
+import type { InspirationFilter } from "@/features/inspiration/types";
 import { finisherQueries } from "@/features/finisher/api";
 import { FinisherRouteError } from "@/features/finisher/components/finisher-error";
 import { ListSkeleton } from "@/features/finisher/components/list-parts";
@@ -36,6 +37,7 @@ import { AuthLinkErrorPage } from "./pages/auth/link-error";
 import { SetPasswordPage } from "./pages/auth/set-password";
 import { SignInPage } from "./pages/auth/sign-in";
 import { EventsPage } from "./pages/events";
+import { InspirationEntryPage, InspirationPage } from "./pages/inspiration";
 import { EditProjectPage } from "./pages/finisher/project-edit";
 import { NewProjectPage } from "./pages/finisher/project-new";
 import { FinisherTabsLayout } from "./pages/finisher/tabs-layout";
@@ -265,6 +267,47 @@ const eventsRoute = createRoute({
   },
 });
 
+// Inspiration (INS-001). Search text, kind and tag stay in the page URL
+// (INS-008); the API receives them in a POST body, never in its own URL.
+const inspirationRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: "inspiration",
+  staticData: { title: "Inspiration" },
+  validateSearch: z.object({
+    q: optionalText(100),
+    kind: z.enum(["article", "image"]).optional().catch(undefined),
+    tag: optionalText(32),
+  }),
+  component: function Inspiration() {
+    const search = inspirationRoute.useSearch();
+    const navigate = inspirationRoute.useNavigate();
+    const onFilterChange = useCallback(
+      (next: InspirationFilter, options?: { replace?: boolean }) =>
+        void navigate({ search: { q: next.q || undefined, kind: next.kind, tag: next.tag || undefined }, replace: options?.replace }),
+      [navigate],
+    );
+    return <InspirationPage filter={search} onFilterChange={onFilterChange} />;
+  },
+});
+
+// Generic title: entry titles are personal and stay out of the document title.
+const inspirationEntryRoute = createRoute({
+  getParentRoute: () => appLayout,
+  path: "inspiration/$id",
+  staticData: { title: "Entry · Inspiration" },
+  component: function InspirationEntry() {
+    const id = inspirationEntryRoute.useParams({ select: (params) => params.id });
+    const navigate = inspirationEntryRoute.useNavigate();
+    return (
+      <InspirationEntryPage
+        id={id}
+        onTag={(tag) => void navigate({ to: "/inspiration", search: { tag } })}
+        onDeleted={() => void navigate({ to: "/inspiration" })}
+      />
+    );
+  },
+});
+
 // Finisher (FIN-001). Each page preloads its data in the loader and renders
 // from the same query, so cached data shows at once and refreshes behind it.
 
@@ -414,6 +457,8 @@ const routeTree = rootRoute.addChildren([
   appLayout.addChildren([
     homeRoute,
     eventsRoute,
+    inspirationRoute,
+    inspirationEntryRoute,
     finisherTabs.addChildren([weekRoute, tasksRoute, projectsRoute, closedRoute]),
     newProjectRoute,
     projectRoute,

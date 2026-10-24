@@ -1,11 +1,13 @@
 # Security headers for static assets (the SPA). API responses set their own
 # headers in src/worker/http.ts. Workers static assets read this file.
-# connect-src allows the browser Supabase Auth client (ADR-0003).
+# connect-src allows the browser Supabase Auth client (ADR-0003) and Inspiration
+# uploads to Storage; img-src allows signed Storage links and local previews
+# of chosen files (blob:) (ADR-0009).
 # no-store keeps app pages out of the back/forward cache, so Back after
 # signing out can't restore a page that showed personal data (auth T9).
 /*
   Cache-Control: no-store
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; font-src 'self'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
