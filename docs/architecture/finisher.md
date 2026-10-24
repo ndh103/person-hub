@@ -5,7 +5,7 @@
 - Date: 2026-10-20
 - Requirements: [requirements/finisher.md](../../requirements/finisher.md) v5.0: FIN-034, FIN-036, FIN-037, FIN-038, FIN-039, FIN-040, and related FIN-017, FIN-020, FIN-021, FIN-022, FIN-031. Decisions 15–26, assumptions A11–A20.
 - Design: [design notes](../../output/designs/finisher/design-notes.md), `output/designs/finisher/task-list.html` and `index.html`.
-- Decisions: [ADR-0007 Pomodoro sessions](decisions/ADR-0007-finisher-pomodoros.md) (new, v5), [ADR-0005 task order keys](decisions/ADR-0005-finisher-task-order-keys.md) (new), [ADR-0006 drag-and-drop library](decisions/ADR-0006-drag-and-drop-library.md) (new), [ADR-0002 RPC writes](decisions/ADR-0002-finisher-rpc-writes.md), [ADR-0003 SPA and Worker API](decisions/ADR-0003-spa-and-worker-api.md).
+- Decisions: [ADR-0008 Week tab](decisions/ADR-0008-finisher-week-tab.md) (new, v6.2; see [Week tab](#week-tab-fin-042-to-fin-048)), [ADR-0007 Pomodoro sessions](decisions/ADR-0007-finisher-pomodoros.md) (v5), [ADR-0005 task order keys](decisions/ADR-0005-finisher-task-order-keys.md) (new), [ADR-0006 drag-and-drop library](decisions/ADR-0006-drag-and-drop-library.md) (new), [ADR-0002 RPC writes](decisions/ADR-0002-finisher-rpc-writes.md), [ADR-0003 SPA and Worker API](decisions/ADR-0003-spa-and-worker-api.md).
 
 ## Summary of changes
 
@@ -286,6 +286,79 @@ Added 2026-10-23 for requirements v5.1 (FIN-041, decisions 29–31). Migration: 
 - **Write path:** `finisher_task_action` gains `delegate` (from `open` or `parked`; `p_reason` carries the name, field `delegated_to`). The signature is unchanged, so grants stay. There are no policy changes: users still have SELECT only (ADR-0002).
 - **API:** `POST /api/finisher/tasks/:id/actions` takes `{ action: "delegate", delegatedTo }`; validation errors use the field `delegatedTo`. `GET /api/finisher/closed` takes `outcome=delegated` (tasks only) and returns `counts.tasksDelegated`. `GET /api/finisher/today` includes tasks delegated today in `doneTasks`; project detail includes them in `closedTasks`.
 - **Rollback:** reopen or delete delegated tasks first, then restore the previous function and constraints. The old checks reject `delegated` rows.
+
+## Week tab (FIN-042 to FIN-048)
+
+Added 2026-10-24 for requirements v6.2 (decisions 33–40). Decision record: [ADR-0008](decisions/ADR-0008-finisher-week-tab.md). Migration: `supabase/migrations/20261024120000_finisher_week.sql`. Design: `output/designs/finisher/week-planner.html`.
+
+**Date semantics.** A week is the Monday-to-Sunday range of local dates (A2) containing `start`, in the caller's timezone (`X-Time-Zone`, A1). "Today", "carried over" (an open task with `due_date < today`), and the marking window are all computed from `ctx.now`. Closed-in-week and Pomodoro-in-week use UTC instants from `zonedToUtc(monday)` to `zonedToUtc(monday + 7)`, and group by the local date of `closed_at` or `ends_at`.
+
+### Removal of the Today tab (decision 40)
+
+- `GET /api/finisher/today`, `getToday` and `TodayData` are removed.
+- `basics.counts` loses `today` (FIN-035), and `getFinisherBasics` no longer loads schedules.
+- The route `/finisher` renders the Week tab, so the old Today URL lands on the current week.
+
+### API
+
+All routes run after `requireUser` and return `private, no-store` (unchanged middleware).
+
+| Method and path | Input (validated) | Output | Errors |
+| --- | --- | --- | --- |
+| `GET /api/finisher/week` | `start`: optional Monday `YYYY-MM-DD` within 5 years of today (zod and domain check); default the current week | `WeekData`: `now`, `weekStart`; `days[7]` with `sessions`, `open` (by `sort_key`), and `finished` (done or delegated, due that day); `unplanned` and `carried` as `{items ≤ 200, total}` (`carried` only for the current week, else null); `revisitDue`; `projects` | 400 `invalid_request` for a malformed or out-of-range `start` |
+| `GET /api/finisher/week/review` | `start` as above; must not be a future week | `WeekReviewData`: `now`, `weekStart`; `done` (done or delegated, closed in the week, with `closedOn` and the delegate's name); `letGo` (closed in the week, with the reason); `slipped` (open, due in the week, overdue now); `projects` (FIN-028 `WeekSummary` for each project with sessions); `pomodoros[7]` `{date, completed}`; `note` | 400 as above; 409 `not_allowed` for a future week |
+| `POST /api/finisher/tasks/due-changes` | `{changes: [{id, dueDate, dueTime}]}`: 1–200 items, unique UUIDs, each validated like `PUT /tasks/:id/due`; other fields ignored | `{moved: id[], failed: id[]}` | 422 `{changes: "invalid" or "too_many"}` with no database call |
+| `PUT /api/finisher/weekly-notes/:weekStart` | `weekStart` a Monday (param); body `{note}`, a string of at most 2000 characters after trimming; an empty note deletes it | `{ok: true}` | 404 for a malformed param; 422 `{note: "too_long"}`; 409 for a future week |
+
+Single moves (drag, Move to day…, carried-over buttons) and Set time… use the existing `PUT /api/finisher/tasks/:id/due`. A date change puts the task at the bottom of the order, and a time-only change keeps its place.
+
+### Database
+
+- **`public.finisher_weekly_notes`:**
+  - columns: `user_id` (FK `auth.users`, cascade), `week_start date` (check `isodow = 1`), `note text` (1–2000 characters), `updated_at`; primary key `(user_id, week_start)`;
+  - RLS enabled; all privileges revoked; SELECT for `authenticated` with the owner policy `user_id = auth.uid()`. There are no write grants (ADR-0002).
+- **`finisher_save_weekly_note(p_tz, p_week_start, p_note)`** (`SECURITY DEFINER`, `search_path = ''`):
+  - `require_uid()`;
+  - the week must be a Monday no more than 5 years back (`PH422 week_start`) and not later than this week's Monday (`PH409`);
+  - `clean_text(p_note, 'note', 2000)`, then an upsert, or a delete when the note is empty.
+- **`finisher_set_tasks_due(p_tz, p_changes jsonb)`** (`SECURITY DEFINER`):
+  - validates the array (1–200 items, else `PH422 changes`);
+  - for each item, calls `public.finisher_set_task_due` inside its own `begin … exception` block. `PH404`, `PH409`, `PH422` and cast errors mark that item failed; anything else aborts the whole call;
+  - returns `{moved, failed}`.
+  Ownership, Open-only, the date range and the bottom-of-order rule all come from the single-task function.
+- **Grants:** both functions are revoked from `public` and `anon`, and executable by `authenticated`.
+
+### SPA
+
+- **Route** `/finisher` (`router.tsx`): search `{week?: Monday, view?: "plan" | "review", task?: uuid}`, each dropped when invalid (`.catch(undefined)`). The loader ensures `finisherQueries.week(start)`, or `.weekReview(start)` for the review. The tab order is Week, Tasks, Projects, Closed.
+- **Components** in `src/features/finisher/components/week/`:
+  - `week-view.tsx`: navigation, the Plan/Review switch, Show done;
+  - `week-board.tsx`: the board with the dnd-kit `DndContext`, droppable columns and draggable cards, the phone day strip, Carried over, and Unplanned;
+  - `week-cards.tsx`;
+  - `move-to-day-dialog.tsx` and `set-time-dialog.tsx`;
+  - `week-review.tsx`, with the weekly note form.
+- **Optimistic moves:** the board keeps a map of pending `{dueDate, dueTime}` overrides and places tasks from data plus overrides. An override is dropped after the refetch, or on failure with an error toast. Undo calls the same endpoint with the previous values.
+- **Pure helpers** in `domain/week.ts`: week bounds and labels, `canPlanOn` (A25), `timeAfterMove` (A14, A26), `orderDayItems` (decision 39), the Set time hours (A32), and the week summary.
+- **Show done** is component state, never browser storage. The "today" used for drop targets and hours is read from the browser's zone when a menu or dialog opens, as FIN-034 does.
+
+### Threats and controls (additions)
+
+| Threat | Control |
+| --- | --- |
+| A bulk move naming another user's tasks | Each item runs `finisher_set_task_due`, which looks up `id = p_task_id and user_id = auth.uid()`. Foreign ids are reported in `failed` with no change and no detail. Tests cover this. |
+| An oversized bulk body | The Worker caps the body at 32 KB and the array at 200 items before any database call; the database checks the array again. |
+| Writing another user's weekly note | There are no table write grants. The function uses `auth.uid()` for the key, so the user id in the key can't be chosen by the client. Reads are under an owner-only policy. Tests cover anon, owner, and another user. |
+| Personal note text in logs | `fromDbError` logs only the SQLSTATE. The note is never logged or put in a URL. |
+| A future-week note | Refused with `PH409` in the database, not only in the UI. |
+
+### Tests
+
+- **Database (`supabase/tests/finisher-week.test.ts`):**
+  - notes: anonymous callers can't read or write; another user can't read or overwrite; direct writes are refused; upsert, clear, the Monday and future-week checks, and the 2000-character limit;
+  - bulk moves: owner success, a foreign id fails without a change, a non-Open task fails, more than 200 items is refused, anonymous calls are refused, a time-only change keeps `sort_key`.
+- **API:** the new routes' validation and allowlists, the guards, 401 without a token, and `today` removed.
+- **Service:** `getWeek` and `getWeekReview` over an in-memory table stub: carried-over tasks excluded from past days, Unplanned, finished on day, review grouping, Pomodoros by day.
+- **Domain:** ordering, ties, time rules, week labels and bounds.
 
 ## Threats and controls
 

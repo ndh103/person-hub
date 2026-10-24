@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono, type Context } from "hono";
 import { z } from "zod";
 import { finisherContext, TIME_ZONE_HEADER, type FinisherContext } from "@/features/finisher/server/context";
+import { isWeekStart, parseWeekStart } from "@/features/finisher/domain/week";
 import { FinisherError } from "@/features/finisher/server/errors";
 import * as mutations from "@/features/finisher/server/mutations";
 import * as queries from "@/features/finisher/server/queries";
@@ -51,7 +52,17 @@ export const finisher = new Hono<Env>()
 
   // Reads -------------------------------------------------------------------
   .get("/basics", async (c) => c.json(await queries.getFinisherBasics(c.var.finisher)))
-  .get("/today", async (c) => c.json(await queries.getToday(c.var.finisher)))
+  // FIN-042 to FIN-047: the week board and its review. `start` is a Monday within 5 years; default this week.
+  .get("/week", query(z.object({ start: z.string().max(10).optional() })), async (c) => {
+    const start = parseWeekStart(c.req.valid("query").start, c.var.finisher.now.date);
+    if (!start) return apiError(c, "invalid_request", 400);
+    return c.json(await queries.getWeek(c.var.finisher, start));
+  })
+  .get("/week/review", query(z.object({ start: z.string().max(10).optional() })), async (c) => {
+    const start = parseWeekStart(c.req.valid("query").start, c.var.finisher.now.date);
+    if (!start) return apiError(c, "invalid_request", 400);
+    return c.json(await queries.getWeekReview(c.var.finisher, start));
+  })
   .get("/tasks", query(z.object({ project: short })), async (c) =>
     c.json(await queries.getTasksTab(c.var.finisher, c.req.valid("query").project)),
   )
@@ -94,6 +105,19 @@ export const finisher = new Hono<Env>()
   // Writes ------------------------------------------------------------------
   // FIN-019 create a task; FIN-020 edit; FIN-021 lifecycle; FIN-016 delete.
   .post("/tasks", async (c) => c.json(await mutations.createTask(c.var.finisher, await body(c))))
+  // FIN-046 / FIN-047 "Move all" and its Undo: up to 200 due-date changes (ADR-0008).
+  .post("/tasks/due-changes", async (c) => c.json(await mutations.setTasksDue(c.var.finisher, await body(c))))
+  // FIN-047 weekly note: the week is named by its Monday; anything else can't exist.
+  .put(
+    "/weekly-notes/:weekStart",
+    zValidator("param", z.object({ weekStart: z.string().refine(isWeekStart) }), (result, c) => {
+      if (!result.success) return apiError(c, "not_found", 404);
+    }),
+    async (c) => {
+      await mutations.saveWeeklyNote(c.var.finisher, c.req.valid("param").weekStart, await body(c));
+      return c.json({ ok: true });
+    },
+  )
   .patch("/tasks/:id", idParam, async (c) => {
     await mutations.updateTask(c.var.finisher, c.req.valid("param").id, await body(c));
     return c.json({ ok: true });

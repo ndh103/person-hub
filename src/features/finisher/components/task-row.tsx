@@ -205,6 +205,8 @@ export function TaskActionsMenu({
   deleteRedirect,
   onDeleted,
   reorder,
+  planItems,
+  triggerProps,
 }: {
   task: TaskItem;
   today: LocalDate;
@@ -216,6 +218,10 @@ export function TaskActionsMenu({
   /** Called after a successful delete (the side panel closes itself). */
   onDeleted?: () => void;
   reorder?: RowReorder;
+  /** Week tab items (Move to day…, Set time…), shown after the quick due dates (FIN-044, FIN-048). */
+  planItems?: { label: string; caption?: string; onSelect: () => void }[];
+  /** Extra attributes for the ⋯ button (the Week board finds it again after a move). */
+  triggerProps?: Record<`data-${string}`, string>;
 }) {
   const navigate = useNavigate();
   const refresh = useFinisherRefresh();
@@ -267,7 +273,13 @@ export function TaskActionsMenu({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon-lg" className="relative size-9 shrink-0 after:absolute after:-inset-1" aria-label={`More actions for “${task.title}”`} />
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              className="relative size-9 shrink-0 after:absolute after:-inset-1"
+              aria-label={`More actions for “${task.title}”`}
+              {...triggerProps}
+            />
           }
         >
           <MoreHorizontalIcon />
@@ -276,6 +288,16 @@ export function TaskActionsMenu({
           {task.status === "open" ? (
             <>
               <QuickDueItems task={task} onChoose={(choice) => void reschedule(choice)} />
+              {planItems?.length ? (
+                <DropdownMenuGroup>
+                  {planItems.map((item) => (
+                    <DropdownMenuItem key={item.label} className="min-h-11 justify-between gap-3" onClick={item.onSelect}>
+                      <span>{item.label}</span>
+                      {item.caption ? <span className="font-mono text-xs text-muted-foreground">{item.caption}</span> : null}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              ) : null}
               <DropdownMenuSeparator />
             </>
           ) : null}

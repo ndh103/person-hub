@@ -41,18 +41,16 @@ const TABLES: Record<string, unknown[]> = {
 /** One running Pomodoro and 3 completed today (FIN-039, FIN-040). */
 const RUNNING = { id: "pomo-1", task_id: "task-1", started_at: "2026-10-13T08:50:00Z", ends_at: "2026-10-13T09:15:00Z" };
 
-/** Head counts for finisher_tasks: open tasks, and those due today or overdue (filtered with lte). */
-const TASK_COUNTS = { open: 5, dueOrOverdue: 2 };
+/** Head count of open tasks in finisher_tasks. */
+const OPEN_TASKS = 5;
 
 function stubSupabase(): SupabaseClient {
   return {
     from(table: string) {
-      let dueFilter = false;
       let head = false;
       const builder: Record<string, unknown> = {};
       for (const method of ["select", "eq", "in", "lte", "gte", "gt", "is", "or", "order", "limit", "not"]) {
         builder[method] = (...args: unknown[]) => {
-          if (method === "lte" && args[0] === "due_date") dueFilter = true;
           if (method === "select" && (args[1] as { head?: boolean } | undefined)?.head) head = true;
           return builder;
         };
@@ -61,7 +59,7 @@ function stubSupabase(): SupabaseClient {
       builder.then = (resolve: (value: unknown) => unknown) =>
         resolve(
           table === "finisher_tasks"
-            ? { data: null, error: null, count: dueFilter ? TASK_COUNTS.dueOrOverdue : TASK_COUNTS.open }
+            ? { data: null, error: null, count: OPEN_TASKS }
             : table === "finisher_pomodoros"
               ? head
                 ? { data: null, error: null, count: 3 }
@@ -74,7 +72,7 @@ function stubSupabase(): SupabaseClient {
 }
 
 describe("Finisher tab counts (FIN-035)", () => {
-  it("counts unmarked sessions today plus due or overdue tasks, open tasks, and active projects", async () => {
+  it("counts open tasks and active projects; the Today count is gone with the Today tab (decision 40)", async () => {
     const ctx: FinisherContext = {
       user: { id: "00000000-0000-4000-8000-00000000000a", email: null },
       supabase: stubSupabase(),
@@ -82,8 +80,7 @@ describe("Finisher tab counts (FIN-035)", () => {
       now: { date: TODAY, time: "09:00" },
     };
     const basics = await getFinisherBasics(ctx);
-    // Today: 1 unmarked session (done, skipped and another weekday's slot are not counted) + 2 due or overdue tasks.
-    expect(basics.counts).toEqual({ today: 3, tasks: 5, projects: 1 });
+    expect(basics.counts).toEqual({ tasks: 5, projects: 1 });
     expect(basics.today).toBe(TODAY);
     expect(basics.projects.map((project) => project.id).sort()).toEqual([ACTIVE, PARKED]);
     // FIN-039/040: the running session with its task title, today's count in minutes, and the server clock.

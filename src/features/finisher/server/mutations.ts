@@ -1,6 +1,9 @@
+import type { DueChangesResult } from "../types";
 import {
   isUuid,
+  parseDueChanges,
   parseDueInput,
+  parseWeeklyNote,
   parseMarkInput,
   parseMoveInput,
   parseStartPomodoro,
@@ -91,6 +94,26 @@ export async function setTaskDue(ctx: FinisherContext, taskId: string, body: Bod
     p_due_date: input.dueDate,
     p_due_time: input.dueTime,
   });
+}
+
+/**
+ * FIN-046 "Move all" and its Undo (ADR-0008): up to 200 due-date changes in
+ * one database call. Each change has the rules of setTaskDue; refused ones
+ * come back in `failed` and the rest still apply.
+ */
+export async function setTasksDue(ctx: FinisherContext, body: Body): Promise<DueChangesResult> {
+  const { changes } = unwrap(parseDueChanges(body, ctx.now.date));
+  const result = await rpc<DueChangesResult>(ctx, "finisher_set_tasks_due", {
+    p_tz: ctx.timeZone,
+    p_changes: changes.map(({ id, dueDate, dueTime }) => ({ id, dueDate, dueTime })),
+  });
+  return { moved: result?.moved ?? [], failed: result?.failed ?? [] };
+}
+
+/** FIN-047: save (or, when empty, remove) the note for a week; `weekStart` is a checked Monday. */
+export async function saveWeeklyNote(ctx: FinisherContext, weekStart: string, body: Body): Promise<void> {
+  const { note } = unwrap(parseWeeklyNote(body));
+  await rpc(ctx, "finisher_save_weekly_note", { p_tz: ctx.timeZone, p_week_start: weekStart, p_note: note });
 }
 
 /** FIN-038: move an Open task between the neighbours the caller sees (ADR-0005). */

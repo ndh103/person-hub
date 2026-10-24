@@ -37,6 +37,9 @@ const DB_FIELDS: Record<string, string> = {
   state: "state",
   action: "action",
   position: "position",
+  note: "note",
+  week_start: "weekStart",
+  changes: "changes",
 };
 
 type DbError = { code?: string; message?: string } | null | undefined;

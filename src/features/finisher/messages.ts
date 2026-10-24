@@ -40,6 +40,7 @@ const FIELD_LABELS: Record<string, string> = {
   delegatedTo: "Delegated to",
   reflection: "Reflection",
   slots: "Slots",
+  note: "Note",
 };
 
 const MAX_BY_FIELD: Record<string, number> = {
@@ -51,6 +52,7 @@ const MAX_BY_FIELD: Record<string, number> = {
   reason: LIMITS.reason,
   delegatedTo: LIMITS.delegatedTo,
   reflection: LIMITS.reflection,
+  note: LIMITS.weeklyNote,
 };
 
 /** Message for a field error. `field` may be "slots.<index>.<field>". */

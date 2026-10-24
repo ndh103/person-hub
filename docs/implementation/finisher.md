@@ -1,7 +1,7 @@
 # Finisher and app shell: implementation notes
 
 - Feature slugs: `finisher`, `app-shell`
-- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified"). Latest change: 2026-10-23 (v5.1 delegate a task), not browser-tested.
+- Status: `ready` for Tester. Not run against a real Supabase project (see "Not verified"). Latest change: 2026-10-24 (v6.2: Week tab, Today tab removed), not browser-tested with a signed-in account.
 - Date: 2026-10-11
 - Inputs:
   - [requirements/finisher.md](../../requirements/finisher.md) v2 (FIN-001 to FIN-033)
@@ -12,6 +12,75 @@
 - Decisions made here: [ADR-0002: Finisher writes go through database functions](../architecture/decisions/ADR-0002-finisher-rpc-writes.md) (proposed)
 
 > **Superseded in part (2026-10-11).** The app moved from Next.js to a React SPA plus a Hono API on Cloudflare Workers ([ADR-0003](../architecture/decisions/ADR-0003-spa-and-worker-api.md)). Pages now load through `GET /api/finisher/*` with TanStack Query instead of Server Components, the timezone travels in the `X-Time-Zone` header instead of the `ph-tz` cookie, and the Load-more paths changed. The current mechanics, checks and setup are in [platform.md](platform.md). The checks recorded below were run against the Next.js version.
+
+## Change 2026-10-24: Week tab, Today tab removed (v6.2)
+
+Inputs:
+- [requirements/finisher.md](../../requirements/finisher.md) v6.2: FIN-042 to FIN-048; decisions 33–40; A21–A33. FIN-031 is retired.
+- [Architecture](../architecture/finisher.md#week-tab-fin-042-to-fin-048) and [ADR-0008](../architecture/decisions/ADR-0008-finisher-week-tab.md) (written for this change).
+- Design: [`week-planner.html`](../../output/designs/finisher/week-planner.html) and its [design notes](../../output/designs/finisher/design-notes.md#week-planner-fin-042-to-fin-047).
+
+### What was built
+
+| ID | Where |
+| --- | --- |
+| Data | `supabase/migrations/20261024120000_finisher_week.sql`: the `finisher_weekly_notes` table (owner SELECT only), `finisher_save_weekly_note`, and `finisher_set_tasks_due` (batches of 1–200, per-item failures) |
+| FIN-042 | Route `/finisher` (`router.tsx`) with search `week` (a Monday) and `view`, sanitised by `parseWeekStart`. `week/week-view.tsx`: week arrows, This week, Plan/Review, an announced range, the loading skeleton. Tabs are Week, Tasks, Projects, Closed (`finisher-tabs.tsx`) |
+| FIN-043 | `GET /api/finisher/week` (`getWeek`) and `week/week-board.tsx`: Unplanned plus seven columns on laptop; on phone, a day strip with one day; day counts, Today and Past marks, Show done, per-day Add (`TaskFormDialog` `defaultDueDate`), the summary line, empty states, "Show more" |
+| FIN-044 | dnd-kit `useDraggable` and `useDroppable` with unavailable days disabled and hatched; a keyboard getter that jumps columns; announcements; Move to day… (`week/plan-dialogs.tsx`, a bottom sheet on phone); optimistic overrides, Undo, failure revert; focus kept on the handle or ⋯ |
+| FIN-045 | `PlanSessionCard`: a dashed rule, a repeat icon, "Session:" for assistive tech, marking in the window, Upcoming and locked states |
+| FIN-046 | Carried over: per task Today, Next week, and Unplan (menu); Move all to today and to next week through `POST /api/finisher/tasks/due-changes`, with partial-failure messages and Undo |
+| FIN-047 | `GET /api/finisher/week/review` (`getWeekReview`) and `week/week-review.tsx`: chips, Slipped (Move to day…, Next week, Move all), Done this week by day, Projects rates, Pomodoros by day, Let go, Plan next week. The weekly note uses `PUT /api/finisher/weekly-notes/:weekStart`, and an unsaved note is guarded by a router blocker with an `AlertDialog` |
+| FIN-048 | Set time… (`SetTimeDialog`): hours 06:00–21:00, Other time, No time; past hours today and the current time are disabled. It uses the existing `PUT /tasks/:id/due`, and ordering comes from `orderDayItems` |
+| Decision 40 | Removed: `views/today-view.tsx`, `GET /api/finisher/today`, `getToday`, `TodayData`, `counts.today`, `SessionCheck`. The `useSessionMark` hook moved to `use-session-mark.ts`. The old `/finisher` URL now opens Week |
+
+### Decisions and deviations
+
+- **Lists:** Unplanned and Carried over load at most 200 tasks with an exact total. "Show more" pages through those 50 at a time, and a note links to the Tasks tab beyond that (TD-FIN-1). "Move all" moves the loaded ones.
+- **Unplanned:** expanded by default at 1400px and wider, collapsed below that, and always collapsed while the side panel is open.
+- **Phone:** there are no drag handles; moves use the menu (A27).
+- **Review moves** (Slipped) refresh after saving rather than updating optimistically.
+
+### Checks (2026-10-24)
+
+- `npm run typecheck`: passed.
+- `npm run lint`: 0 errors and 6 warnings, the same count as before.
+- `npx vitest run`: 285 passed in 16 files (246 before this change). New tests:
+  - `supabase/tests/finisher-week.test.ts` (10, real Postgres via PGlite):
+    - notes: anon, owner and other user; direct writes refused; upsert, clear, the Monday and future-week checks, and the 2000-character limit;
+    - batch moves: owner, foreign ids, non-Open tasks, bad values, the 200 limit, anon, and the time-only change keeping `sort_key`.
+  - `tests/unit/api-finisher-week.test.ts` (12): bounds, allowlists, guards, safe errors, and `/today` gone.
+  - `tests/unit/finisher-week.test.ts` (17): domain rules, plus `getWeek` and `getWeekReview` over the new filtering stub `tests/support/table-stub.ts`. That a test fails was confirmed by breaking the carried-over rule on purpose.
+- `npx vite build`: passed. The large-chunk warning was already there.
+- `npm run dev` (workerd), curl without signing in:
+  - `/finisher` → 200 HTML;
+  - `/api/finisher/week` and `/week/review` → 401;
+  - weekly note PUT and batch POST → 401 with `private, no-store`;
+  - a foreign-Origin batch → 403.
+
+### Not verified
+
+- The new screens in a browser with a signed-in account, because local dev uses the live Supabase project, where this migration has not been applied. This includes drag with a mouse and touch, keyboard dragging with a screen reader, the phone bottom sheets, and reduced motion.
+- The migration on Supabase itself; it was tested only on PGlite.
+
+### Migration and setup
+
+1. Apply `supabase/migrations/20261024120000_finisher_week.sql` (additive: one table, two functions) before deploying the code. The new code calls the functions; the old code ignores them.
+2. Regenerate database types if the project starts generating them (none are checked in today).
+3. **Rollback:** deploy the previous code. The table and functions can stay, or be dropped with `drop function public.finisher_set_tasks_due(text, jsonb); drop function public.finisher_save_weekly_note(text, date, text); drop table public.finisher_weekly_notes;`. Dropping the table deletes the notes.
+
+### Tester
+
+- **Board:**
+  - week boundaries (a Sunday, ranges across a month and a year, midnight);
+  - Carried over only in the current week;
+  - a drop on a past day or the task's own day is refused;
+  - Unplanned clears the time;
+  - a move to today with a passed time clears it;
+  - Undo for single and bulk moves; a bulk partial failure (move one task to Done in another tab first).
+- **Set time:** the hours today, and the order next to sessions (ties).
+- **Review:** the note on two accounts; unsaved-changes guard on week change and on Back; Pomodoro counts around midnight in a non-UTC zone.
+- **Phone:** 320px with no page overflow, the day strip, the sheets.
 
 ## Change 2026-10-23: delegate a task (v5.1)
 

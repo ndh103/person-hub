@@ -245,3 +245,184 @@ body.is-reordering, body.is-reordering * { cursor: grabbing !important; user-sel
 .hit-44 { position: relative; }
 .hit-44::after { content: ""; position: absolute; inset: 50% auto auto 50%; width: 2.75rem; height: 2.75rem; transform: translate(-50%, -50%); }
 .drag-handle::after { content: ""; position: absolute; inset: -0.25rem 0; }
+
+/* ======================================================================
+   Week planner (week-planner.html): FIN-042 to FIN-047.
+   Phone: one day at a time (day strip), Unplanned last.
+   Laptop: Unplanned + seven day columns; the board scrolls inside itself, never the page.
+   ====================================================================== */
+
+/* The Week tab uses the full content width on laptop (other tabs keep max-w-5xl). */
+@media (min-width: 1024px) {
+  .finisher-page.is-week { max-width: none; padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+/* Day strip (phone only): seven equal pressed buttons. */
+.day-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.25rem; }
+.day-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: 3.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  line-height: 1.1;
+  color: var(--muted-foreground);
+}
+.day-pill .day-pill-date { font-size: 1rem; font-weight: 600; color: var(--foreground); }
+.day-pill[data-past] { opacity: 0.7; }
+.day-pill[data-today] { border-color: var(--input); }
+.day-pill[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.day-pill[aria-pressed="true"] .day-pill-date { color: var(--primary-foreground); }
+.day-pill-count { min-height: 1rem; font-family: var(--font-mono); font-size: 0.6875rem; }
+
+.week-board { display: flex; flex-direction: column; gap: 1.5rem; }
+.week-col { display: flex; flex-direction: column; min-width: 0; }
+.week-col[data-day]:not(.is-selected) { display: none; } /* phone: only the selected day */
+.week-col[data-col="unplanned"] { order: 9; }
+.week-col-body { display: flex; flex-direction: column; gap: 0.5rem; }
+
+@media (min-width: 1024px) {
+  .day-strip { display: none; }
+  .week-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 0.5rem; }
+  /* Fits without scrolling at 1280px with a classic 17px scrollbar and Unplanned collapsed
+     (3rem + 7 × 7.25rem + gaps ≈ 902px of ~920px), and at 1400px+ with it expanded. Narrower laptops scroll inside .week-scroll. */
+  .week-board {
+    display: grid;
+    grid-template-columns: 13rem repeat(7, minmax(7.25rem, 1fr));
+    gap: 0.375rem;
+    align-items: stretch;
+  }
+  .week-board[data-unplanned="collapsed"] { grid-template-columns: 3rem repeat(7, minmax(7.25rem, 1fr)); }
+  .week-col[data-day]:not(.is-selected) { display: flex; }
+  .week-col[data-col="unplanned"] { order: 0; }
+  /* Card inner width at the 7.25rem minimum is ~100px: handle 28 + check 28 + ⋯ 28 + gaps fit. */
+  .week-col {
+    min-height: 22rem;
+    padding: 0.5rem 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.5);
+    background: var(--muted);
+    transition: background-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+  }
+  .week-col[data-col="unplanned"] { background: var(--card); }
+  .week-col[data-today] { background: var(--accent); border-color: var(--ring); }
+  .week-col[data-past] .week-col-head { color: var(--muted-foreground); }
+  /* Collapsed Unplanned rail: only the toggle, rotated label. */
+  .week-board[data-unplanned="collapsed"] .week-col[data-col="unplanned"] .week-col-body,
+  .week-board[data-unplanned="collapsed"] .week-col[data-col="unplanned"] .unplanned-full { display: none; }
+  .week-board[data-unplanned="collapsed"] .week-col[data-col="unplanned"] { padding: 0.25rem; align-items: center; }
+}
+.unplanned-rail-label { display: none; }
+@media (min-width: 1024px) {
+  .week-board[data-unplanned="collapsed"] .unplanned-rail-label { display: block; writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 0.5rem; font-size: 0.8125rem; font-weight: 500; }
+}
+
+/* Drag feedback (FIN-044): the target names its day; unavailable days are hatched and dimmed. */
+.week-col[data-drop="over"] { box-shadow: inset 0 0 0 2px var(--ring); background: var(--popover); }
+.week-col[data-drop="no"] { opacity: 0.5; background-image: repeating-linear-gradient(135deg, transparent 0 8px, var(--border) 8px 9px); }
+.drop-label { display: none; }
+.week-col[data-drop="over"] .drop-label { display: block; }
+
+/* Cards: task and session share a frame; sessions add a dashed left rule and a repeat icon (not colour alone). */
+.plan-card {
+  position: relative;
+  padding: 0.375rem 0.375rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+/* Card layout. Phone: check · title/meta · ⋯ on one row.
+   Laptop columns are ~8.5rem, so the controls get their own row and the title uses the full width. */
+.plan-grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "check title more" "check meta more";
+  column-gap: 0.5rem;
+  align-items: start;
+}
+.a-handle { grid-area: handle; display: none; }
+.a-check { grid-area: check; }
+.a-title { grid-area: title; padding-top: 0.25rem; }
+.a-meta { grid-area: meta; }
+.a-more { grid-area: more; }
+@media (min-width: 1024px) {
+  .plan-grid {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "handle check . more" "title title title title" "meta meta meta meta";
+    column-gap: 0.25rem;
+  }
+  .a-handle { display: grid; }
+  .plan-card { padding: 0.25rem 0.25rem 0.5rem; }
+  .a-title { padding: 0.25rem 0.25rem 0; }
+  .a-meta { padding: 0 0.25rem; }
+}
+.plan-card.is-session { border-left: 3px dashed var(--input); }
+.plan-card.is-closed { background: transparent; }
+.plan-card.is-closed .plan-title { color: var(--muted-foreground); text-decoration: line-through; text-decoration-color: var(--input); }
+.plan-card.is-lifted { box-shadow: inset 0 0 0 2px var(--ring); background: var(--popover); }
+.plan-card.is-dragging { opacity: 0.4; }
+.plan-card .drag-handle { width: 1.75rem; height: 1.75rem; }
+@media (max-width: 1023.98px) {
+  .plan-card .drag-handle { display: none; } /* A27: no cross-day drag on phones */
+}
+.check-btn[aria-pressed="true"] { background: var(--secondary); color: var(--secondary-foreground); border-color: var(--secondary); }
+
+/* Move to day dialog: a centred dialog on laptop, a bottom sheet on phone. */
+.move-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius);
+  text-align: left;
+  font-size: 0.9375rem;
+}
+.move-option:hover:not([aria-disabled="true"]) { background: var(--accent); color: var(--accent-foreground); }
+.move-option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 1023.98px) {
+  .task-dialog.is-sheet {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-radius: calc(var(--radius) * 2) calc(var(--radius) * 2) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Set time hour buttons (FIN-048): 4 per row, fits 320px; caption under a disabled hour. */
+.time-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.1;
+}
+.time-chip:hover:not([aria-disabled="true"]) { background: var(--accent); color: var(--accent-foreground); }
+.time-chip[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
+.time-chip-cap { font-size: 0.625rem; color: var(--muted-foreground); }
+
+/* Plan / Review switch (maps to shadcn ToggleGroup). */
+.view-switch { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; padding: 0.25rem; border: 1px solid var(--border); border-radius: calc(var(--radius) * 1.5); background: var(--card); }
+.view-switch button { min-height: 2.5rem; padding: 0 1rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; }
+.view-switch button[aria-pressed="true"] { background: var(--secondary); color: var(--secondary-foreground); }
+.view-switch button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+body.is-moving, body.is-moving * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .week-col { transition: none; }
+}

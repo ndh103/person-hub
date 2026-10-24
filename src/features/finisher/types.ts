@@ -32,10 +32,8 @@ export type TaskDetail = TaskItem & {
 
 export type ProjectOption = { id: string; title: string; status: ProjectStatus };
 
-/** Counts on the Finisher tabs (FIN-035). Closed has no count. */
+/** Counts on the Finisher tabs (FIN-035). Week (A22) and Closed have no count. */
 export type FinisherTabCounts = {
-  /** Unmarked sessions today plus open tasks due today or overdue. */
-  today: number;
   /** Open tasks, not parked. */
   tasks: number;
   /** Active projects, not parked. */
@@ -78,18 +76,56 @@ export type SessionItem = {
   state: SessionState;
 };
 
-export type TodayData = {
-  now: LocalNow;
+/** One day of the week board (FIN-043). */
+export type WeekDay = {
+  date: LocalDate;
+  /** Sessions scheduled that day (FIN-045), timed first. */
   sessions: SessionItem[];
-  overdue: TaskItem[];
-  dueToday: TaskItem[];
-  doneSessions: SessionItem[];
-  doneTasks: TaskItem[];
-  sessionsTotal: number;
-  sessionsDone: number;
-  revisitDue: { tasks: number; projects: number };
+  /**
+   * Open tasks due that day, in the user's order (FIN-038). In the current
+   * week, days before today are empty: those tasks are carried over (FIN-046).
+   */
+  open: TaskItem[];
+  /** Done and Delegated tasks due that day (decision 36). */
+  finished: TaskItem[];
+};
+
+/** At most `items.length` of `total` tasks were loaded (TD-FIN-1). */
+export type TaskList = { items: TaskItem[]; total: number };
+
+export type WeekData = {
+  now: LocalNow;
+  weekStart: LocalDate;
+  days: WeekDay[];
+  /** Open tasks with no due date (FIN-043). */
+  unplanned: TaskList;
+  /** Open tasks due before today; only for the current week (FIN-046). */
+  carried: TaskList | null;
+  /** Parked items due for revisit; only for the current week (FIN-013, A33). */
+  revisitDue: { tasks: number; projects: number } | null;
   projects: ProjectOption[];
 };
+
+/** A task closed during the reviewed week, with its local closing date and reason or delegate (FIN-047). */
+export type ReviewTask = TaskItem & { closedOn: LocalDate; note: string | null };
+
+export type WeekReviewData = {
+  now: LocalNow;
+  weekStart: LocalDate;
+  /** Done and Delegated during the week, by closing time. */
+  done: ReviewTask[];
+  letGo: ReviewTask[];
+  /** Open tasks due in the week that are overdue now. */
+  slipped: TaskItem[];
+  projects: { id: string; title: string; week: WeekSummary }[];
+  /** Completed Pomodoros on each day, Monday to Sunday (decision 38). */
+  pomodoros: { date: LocalDate; completed: number }[];
+  note: string | null;
+  projectOptions: ProjectOption[];
+};
+
+/** Result of a batch due-date change (A29). */
+export type DueChangesResult = { moved: string[]; failed: string[] };
 
 export const TASK_GROUPS = ["overdue", "today", "upcoming", "nodate", "parked"] as const;
 export type TaskGroupKey = (typeof TASK_GROUPS)[number];

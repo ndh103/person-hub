@@ -26,6 +26,9 @@ export const LIMITS = {
   maxDuration: 480,
   parkMaxDays: 365,
   dueYears: 5,
+  weeklyNote: 2000,
+  /** Tasks in one batch due-date change (A29). */
+  dueChanges: 200,
 } as const;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -127,6 +130,37 @@ export function parseDueInput(raw: Record<string, unknown>, today: LocalDate): P
   }
   if (dueTime && !dueDate && !c.errors.dueDate) c.errors.dueTime = "needs_date";
   return done(c, { dueDate, dueTime });
+}
+
+export type DueChange = DueInput & { id: string };
+
+/**
+ * FIN-046 "Move all" and its Undo: 1–200 changes, one per task, each with the
+ * same rules as a single due-date change. Any problem refuses the whole batch
+ * under the field "changes"; nothing but id, dueDate and dueTime is read.
+ */
+export function parseDueChanges(raw: Record<string, unknown>, today: LocalDate): Parsed<{ changes: DueChange[] }> {
+  const list = raw.changes;
+  if (!Array.isArray(list) || list.length === 0) return { ok: false, errors: { changes: "invalid" } };
+  if (list.length > LIMITS.dueChanges) return { ok: false, errors: { changes: "too_many" } };
+  const changes: DueChange[] = [];
+  const seen = new Set<string>();
+  for (const item of list) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return { ok: false, errors: { changes: "invalid" } };
+    const entry = item as Record<string, unknown>;
+    const due = parseDueInput({ dueDate: entry.dueDate, dueTime: entry.dueTime }, today);
+    if (!isUuid(entry.id) || !due.ok || seen.has(entry.id.toLowerCase())) return { ok: false, errors: { changes: "invalid" } };
+    seen.add(entry.id.toLowerCase());
+    changes.push({ id: entry.id.toLowerCase(), ...due.value });
+  }
+  return { ok: true, value: { changes } };
+}
+
+/** FIN-047: the weekly note; empty or blank means "remove it". */
+export function parseWeeklyNote(raw: Record<string, unknown>): Parsed<{ note: string | null }> {
+  const c: Collector = { errors: {} };
+  const note = text(c, raw.note, "note", LIMITS.weeklyNote, false);
+  return done(c, { note });
 }
 
 /** FIN-039: start a Pomodoro; `replace` stops the running one first (Switch). */

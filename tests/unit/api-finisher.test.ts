@@ -60,9 +60,9 @@ describe("authentication (FIN-017, AUTH-007)", () => {
   it("answers 401 without touching data when there is no valid token", async () => {
     getClaims.mockResolvedValue({ data: null, error: { message: "invalid JWT" } });
     const cases = [
-      call("GET", "/api/finisher/today", undefined, { authorization: "" }),
-      call("GET", "/api/finisher/today", undefined, { authorization: "Basic dXNlcjpwdw==" }),
-      call("GET", "/api/finisher/today", undefined, { authorization: "Bearer not-a-jwt" }),
+      call("GET", "/api/finisher/week", undefined, { authorization: "" }),
+      call("GET", "/api/finisher/week", undefined, { authorization: "Basic dXNlcjpwdw==" }),
+      call("GET", "/api/finisher/week", undefined, { authorization: "Bearer not-a-jwt" }),
       call("POST", "/api/finisher/tasks", { title: "x" }),
       call("GET", "/api/finisher/closed"),
     ];
@@ -78,7 +78,7 @@ describe("authentication (FIN-017, AUTH-007)", () => {
   it("refuses verified tokens that are not a signed-in user (anon key, anonymous sign-in)", async () => {
     for (const claims of [{ role: "anon" }, { sub: USER, role: "anon" }, { sub: USER, role: "authenticated", is_anonymous: true }]) {
       getClaims.mockResolvedValueOnce({ data: { claims }, error: null });
-      expect((await call("GET", "/api/finisher/today")).status).toBe(401);
+      expect((await call("GET", "/api/finisher/week")).status).toBe(401);
     }
     expect(from).not.toHaveBeenCalled();
   });

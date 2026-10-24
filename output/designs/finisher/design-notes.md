@@ -1,7 +1,7 @@
 # Finisher: design notes
 
 - Feature slug: `finisher`
-- Status: `draft`. Covers the task form (`index.html`) and the Tasks list with the laptop side panel, drag order and quick due-date menu (`task-list.html`). Projects, Closed, project detail, and the Finish, Let go, Park, and Delete dialogs are not designed here yet.
+- Status: `draft`. Covers the task form (`index.html`), the Tasks list with the laptop side panel, drag order and quick due-date menu (`task-list.html`), and the Week tab (`week-planner.html`, 2026-10-24; see [Week planner](#week-planner-fin-042-to-fin-047)). Projects, Closed, project detail, and the Finish, Let go, Park, and Delete dialogs are not designed here yet.
 - Date: 2026-10-12 (revised the same day: date-field display "12 Oct 2026", shortcut captions "Monday 12 Oct", stacked Due date / Due time); restyled 2026-10-13 to the Claude design system (see the [app-shell notes](../app-shell/design-notes.md#change-2026-10-13-claude-design-system-and-reference-orange)); extended 2026-10-20 for requirements v4.0 (Tomorrow shortcut, FIN-036, FIN-037, FIN-038).
 - Scope of this version:
   - `index.html`: the Add and Edit task dialog, with the **Today**, **Tomorrow**, and **Next week** due-date shortcuts (FIN-034).
@@ -365,3 +365,165 @@ Added 2026-10-23 as a note, with no mockup. Requirements v5.1, decisions 29–31
 - **Rows:** a delegated task shows an outline “Delegated” badge before its date line and has no check-off circle (Today’s Done list, project closed tasks).
 - **Closed tab:** the outcome filters are Any outcome · Done or finished · **Delegated** · Let go. A delegated entry shows the outline badge “Delegated” and “Delegated to: name”.
 - **Details:** the status badge reads Delegated, with “Delegated” as the date label and a “Delegated to” fact. There is no Mark done button.
+
+## Week planner (FIN-042 to FIN-047)
+
+Added 2026-10-24 for requirements v6.0 (decisions 33–35, assumptions A21–A29). File: `week-planner.html`, plus a "Week planner" block at the end of `styles.css`. Status: `draft`; it has not been reviewed by the user yet.
+
+### Preview
+
+Open `week-planner.html` from this folder. It has the same font and Tailwind runtime dependencies as the other pages. The fixture time is **Wednesday 28 Oct 2026, 14:30**, so the marking window is 21–28 Oct.
+
+- The URL keeps the state as `#week=2026-10-26&view=plan` (A21). For example, `#week=2026-10-19&view=review` opens last week's review.
+- The prototype controls can make the next save fail (a single move reverts; a bulk move reports one failure). They can also show the loading and error states, jump to a week three weeks ahead, or open last week's review.
+- Narrow the window below 1024px for the phone layout.
+
+### Layout
+
+```
+Laptop (≥ 1024px)
+[‹] 26 Oct – 1 Nov 2026 [›]  This week          ☑ Show done   [Plan|Review]
+11 tasks planned · 4 done · Sessions 2 of 9 done
+┌ 4 tasks carried over ─────────────── [Move all to today] [Move all to next week] ┐
+│ ○ Send the insurance claim form  Due 16 Oct 2026       Today  Next week  ⋯      │
+└─────────────────────────────────────────────────────────────────────────────────┘
+┌Unpl.┐┌Mon 26 Past┐┌Tue 27┐┌Wed 28 Today┐┌Thu 29┐┌Fri 30┐┌Sat 31┐┌Sun 1┐
+│ ▯▯▯ ││ ⟲ session ││ …    ││ ⟲ session  ││ …    ││      ││      ││     │
+│     ││ ✓ done    ││      ││ ⠿○ task  ⋯ ││      ││      ││      ││     │
+│     ││           ││      ││ + Add      ││ + Add││ + Add││ + Add││+ Add│
+└─────┘└───────────┘└──────┘└────────────┘└──────┘└──────┘└──────┘└─────┘
+
+Phone (< 1024px)
+[‹] 26 Oct – 1 Nov 2026 [›]
+Carried over (stacked rows, actions wrap under the title)
+Mon Tue [Today] Thu Fri Sat Sun   ← day strip, pressed = shown day, count under the date
+Wednesday 28 Oct  Today   4 to do
+ ○ ⟲ Watch ABK program   30 min · 19:00 · Teach my daughter English   ⋯
+ ○ Return the hiking boots   09:00 · Overdue                           ⋯
+ + Add
+Unplanned 3
+```
+
+- **Board width:** Unplanned is 13rem, or a 3rem rail when collapsed. Day columns are at least 7.25rem. At 1280px with a classic 17px scrollbar and Unplanned collapsed, all seven days fit. Unplanned starts expanded at 1400px and wider, where all eight columns fit. Narrower laptops (1024–1279px) scroll sideways inside `.week-scroll`, never the page. The Week tab drops `max-w-5xl` on laptop and uses 1.5rem side padding.
+- **Cards:** on laptop the controls get their own row (handle, check-off, ⋯), so the title uses the full column width. On phone it is one row: check-off, title and meta, ⋯. The ⋯ is 28px on laptop (`lg:size-7`) and keeps its 44px `.hit-44` touch area.
+- **Sessions vs tasks** are told apart without relying on colour: sessions have a dashed left rule, a repeat icon, and the duration in text, and they have no drag handle. Assistive technology reads "Session:" before the activity.
+- **Done and Delegated tasks** stay on their day, muted and struck through, with "Done" or "Delegated to …" in text (A23). The **Show done** toggle hides them.
+- **Today** has an accent-tinted column with a ring border and a "Today" pill. **Past days** say "Past" in place of the count and have no Add button (A25).
+
+### Interaction
+
+- **Drag (laptop only, FIN-044):**
+  - The grip handle starts the drag. A ghost follows the pointer.
+  - The column under the pointer gets a 2px ring and a "Plan for Thursday 29 Oct" label.
+  - Unavailable columns (the task's own day, past days, every day of a past week) are hatched and dimmed. Dropping there cancels.
+  - The board scrolls automatically near its left and right edges. Escape cancels.
+- **Keyboard:** Space or Enter picks the task up; ←/→ moves between Unplanned and the available days (the task's own day is a stop that means "no move"); Space or Enter drops; Escape cancels. Each step is announced. Focus stays on the handle afterwards.
+- **Move to day…:** in every Open task's ⋯ menu, under Today / Tomorrow / Next week (FIN-037). On laptop it opens a centred dialog, and below 1024px a bottom sheet with week arrows. It lists:
+  - seven day options, with past days and the current day disabled and captioned "past" or "current";
+  - **No day (Unplanned)** ("clears date and time").
+- **Carried over:** each row has Today and Next week buttons. Its ⋯ menu adds **Unplan**. The bulk buttons report the count in a toast with Undo, and a partial failure shows an alert-styled toast.
+- **Review:** summary chips, then Slipped (with actions), Done this week grouped by day, Projects (FIN-028 rates), and a collapsed Let go list. **Plan next week** opens the following week's Plan view. The Review button is disabled for future weeks, with the reason shown next to it.
+- **Week navigation:** the arrows' accessible names include the target range. "This week" appears when another week is shown and moves focus to the range heading.
+
+### States covered
+
+Default (current week), next week, a past week (overdue tasks on their days and no Carried over), a week three ahead (sessions only, no tasks), the review of a past week, loading (an eight-column skeleton), error with Retry, failed single and bulk saves, the empty Unplanned list ("Every open task has a day."), and "Nothing planned" days. The "Nothing planned for this week" and "Nothing happened in Finisher this week" messages are in the code. The fixtures never trigger them, because every week has sessions.
+
+### shadcn/ui mapping
+
+| Prototype | Production |
+| --- | --- |
+| Week arrows, This week | `Button` (outline / ghost, icon) |
+| Plan / Review switch | `ToggleGroup` (single) |
+| Show done | `Switch` or `Checkbox` with label |
+| Day strip | `ToggleGroup` of buttons, or plain buttons with `aria-pressed` |
+| Cards, columns | `Card` styling via Tailwind; columns are `section`s with headings |
+| ⋯ menu | `DropdownMenu` (same items as FIN-037 plus Move to day…) |
+| Move to day | `Dialog` on laptop, `Drawer` (bottom sheet) on phone |
+| Toasts | `Sonner` with an Undo action |
+| Drag | The same library as FIN-038 (ADR-0006, dnd-kit preferred by the user), with droppable columns. The TA confirms that sortable plus multiple droppable containers fits. |
+
+### For the TA and Developer
+
+- **One week read** should return:
+  - Open tasks due in the week, and Done or Delegated tasks due in the week (Show done);
+  - Unplanned tasks (paged, 50 at a time);
+  - carried-over tasks (current week only, paged);
+  - sessions per day with their states;
+  - for the review: tasks closed in the week, by local date.
+- **Single moves** reuse the due-date update (FIN-037 path): set date or null, keep or clear the time per A26 and A14, and put the task at the bottom of the order.
+- **Bulk moves** need a bounded endpoint (A29) that returns per-task success, so the UI can report partial failure. Undo is a second bulk call with each task's previous date and time.
+- **The tab row** has five tabs now. Make the `ul` `relative` (as in this file) so the `sr-only` count text cannot widen the page at 320px; check this in the production `finisher-tabs.tsx`.
+
+### Checks performed (2026-10-24)
+
+Headless Edge 1280px screenshots (light and dark), 1440px, last week's review at 1280px, and 320px and 375px in iframes (light, and dark with the Move to day sheet open). The files are in the session scratchpad and are not committed.
+
+A scripted run in same-origin iframes made 48 checks; 46 passed. The 2 failures are artefacts of the test harness, not defects:
+- The sheet measured 353px wide during its 0.98 scale-in animation; its computed width is 360px.
+- A focus check failed across frames; a separate run confirmed that focus returns to the moved task's ⋯.
+
+Verified:
+- no horizontal page overflow at 320px and 375px;
+- all seven day pills are visible; only the selected day is listed; picking a day keeps focus on its pill;
+- no drag handle on phone;
+- all days fit at 1280px;
+- no duplicate IDs, and every icon used exists in the sprite;
+- carried-over tasks are not repeated on past days;
+- the summary text; the URL state;
+- the ⋯ menu items (Tomorrow is disabled when it is the current date; there are no Move up/down items);
+- the dialog's disabled days; a move through the dialog, with its toast;
+- keyboard lift, highlight, unavailable days, drop, and focus kept on the handle;
+- the time kept after a move, and cleared when moving to Unplanned;
+- Escape cancels a lift;
+- pointer drag to Thursday, and a cancelled drop on a past day;
+- Move all to today, and Undo;
+- a failed save reverting;
+- session marking, and future sessions locked;
+- next week, This week, last week's review, Plan next week, and the error state.
+
+**Defects found and fixed during the checks:**
+- At 320px, the fifth tab's `sr-only` text widened the page. The tab `ul` is now `relative`.
+- At 375px, carried-over titles collapsed to a few characters. The title now has a 12rem flex basis, so the actions wrap.
+- At 1280px, Sunday was cut off and the controls overflowed the card. Columns, padding, and the ⋯ size were reduced.
+
+**Not verified:** touch dragging on a real device, a screen reader, reduced motion, and the 1024–1279px sideways scroll by eye.
+
+### Limitations and open questions
+
+- The prototype's drag code, menu, and URL handling are for demonstration only. Edit, Delegate, Park, and Let go show a toast; the Add buttons say which date they would preset; titles say whether they open the side panel or the task page. Delete skips its confirmation.
+- The side panel (FIN-036) is not drawn on the Week tab. The proposed behaviour is to collapse Unplanned while the panel is open, so the seven days stay readable. This needs a mockup if the user wants to see it.
+- The user answered Q6–Q9 on 2026-10-24 (decisions 36–39); see the next section. The open question is now Q10: should the Today tab also sort by time?
+
+### v6.1: time order, Set time, Pomodoros by day, weekly note (2026-10-24)
+
+- **Order within a day (decision 39):** timed tasks and timed sessions are interleaved by time, with a session first on a tie. Untimed sessions come next, then untimed tasks in the user's order, then finished tasks. On today, Wednesday reads: 09:00 task, 17:00 task, 19:00 session, untimed session.
+- **Set time… (FIN-048):** a menu item after Move to day…, captioned with the current time or "no time". It appears only on tasks dated today or later.
+  - It opens a dialog (a bottom sheet on phone) with 16 hour buttons, 06:00–21:00, four per row (`.time-chip`). Passed hours on today and the current time are dashed, disabled, and captioned "past" or "current".
+  - It also has an **Other time** field with Set (it refuses an empty time, a time already passed today, or the unchanged time) and **No time**.
+  - Choosing saves at once, with an Undo toast. Focus returns to the task's ⋯ in its new place.
+  - Production: the hour buttons map to `ToggleGroup` or plain `Button`s. The Other time field should show the app's 24-hour format; the prototype's native `<input type="time">` follows the browser locale and may show "05:00 PM".
+- **Pomodoros by day (decision 38):** a review card with one row per day ("Tue 20 Oct · 4 Pomodoros · 100 min"), "–" for future days, today in bold, and a total line. It is text only, with no bars.
+- **Weekly note (decision 37):** a review card titled "Notes on this week". The label is visible, with a hint, a 2000-character count, and **Save note**, which is enabled only when the text has changed.
+  - It shows Saving…, then "Saved" or "Note removed" (an empty note). A failure shows an error toast and keeps the text.
+  - Leaving the week or view with unsaved text asks for confirmation. The prototype uses the native `confirm()`; production uses `AlertDialog` with "Keep editing" focused first.
+  - The note card is also shown in the empty-review state.
+
+**Checks (headless Edge, same-origin iframes):** a second script made 27 checks, and all passed:
+- the time order on Wednesday and Thursday, a tie at 07:30, and 06:00 placed before a 07:30 session;
+- no Set time on Unplanned or carried-over tasks;
+- today's disabled hours, the refused past Other time, and focus;
+- the toast, No time, Undo, and a failed save reverting;
+- the Pomodoro rows and total;
+- the note: loading, editing, the count, blocked leaving, saving, and persistence across weeks;
+- the current week's dashes;
+- no page overflow at 320px in the review.
+
+The first script was rerun with no new failures (the same two harness artefacts as before). Screenshots: the Set time sheet at 375px, and last week's review at 1100px.
+
+### v6.2: Today tab removed (2026-10-24)
+
+- The tab row is now **Week · Tasks · Projects · Closed** (decision 40), in `week-planner.html` and `task-list.html`. The app-shell reference and `index.html` were not changed. Week has no count (A22).
+- **Revisit notice (FIN-013, A33):** a one-line notice above Carried over, shown for the current week only, for example "1 parked item is due for revisit · Review parked". The link goes to the Tasks list. It is hidden when nothing is due.
+- Everything else the Today view did is already on the Week tab; see the FIN-031 table in the requirements.
+- **Checks:** both scripts were rerun. The second passed all 27 checks, and the first showed only the two known harness artefacts. A 1280px screenshot confirms the new tab row and the notice.

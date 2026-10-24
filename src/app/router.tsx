@@ -20,8 +20,11 @@ import { ProjectView } from "@/features/finisher/components/views/project-view";
 import { ProjectsView } from "@/features/finisher/components/views/projects-view";
 import { TaskView } from "@/features/finisher/components/views/task-view";
 import { TasksView } from "@/features/finisher/components/views/tasks-view";
-import { TodayView } from "@/features/finisher/components/views/today-view";
+import { BoardSkeleton, WeekView, type WeekSearch } from "@/features/finisher/components/week/week-view";
 import { TaskPanelLayout } from "@/features/finisher/components/task-panel";
+import { startOfWeek } from "@/features/finisher/domain/dates";
+import { parseWeekStart } from "@/features/finisher/domain/week";
+import { browserToday } from "@/lib/dates";
 import { DEFAULT_NEXT } from "@/lib/auth/safe-next";
 import { parseConfirmType } from "@/lib/auth/validation";
 import { sessionStatus } from "@/lib/supabase/client";
@@ -272,15 +275,44 @@ const finisherTabs = createRoute({
   errorComponent: FinisherRouteError,
 });
 
-const todayRoute = createRoute({
+// The Week tab is Finisher's home (FIN-042, decision 40), so the former Today
+// URL opens it. `week` is a Monday within range (A21); the current week has
+// none. A future week has no Review. Anything else is dropped, not rejected.
+const weekRoute = createRoute({
   getParentRoute: () => finisherTabs,
   path: "finisher",
   staticData: { title: "Finisher" },
-  validateSearch: z.object(panelTask),
-  loader: ({ context }) => context.queryClient.ensureQueryData(finisherQueries.today()),
-  pendingComponent: () => <ListSkeleton label="Loading today’s plan…" />,
+  validateSearch: z.object({
+    week: z
+      .string()
+      .optional()
+      .catch(undefined)
+      .transform((value) => {
+        const start = value ? parseWeekStart(value, browserToday()) : null;
+        return start && start !== startOfWeek(browserToday()) ? start : undefined;
+      }),
+    view: z.enum(["plan", "review"]).optional().catch(undefined),
+    ...panelTask,
+  }).transform((search) => ({
+    ...search,
+    view: search.view === "review" && !(search.week && search.week > startOfWeek(browserToday())) ? ("review" as const) : undefined,
+  })),
+  loaderDeps: ({ search }) => ({ week: search.week, view: search.view }),
+  loader: ({ context, deps }) =>
+    deps.view === "review"
+      ? context.queryClient.ensureQueryData(finisherQueries.weekReview(deps.week))
+      : context.queryClient.ensureQueryData(finisherQueries.week(deps.week)),
+  pendingComponent: BoardSkeleton,
   errorComponent: FinisherRouteError,
-  component: TodayView,
+  component: function Week() {
+    const search = weekRoute.useSearch();
+    const navigate = weekRoute.useNavigate();
+    const onNavigate = useCallback(
+      (next: WeekSearch) => void navigate({ search: (previous) => ({ ...previous, week: next.week, view: next.view }) }),
+      [navigate],
+    );
+    return <WeekView search={{ week: search.week, view: search.view }} onNavigate={onNavigate} />;
+  },
 });
 
 const tasksRoute = createRoute({
@@ -382,7 +414,7 @@ const routeTree = rootRoute.addChildren([
   appLayout.addChildren([
     homeRoute,
     eventsRoute,
-    finisherTabs.addChildren([todayRoute, tasksRoute, projectsRoute, closedRoute]),
+    finisherTabs.addChildren([weekRoute, tasksRoute, projectsRoute, closedRoute]),
     newProjectRoute,
     projectRoute,
     editProjectRoute,

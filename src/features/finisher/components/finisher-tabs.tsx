@@ -3,17 +3,19 @@ import { cn } from "@/lib/utils";
 import type { FinisherTabCounts } from "../types";
 
 const TABS = [
-  { to: "/finisher", label: "Today", count: "today", unit: "to do" },
+  { to: "/finisher", label: "Week", count: null, unit: "" },
   { to: "/finisher/tasks", label: "Tasks", count: "tasks", unit: "open" },
   { to: "/finisher/projects", label: "Projects", count: "projects", unit: "active" },
   { to: "/finisher/closed", label: "Closed", count: null, unit: "" },
 ] as const;
 
 /**
- * Finisher sections (FIN-001). Each tab is a link with its own URL, styled as
- * underline tabs with a muted count pill (foundation 2026-10-13, FIN-035;
- * Closed has no count). The labels and pills fit at 320px (FIN-018); the row
- * scrolls inside itself rather than widening the page if text is enlarged.
+ * Finisher sections (FIN-001): Week (the home, decision 40), Tasks, Projects,
+ * Closed. Each tab is a link with its own URL, styled as underline tabs with a
+ * muted count pill (foundation 2026-10-13, FIN-035; Week and Closed have no
+ * count). The labels and pills fit at 320px (FIN-018); the row scrolls inside
+ * itself rather than widening the page if text is enlarged. The list is
+ * `relative`, so the screen-reader-only count text stays inside that scroll.
  * The current tab gets aria-current="page" from the link (exact path match)
  * and is marked by weight and an underline, not colour alone. Counts are left
  * out until they have loaded, so a tab never shows a wrong number.
@@ -21,7 +23,7 @@ const TABS = [
 export function FinisherTabs({ counts }: { counts?: FinisherTabCounts }) {
   return (
     <nav aria-label="Finisher sections" className="border-b">
-      <ul className="-mb-px flex gap-5 overflow-x-auto text-[0.9375rem] sm:gap-8">
+      <ul className="relative -mb-px flex gap-5 overflow-x-auto text-[0.9375rem] sm:gap-8">
         {TABS.map((tab) => {
           const count = tab.count && counts ? counts[tab.count] : null;
           return (

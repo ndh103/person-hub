@@ -13,7 +13,8 @@ import type {
   ProjectsTabData,
   TaskDetail,
   TasksTabData,
-  TodayData,
+  WeekData,
+  WeekReviewData,
 } from "./types";
 
 export type ApiResult<T> =
@@ -88,7 +89,17 @@ export const finisherQueries = {
       queryKey: ["finisher", "basics"],
       queryFn: () => load<FinisherBasics>("/api/finisher/basics"),
     }),
-  today: () => queryOptions({ queryKey: ["finisher", "today"], queryFn: () => load<TodayData>("/api/finisher/today") }),
+  /** The week board (FIN-043); `start` is a Monday, or undefined for the current week. */
+  week: (start: LocalDate | undefined) =>
+    queryOptions({
+      queryKey: ["finisher", "week", start ?? "current"],
+      queryFn: () => load<WeekData>(withQuery("/api/finisher/week", { start })),
+    }),
+  weekReview: (start: LocalDate | undefined) =>
+    queryOptions({
+      queryKey: ["finisher", "week-review", start ?? "current"],
+      queryFn: () => load<WeekReviewData>(withQuery("/api/finisher/week/review", { start })),
+    }),
   tasks: (project: string | undefined) =>
     queryOptions({
       queryKey: ["finisher", "tasks", project ?? "all"],

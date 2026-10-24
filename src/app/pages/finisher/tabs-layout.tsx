@@ -9,7 +9,7 @@ import { TaskPanelLayout } from "@/features/finisher/components/task-panel";
 import { formatDate } from "@/lib/dates";
 
 /**
- * Finisher header and Today / Tasks / Projects / Closed tabs (FIN-001), as in
+ * Finisher header and Week / Tasks / Projects / Closed tabs (FIN-001), as in
  * the app-shell design: the title, a mono "Today · 13 Oct 2026" line, and
  * underline tabs with counts (FIN-035). The header loads on its own, so the
  * tab content never waits for it.

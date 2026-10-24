@@ -1,0 +1,1287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Week · Finisher · Personal Hub</title>
+  <!--
+    Design reference: Finisher Week tab (FIN-042 to FIN-047): week navigation, the week board with Unplanned and
+    seven days, planning a task onto a day (drag on laptop, Move to day… everywhere), sessions on the board,
+    Carried over, and the weekly review. Feature slug: finisher. Status: draft.
+    Not production code. All data shown is synthetic fixture data. See design-notes.md → Week planner.
+    External runtime dependencies: Google Fonts (Source Serif 4, Inter, JetBrains Mono) and the pinned Tailwind browser runtime.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../_foundation/theme.css" />
+  <link rel="stylesheet" href="../app-shell/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("ph-theme"); } catch (e) {}
+      var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <!-- Prototype only: pinned Tailwind v4 browser runtime. Never ship this in the app. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --color-card: var(--card);
+      --color-card-foreground: var(--card-foreground);
+      --color-popover: var(--popover);
+      --color-popover-foreground: var(--popover-foreground);
+      --color-primary: var(--primary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-primary-hover: var(--primary-hover);
+      --color-secondary: var(--secondary);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-muted: var(--muted);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-accent: var(--accent);
+      --color-accent-foreground: var(--accent-foreground);
+      --color-destructive: var(--destructive);
+      --color-destructive-foreground: var(--destructive-foreground);
+      --color-border: var(--border);
+      --color-input: var(--input);
+      --color-ring: var(--ring);
+      --color-sidebar: var(--sidebar);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar-primary: var(--sidebar-primary);
+      --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+      --color-sidebar-border: var(--sidebar-border);
+      --color-sidebar-ring: var(--sidebar-ring);
+      --font-heading: var(--font-heading);
+      --radius-sm: calc(var(--radius) - 4px);
+      --radius-md: calc(var(--radius) - 2px);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) + 4px);
+    }
+  </style>
+</head>
+<body class="min-h-dvh bg-background text-foreground antialiased">
+
+  <!-- Icon sprite (Lucide paths, ISC licence). Production: lucide-react. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+    <symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></symbol>
+  </svg>
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
+
+  <div class="min-h-dvh bg-sidebar lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div id="drawer-backdrop" class="drawer-backdrop lg:hidden" hidden></div>
+
+    <!-- ===================== Sidebar (same as app-shell reference) ===================== -->
+    <aside id="sidebar" class="sidebar on-sidebar flex flex-col bg-sidebar text-sidebar-foreground" aria-labelledby="brand-name">
+      <div class="flex items-start justify-between gap-2 px-5 pt-6 pb-2 lg:pt-8">
+        <a href="#" class="flex min-h-11 min-w-0 items-center gap-3 rounded-md">
+          <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground" aria-hidden="true">PH</span>
+          <span class="min-w-0 leading-tight">
+            <span id="brand-name" class="block font-heading text-lg font-medium">Personal Hub</span>
+            <span class="block truncate text-sm">you@example.com</span>
+          </span>
+        </a>
+        <button type="button" id="drawer-close" class="grid size-11 shrink-0 place-items-center rounded-md hover:bg-sidebar-accent lg:hidden" aria-label="Close navigation">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <nav aria-label="Apps" class="flex-1 overflow-y-auto px-3 pt-8 pb-4 lg:pt-14">
+        <ul class="space-y-1">
+          <li><a href="../app-shell/index.html#/home" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-home"/></svg> Home</a></li>
+        </ul>
+        <p class="mt-8 mb-2 px-3 font-mono text-xs font-medium uppercase tracking-[0.12em]" id="apps-heading">Apps</p>
+        <ul class="space-y-1" aria-labelledby="apps-heading">
+          <li><a href="#" aria-current="page" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-flag"/></svg> Finisher</a></li>
+          <li><a href="../app-shell/index.html#/events" class="nav-link flex min-h-11 items-center gap-3 rounded-lg px-3 text-[0.9375rem] font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"><svg class="icon size-5" aria-hidden="true"><use href="#i-calendar"/></svg> Events</a></li>
+        </ul>
+      </nav>
+      <div class="space-y-3 px-5 pb-6 lg:pb-8">
+        <div role="group" aria-label="Theme" class="grid grid-cols-2 gap-1 rounded-xl border border-sidebar-border p-1">
+          <button type="button" data-theme-choice="light" aria-pressed="true" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-sun"/></svg> Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false" class="theme-choice inline-flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-medium hover:bg-sidebar-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-moon"/></svg> Dark</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================== Content column ===================== -->
+    <div id="content-column" class="flex min-h-dvh min-w-0 flex-col lg:py-5 lg:pr-5">
+      <header class="on-sidebar sticky top-0 z-30 flex h-14 items-center gap-2 bg-sidebar px-2 text-sidebar-foreground lg:hidden">
+        <button type="button" id="drawer-open" class="grid size-11 place-items-center rounded-md hover:bg-sidebar-accent" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon size-5" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <p class="truncate font-heading text-lg font-medium">Finisher</p>
+      </header>
+
+      <main id="main" tabindex="-1" class="content-card flex-1 rounded-t-2xl bg-background lg:rounded-2xl">
+       <div id="page" class="finisher-page is-week mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:py-14">
+
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 id="page-title" tabindex="-1" class="font-heading text-3xl font-medium lg:text-4xl">Finisher</h1>
+            <p class="mt-1 font-mono text-[0.8125rem] text-muted-foreground">Today · <time datetime="2026-10-28">28 Oct 2026</time></p>
+          </div>
+          <button type="button" data-add="" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">
+            <svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg> Add task
+          </button>
+        </div>
+
+        <!-- FIN-001 / decision 40: Week is the first tab and the Finisher home (Today removed). A22: the Week tab has no count. -->
+        <nav aria-label="Finisher sections" class="mt-5 border-b border-border">
+          <!-- relative: keeps the absolutely positioned sr-only count text inside this scroll container, so five tabs cannot widen the page at 320px. -->
+          <ul class="relative -mb-px flex gap-5 overflow-x-auto text-[0.9375rem] sm:gap-8">
+            <li><a href="#" aria-current="page" class="section-tab">Week</a></li>
+            <li><a href="task-list.html" class="section-tab">Tasks <span class="tab-count"><span class="sr-only">(</span><span id="tasks-count">13</span><span class="sr-only"> open)</span></span></a></li>
+            <li><a href="#" class="section-tab">Projects <span class="tab-count"><span class="sr-only">(</span>2<span class="sr-only"> active)</span></span></a></li>
+            <li><a href="#" class="section-tab">Closed</a></li>
+          </ul>
+        </nav>
+
+        <!-- ===================== Week toolbar (FIN-042) ===================== -->
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div class="flex min-w-0 items-center gap-1">
+            <button type="button" id="wk-prev" class="grid size-11 shrink-0 place-items-center rounded-lg border border-border bg-card hover:bg-accent hover:text-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+            </button>
+            <div class="min-w-0 px-2">
+              <h2 id="wk-range" tabindex="-1" class="font-heading text-xl font-medium outline-none sm:text-2xl"></h2>
+              <p id="wk-label" class="font-mono text-xs text-muted-foreground"></p>
+            </div>
+            <button type="button" id="wk-next" class="grid size-11 shrink-0 place-items-center rounded-lg border border-border bg-card hover:bg-accent hover:text-accent-foreground">
+              <svg class="icon size-5" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+            </button>
+            <button type="button" id="wk-this" class="ml-1 inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground underline-offset-4 hover:underline" hidden>This week</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <label id="show-done-wrap" class="inline-flex min-h-11 items-center gap-2 text-sm">
+              <input type="checkbox" id="show-done" class="size-4" checked /> Show done
+            </label>
+            <div class="view-switch" role="group" aria-label="View">
+              <button type="button" data-view="plan" aria-pressed="true">Plan</button>
+              <button type="button" data-view="review" aria-pressed="false" aria-describedby="review-note">Review</button>
+            </div>
+          </div>
+        </div>
+        <p id="review-note" class="mt-1 text-right text-xs text-muted-foreground" hidden>You can review a week once it has started.</p>
+        <p id="wk-summary" class="mt-3 font-mono text-[0.8125rem] text-muted-foreground"></p>
+
+        <div id="view" class="mt-4" aria-live="off"></div>
+
+        <!-- ============ Prototype-only controls (not product UI) ============ -->
+        <details class="mt-12 max-w-3xl rounded-lg border border-dashed border-border p-4 text-sm" open>
+          <summary class="cursor-pointer font-medium text-muted-foreground">Prototype controls (not part of the product)</summary>
+          <p class="mt-2 text-muted-foreground">Fixture time: Wednesday 28 Oct 2026, 14:30. The marking window is 21–28 Oct. Resize below 1024px for the phone layout (day strip, no drag).</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <label class="flex min-h-11 items-center gap-2 pr-4"><input type="checkbox" id="proto-fail" class="size-4" /> Make the next save fail</label>
+            <button type="button" id="proto-loading" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 hover:bg-accent">Show loading</button>
+            <button type="button" id="proto-error" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 hover:bg-accent">Show error</button>
+            <button type="button" id="proto-empty" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 hover:bg-accent">Go to an empty week</button>
+            <button type="button" id="proto-last" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 hover:bg-accent">Review last week</button>
+          </div>
+        </details>
+       </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Shared item menu (maps to shadcn DropdownMenu). -->
+  <div id="row-menu" class="row-menu" role="menu" hidden></div>
+
+  <!-- Move to day… (FIN-044). Dialog on laptop, bottom sheet on phone. Production: Dialog / Drawer (vaul). -->
+  <dialog id="move-dialog" class="task-dialog is-sheet" aria-labelledby="move-title">
+    <div class="p-5 sm:p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 id="move-title" class="font-heading text-xl font-medium">Move to day</h2>
+          <p id="move-task" class="mt-1 text-sm break-words text-muted-foreground"></p>
+        </div>
+        <button type="button" data-move-cancel class="-mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent" aria-label="Close">
+          <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <div class="mt-4 flex items-center justify-between gap-2">
+        <button type="button" id="move-prev" class="grid size-11 place-items-center rounded-lg border border-border bg-card hover:bg-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+        <p id="move-range" class="text-center text-sm font-medium" aria-live="polite"></p>
+        <button type="button" id="move-next" class="grid size-11 place-items-center rounded-lg border border-border bg-card hover:bg-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+      </div>
+      <div id="move-options" class="mt-3 space-y-0.5" role="group" aria-labelledby="move-range"></div>
+      <div class="my-2 h-px bg-border"></div>
+      <button type="button" id="move-unplan" class="move-option"><span>No day (Unplanned)</span><span class="font-mono text-xs text-muted-foreground">clears date and time</span></button>
+    </div>
+  </dialog>
+
+  <!-- Set time… (FIN-048). Same container as Move to day: dialog on laptop, bottom sheet on phone. -->
+  <dialog id="time-dialog" class="task-dialog is-sheet" aria-labelledby="time-title">
+    <div class="p-5 sm:p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 id="time-title" class="font-heading text-xl font-medium">Set time</h2>
+          <p id="time-task" class="mt-1 text-sm break-words text-muted-foreground"></p>
+        </div>
+        <button type="button" data-time-cancel class="-mr-2 grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent" aria-label="Close">
+          <svg class="icon size-4" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <div id="time-options" class="mt-4 grid grid-cols-4 gap-2" role="group" aria-label="Hours"></div>
+      <form id="time-other" class="mt-4 flex items-end gap-2" novalidate>
+        <div class="min-w-0 flex-1">
+          <label for="time-input" class="text-sm font-medium">Other time</label>
+          <input id="time-input" type="time" step="300" aria-describedby="time-error" class="mt-1 h-11 w-full rounded-xl border border-input bg-card px-3 text-base sm:text-sm" />
+        </div>
+        <button type="submit" class="inline-flex h-11 shrink-0 items-center rounded-lg border border-border bg-card px-4 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground">Set</button>
+      </form>
+      <p id="time-error" class="mt-1 text-sm text-destructive" role="alert" hidden></p>
+      <div class="my-3 h-px bg-border"></div>
+      <button type="button" id="time-clear" class="move-option"><span>No time</span><span class="font-mono text-xs text-muted-foreground">listed after timed items</span></button>
+    </div>
+  </dialog>
+
+  <p id="live" class="sr-only" role="status" aria-live="polite"></p>
+  <div class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4" id="toast-region"></div>
+
+  <script>
+  (function () {
+    // ---------------- Fixtures and date helpers (date-only values) ----------------
+    var TODAY = "2026-10-28"; // Wednesday; production: the user's timezone (A1)
+    var NOW = "14:30";
+    function parse(iso) { var p = iso.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); }
+    function isoOf(d) { return d.toISOString().slice(0, 10); }
+    function addDays(iso, n) { var d = parse(iso); d.setUTCDate(d.getUTCDate() + n); return isoOf(d); }
+    function isoDow(iso) { return ((parse(iso).getUTCDay() + 6) % 7) + 1; } // 1 = Monday … 7 = Sunday
+    function mondayOf(iso) { return addDays(iso, 1 - isoDow(iso)); }
+    function fmt(iso, opts) { return new Intl.DateTimeFormat("en-GB", Object.assign({ timeZone: "UTC" }, opts)).format(parse(iso)); }
+    var LONG = { day: "numeric", month: "short", year: "numeric" };     // "28 Oct 2026"
+    var SHORT = { weekday: "long", day: "numeric", month: "short" };    // "Wednesday 28 Oct" (decision 13)
+    var DAY = { weekday: "short", day: "numeric", month: "short" };     // "Wed 28 Oct"
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function rangeText(mon) {
+      var sun = addDays(mon, 6), sameYear = mon.slice(0, 4) === sun.slice(0, 4);
+      return fmt(mon, sameYear ? { day: "numeric", month: "short" } : LONG) + " – " + fmt(sun, LONG);
+    }
+    var THIS_MON = mondayOf(TODAY);
+    var WINDOW_START = addDays(TODAY, -7); // FIN-027 marking window
+    var MIN_MON = mondayOf(addDays(TODAY, -5 * 365)), MAX_MON = mondayOf(addDays(TODAY, 5 * 365));
+
+    var EN = "Teach my daughter English", GT = "Play three songs on guitar";
+    var tasks = {
+      t1: { title: "Send the insurance claim form", due: "2026-10-16", time: null, project: null, status: "open" },
+      t13: { title: "Clean the gutters", due: "2026-10-22", time: null, project: null, status: "open" },
+      t2: { title: "Call the dentist to reschedule", due: "2026-10-26", time: "09:00", project: null, status: "open" },
+      t3: { title: "Print phonics flashcards", due: "2026-10-27", time: null, project: EN, status: "open" },
+      t5: { title: "Return the hiking boots", due: "2026-10-28", time: "09:00", project: null, status: "open" },
+      t4: { title: "Prepare the paperwork and submit the form", due: "2026-10-28", time: "17:00", project: null, status: "open" },
+      t6: { title: "Buy guitar strings", due: "2026-10-29", time: null, project: GT, status: "open" },
+      t7: { title: "Book the car service", due: "2026-10-30", time: "10:00", project: null, status: "open" },
+      t8: { title: "Plan the Saturday picnic", due: "2026-10-31", time: null, project: null, status: "open" },
+      t9: { title: "Renew library card", due: "2026-11-03", time: null, project: null, status: "open" },
+      t10: { title: "Sort old photos into albums", due: null, time: null, project: null, status: "open" },
+      t11: { title: "Fix the bike light", due: null, time: null, project: null, status: "open" },
+      t12: { title: "Compare phone plans", due: null, time: null, project: null, status: "open" },
+      d1: { title: "Pay the electricity bill", due: "2026-10-26", time: null, project: null, status: "done", closed: "2026-10-26" },
+      d2: { title: "Order school shoes", due: "2026-10-27", time: null, project: EN, status: "done", closed: "2026-10-26" },
+      d3: { title: "Water the neighbour’s plants", due: "2026-10-28", time: null, project: null, status: "delegated", closed: "2026-10-27", delegatedTo: "Sam" },
+      d7: { title: "Collect the dry cleaning", due: "2026-10-28", time: null, project: null, status: "done", closed: "2026-10-28" },
+      d4: { title: "Cancel the gym trial", due: "2026-10-29", time: null, project: null, status: "let_go", closed: "2026-10-27", reason: "Decided to keep it for another month." },
+      d5: { title: "Submit the tax form", due: "2026-10-21", time: null, project: null, status: "done", closed: "2026-10-20" },
+      d6: { title: "Back up the laptop", due: "2026-10-23", time: null, project: null, status: "done", closed: "2026-10-24" },
+    };
+    // One order for all open tasks (FIN-038). The Week tab shows it but does not change it within a day (A24).
+    var order = ["t1", "t13", "t2", "t3", "t5", "t4", "t6", "t7", "t8", "t9", "t10", "t11", "t12"];
+    var slots = [
+      { id: "s1", project: EN, activity: "Watch ABK program", days: [1, 3, 5], dur: 30, time: "19:00" },
+      { id: "s2", project: EN, activity: "Learn together", days: [1, 3, 5], dur: 30, time: null },
+      { id: "s3", project: GT, activity: "Practise chords", days: [2, 4, 6], dur: 20, time: "07:30" },
+    ];
+    // Completed Pomodoros per local end date (FIN-040, FIN-047).
+    var pomos = { "2026-10-19": 2, "2026-10-20": 4, "2026-10-21": 3, "2026-10-22": 0, "2026-10-23": 5, "2026-10-24": 1, "2026-10-26": 3, "2026-10-27": 5, "2026-10-28": 2 };
+    // Weekly notes keyed by the week's Monday (decision 37). noteDraft holds unsaved text for the shown week.
+    var notes = { "2026-10-19": "Good focus early in the week. Friday got away from me: fewer errands on Fridays." };
+    var noteDraft = null;
+    var marks = {
+      "s1|2026-10-19": "done", "s2|2026-10-19": "done", "s3|2026-10-20": "done", "s1|2026-10-21": "done", "s2|2026-10-21": "skipped",
+      "s3|2026-10-22": "done", "s1|2026-10-23": "done", "s3|2026-10-24": "done", "s1|2026-10-26": "done", "s2|2026-10-26": "skipped", "s3|2026-10-27": "done",
+    };
+
+    var desktop = window.matchMedia("(min-width: 1024px)");
+    var week = THIS_MON, view = "plan", selectedDay = null, showDone = true;
+    var unplannedCollapsed = window.innerWidth < 1400; // expanded only where all eight columns fit
+    var state = "ready"; // ready | loading | error (prototype)
+    var kb = null, drag = null;
+
+    var viewEl = document.getElementById("view");
+    var failToggle = document.getElementById("proto-fail");
+
+    // ---------------- Derived data ----------------
+    function days(mon) { var a = []; for (var i = 0; i < 7; i++) a.push(addDays(mon, i)); return a; }
+    function isOpen(t) { return t.status === "open"; }
+    function overdue(t) { return isOpen(t) && t.due && (t.due < TODAY || (t.due === TODAY && t.time && t.time <= NOW)); }
+    function carriedIds() { return order.filter(function (id) { return isOpen(tasks[id]) && tasks[id].due && tasks[id].due < TODAY; }); }
+    function unplannedIds() { return order.filter(function (id) { return isOpen(tasks[id]) && !tasks[id].due; }); }
+    // FIN-043: in the current week, open tasks due before today live in Carried over only.
+    function openOn(d) {
+      if (week === THIS_MON && d < TODAY) return [];
+      return order.filter(function (id) { return isOpen(tasks[id]) && tasks[id].due === d; });
+    }
+    function closedOn(d) {
+      return Object.keys(tasks).filter(function (id) { var t = tasks[id]; return (t.status === "done" || t.status === "delegated") && t.due === d; });
+    }
+    function sessionsOn(d) {
+      var dow = isoDow(d);
+      return slots.filter(function (s) { return s.days.indexOf(dow) > -1; }).sort(function (a, b) {
+        if (a.time && b.time) return a.time < b.time ? -1 : 1;
+        return a.time ? -1 : b.time ? 1 : 0;
+      });
+    }
+    function sessionState(s, d) {
+      var m = marks[s.id + "|" + d];
+      if (m) return m;
+      if (d < WINDOW_START) return "missed";
+      if (d > TODAY) return "upcoming";
+      return "unmarked";
+    }
+    function markable(d) { return d >= WINDOW_START && d <= TODAY; }
+    function toDoCount(d) {
+      var n = openOn(d).length;
+      sessionsOn(d).forEach(function (s) { var st = sessionState(s, d); if (st === "unmarked" || st === "upcoming") n++; });
+      return n;
+    }
+    function inWeek(iso, mon) { return iso && iso >= mon && iso <= addDays(mon, 6); }
+    function sessionTotals(mon) {
+      var t = { scheduled: 0, done: 0, skipped: 0, missed: 0, remaining: 0, byProject: {} };
+      days(mon).forEach(function (d) {
+        sessionsOn(d).forEach(function (s) {
+          var st = sessionState(s, d), p = t.byProject[s.project] || (t.byProject[s.project] = { scheduled: 0, done: 0, skipped: 0, missed: 0, remaining: 0 });
+          t.scheduled++; p.scheduled++;
+          var k = st === "done" ? "done" : st === "skipped" ? "skipped" : st === "missed" ? "missed" : "remaining";
+          t[k]++; p[k]++;
+        });
+      });
+      return t;
+    }
+    function weekLabel(mon) {
+      var diff = Math.round((parse(mon) - parse(THIS_MON)) / (7 * 864e5));
+      return diff === 0 ? "This week" : diff === 1 ? "Next week" : diff === -1 ? "Last week" : "";
+    }
+    function dayName(d) { return d ? fmt(d, SHORT) + (d === TODAY ? " (today)" : "") : "Unplanned"; }
+
+    // ---------------- Announcements, toast, simulated save ----------------
+    var live = document.getElementById("live");
+    function announce(msg) { live.textContent = ""; setTimeout(function () { live.textContent = msg; }, 30); }
+    var toastTimer;
+    function toast(message, opts) {
+      opts = opts || {};
+      var region = document.getElementById("toast-region");
+      region.innerHTML = "";
+      var el = document.createElement("div");
+      el.setAttribute("role", opts.error ? "alert" : "status");
+      el.className = "toast pointer-events-auto flex max-w-md items-center gap-4 rounded-lg border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg " + (opts.error ? "border-destructive/40" : "border-border");
+      var text = document.createElement("span");
+      text.textContent = message;
+      el.appendChild(text);
+      if (opts.action) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "min-h-11 shrink-0 rounded-md px-2 font-semibold text-accent-foreground underline underline-offset-4";
+        b.textContent = opts.action.label;
+        b.addEventListener("click", function () { region.innerHTML = ""; opts.action.run(); });
+        el.appendChild(b);
+      }
+      region.appendChild(el);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { region.innerHTML = ""; }, 6000);
+    }
+    function save(onFail) {
+      var fail = failToggle.checked;
+      if (fail) failToggle.checked = false;
+      setTimeout(function () { if (fail) onFail(); }, 500);
+      return fail;
+    }
+
+    // ---------------- Header (FIN-042) ----------------
+    function renderHeader() {
+      var label = weekLabel(week), future = week > THIS_MON;
+      document.getElementById("wk-range").textContent = rangeText(week);
+      document.getElementById("wk-label").textContent = label || "Week of " + fmt(week, SHORT);
+      var prev = document.getElementById("wk-prev"), next = document.getElementById("wk-next");
+      prev.setAttribute("aria-label", "Previous week, " + rangeText(addDays(week, -7)));
+      next.setAttribute("aria-label", "Next week, " + rangeText(addDays(week, 7)));
+      prev.disabled = week <= MIN_MON; next.disabled = week >= MAX_MON;
+      document.getElementById("wk-this").hidden = week === THIS_MON;
+      document.querySelectorAll("[data-view]").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b.getAttribute("data-view") === view));
+        if (b.getAttribute("data-view") === "review") b.disabled = future;
+      });
+      document.getElementById("review-note").hidden = !future;
+      document.getElementById("show-done-wrap").hidden = view !== "plan";
+      var sum = document.getElementById("wk-summary");
+      sum.hidden = view === "review"; // the review has its own summary chips
+      if (state !== "ready") { sum.textContent = ""; return; }
+      var planned = Object.keys(tasks).filter(function (id) { var t = tasks[id]; return inWeek(t.due, week) && (t.status === "open" || t.status === "done" || t.status === "delegated"); });
+      var done = planned.filter(function (id) { return tasks[id].status !== "open"; });
+      var st = sessionTotals(week);
+      sum.textContent = planned.length + " tasks planned · " + done.length + " done · " +
+        (st.scheduled ? "Sessions " + st.done + " of " + st.scheduled + " done" : "No sessions scheduled");
+    }
+
+    // ---------------- Cards ----------------
+    var CHECK = "hit-44 check-btn grid size-7 shrink-0 place-items-center rounded-full border border-input bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground";
+    var MORE = "hit-44 grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground";
+    function canDropOn(t, target) { // FIN-044, A25
+      if (target === "unplanned") return !!t.due;
+      return target >= TODAY && target !== t.due;
+    }
+    function taskCard(id) {
+      var t = tasks[id], open = isOpen(t), lifted = kb && kb.id === id;
+      var meta = [];
+      if (t.time) meta.push('<time datetime="' + t.due + "T" + t.time + '">' + t.time + "</time>");
+      if (overdue(t)) meta.push('<span class="text-destructive">Overdue</span>');
+      if (t.status === "done") meta.push("Done");
+      if (t.status === "delegated") meta.push("Delegated to " + esc(t.delegatedTo));
+      if (t.project) meta.push('<span class="break-words">' + esc(t.project) + "</span>");
+      var movable = open && desktop.matches && (canDropOn(t, "unplanned") || days(week).some(function (d) { return canDropOn(t, d); }));
+      return '<article class="plan-card' + (open ? "" : " is-closed") + (lifted ? " is-lifted" : "") + '" data-task="' + id + '">' +
+        '<div class="plan-grid">' +
+          (open ? '<button type="button" class="drag-handle a-handle" data-handle aria-label="Move “' + esc(t.title) + '” to another day" aria-describedby="move-help"' + (movable ? "" : " disabled") + (lifted ? ' aria-pressed="true"' : "") + '><svg class="icon size-4" aria-hidden="true"><use href="#i-grip"/></svg></button>' : "") +
+          '<button type="button" data-check class="a-check ' + CHECK + '" aria-pressed="' + String(!open) + '" aria-label="' + (open ? "Mark “" + esc(t.title) + "” done" : "Reopen “" + esc(t.title) + "”") + '">' +
+            '<svg class="icon size-3.5" aria-hidden="true"><use href="#' + (open ? "i-circle" : "i-check") + '"/></svg></button>' +
+          '<a href="#task=' + id + '" data-title class="plan-title a-title text-sm font-medium break-words underline-offset-4 hover:underline">' + esc(t.title) + "</a>" +
+          (meta.length ? '<p class="a-meta mt-0.5 font-mono text-xs text-muted-foreground">' + meta.join(" · ") + "</p>" : "") +
+          '<button type="button" data-more="task" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for “' + esc(t.title) + '”" class="a-more ' + MORE + ' lg:size-7"><svg class="icon size-5" aria-hidden="true"><use href="#i-more"/></svg></button>' +
+        "</div></article>";
+    }
+    function sessionCard(s, d) {
+      var st = sessionState(s, d), can = markable(d);
+      var label = { done: "Done", skipped: "Skipped", missed: "Missed", upcoming: "Upcoming", unmarked: "" }[st];
+      var desc = "Session: " + s.activity + ", " + s.project + ", " + s.dur + " min" + (s.time ? " at " + s.time : "");
+      var checkLabel = !can ? desc + ". " + (st === "upcoming" ? "Upcoming, can’t be marked yet" : label + ", locked") :
+        st === "unmarked" ? "Mark “" + s.activity + "” on " + fmt(d, SHORT) + " done" : "“" + s.activity + "” is " + label.toLowerCase() + ". Clear the mark";
+      return '<article class="plan-card is-session' + (st === "done" || st === "skipped" ? " is-closed" : "") + '" data-session="' + s.id + "|" + d + '">' +
+        '<div class="plan-grid">' +
+          '<button type="button" data-scheck class="a-check ' + CHECK + '" aria-pressed="' + String(st === "done" || st === "skipped") + '" aria-label="' + esc(checkLabel) + '"' + (can ? "" : ' aria-disabled="true"') + ">" +
+            '<svg class="icon size-3.5" aria-hidden="true"><use href="#' + (st === "done" ? "i-check" : st === "skipped" ? "i-x" : "i-circle") + '"/></svg></button>' +
+          '<p class="plan-title a-title flex items-start gap-1 text-sm font-medium break-words"><svg class="icon mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true"><use href="#i-repeat"/></svg><span><span class="sr-only">Session: </span>' + esc(s.activity) + "</span></p>" +
+          '<p class="a-meta mt-0.5 font-mono text-xs text-muted-foreground">' + s.dur + " min" + (s.time ? " · " + s.time : "") + (label ? " · " + label : "") +
+            ' · <a href="#project" class="break-words underline-offset-4 hover:underline">' + esc(s.project) + "</a></p>" +
+          (can ? '<button type="button" data-more="session" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for session “' + esc(s.activity) + '”" class="a-more ' + MORE + ' lg:size-7"><svg class="icon size-5" aria-hidden="true"><use href="#i-more"/></svg></button>' : "") +
+        "</div></article>";
+    }
+
+    // ---------------- Plan view (FIN-043) ----------------
+    // FIN-013 / A33: the due-for-revisit count moved here from the retired Today tab. Fixture: one parked task due.
+    var REVISIT_DUE = 1;
+    function revisitHtml() {
+      if (week !== THIS_MON || !REVISIT_DUE) return "";
+      return '<p class="mb-3 flex flex-wrap items-center gap-x-2 text-sm"><svg class="icon size-4 text-muted-foreground" aria-hidden="true"><use href="#i-flag"/></svg>' +
+        REVISIT_DUE + (REVISIT_DUE === 1 ? " parked item is" : " parked items are") + ' due for revisit · <a href="task-list.html" class="font-medium text-accent-foreground underline underline-offset-4">Review parked</a></p>';
+    }
+    function carriedHtml() {
+      var ids = carriedIds();
+      if (week !== THIS_MON || !ids.length) return "";
+      return '<section id="carried" class="mb-5 rounded-2xl border border-destructive/40 bg-card p-4 text-card-foreground sm:p-5" aria-labelledby="carried-h">' +
+        '<div class="flex flex-wrap items-center justify-between gap-3">' +
+          '<div><h3 id="carried-h" tabindex="-1" class="font-heading text-lg font-medium outline-none">' + ids.length + (ids.length === 1 ? " task" : " tasks") + " carried over</h3>" +
+          '<p class="text-sm text-muted-foreground">Due earlier and still open. Give each a new day, or let it go.</p></div>' +
+          '<div class="flex flex-wrap gap-2">' +
+            '<button type="button" data-bulk="today" class="inline-flex min-h-11 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">Move all to today</button>' +
+            '<button type="button" data-bulk="nextweek" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent hover:text-accent-foreground">Move all to next week</button>' +
+          "</div></div>" +
+        '<ul class="mt-3 divide-y divide-border">' + ids.map(function (id) {
+          var t = tasks[id], dueTxt = inWeek(t.due, THIS_MON) ? fmt(t.due, DAY) : fmt(t.due, LONG);
+          return '<li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2" data-task="' + id + '">' +
+            '<button type="button" data-check class="' + CHECK + '" aria-pressed="false" aria-label="Mark “' + esc(t.title) + '” done"><svg class="icon size-3.5" aria-hidden="true"><use href="#i-circle"/></svg></button>' +
+            '<div class="min-w-0 flex-1 basis-48"><a href="#task=' + id + '" data-title class="text-sm font-medium break-words underline-offset-4 hover:underline">' + esc(t.title) + "</a>" +
+            '<p class="font-mono text-xs text-destructive">Due <time datetime="' + t.due + '">' + dueTxt + "</time>" + (t.project ? '<span class="text-muted-foreground"> · ' + esc(t.project) + "</span>" : "") + "</p></div>" +
+            '<div class="ml-10 flex items-center gap-1 sm:ml-0">' +
+              '<button type="button" data-quick="today" class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground hover:bg-accent sm:min-h-9" aria-label="Move “' + esc(t.title) + '” to today">Today</button>' +
+              '<button type="button" data-quick="nextweek" class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground hover:bg-accent sm:min-h-9" aria-label="Move “' + esc(t.title) + '” to next week, ' + fmt(addDays(THIS_MON, 7), SHORT) + '">Next week</button>' +
+              '<button type="button" data-more="carried" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for “' + esc(t.title) + '”" class="' + MORE + '"><svg class="icon size-5" aria-hidden="true"><use href="#i-more"/></svg></button>' +
+            "</div></li>";
+        }).join("") + "</ul></section>";
+    }
+    function stripHtml(ds) {
+      return '<div class="day-strip mb-4" role="group" aria-label="Choose a day">' + ds.map(function (d) {
+        var n = toDoCount(d), wd = fmt(d, { weekday: "short" });
+        return '<button type="button" class="day-pill" data-pick="' + d + '" aria-pressed="' + String(d === selectedDay) + '"' + (d === TODAY ? " data-today" : "") + (d < TODAY ? " data-past" : "") +
+          ' aria-label="' + fmt(d, SHORT) + (d === TODAY ? ", today" : "") + ", " + n + ' to do">' +
+          '<span aria-hidden="true">' + (d === TODAY ? "Today" : wd) + '</span><span class="day-pill-date" aria-hidden="true">' + Number(d.slice(8)) + '</span>' +
+          '<span class="day-pill-count" aria-hidden="true">' + (n ? n : "") + "</span></button>";
+      }).join("") + "</div>";
+    }
+    function addButton(d, label) {
+      return '<button type="button" data-add="' + (d || "") + '" class="mt-1 inline-flex min-h-11 w-full items-center gap-2 rounded-lg px-2 text-sm text-muted-foreground hover:bg-card hover:text-foreground lg:min-h-9">' +
+        '<svg class="icon size-4" aria-hidden="true"><use href="#i-plus"/></svg>' + label + "</button>";
+    }
+    // Decision 39: timed sessions and tasks together by time (session first on a tie, then the user's task order),
+    // then untimed sessions, then untimed tasks in the user's order.
+    function dayItems(d) {
+      var items = [];
+      sessionsOn(d).forEach(function (s) { items.push({ time: s.time, session: true, i: -1, html: sessionCard(s, d) }); });
+      openOn(d).forEach(function (id, i) { items.push({ time: tasks[id].time, session: false, i: i, html: taskCard(id) }); });
+      var timed = items.filter(function (x) { return x.time; }).sort(function (a, b) {
+        if (a.time !== b.time) return a.time < b.time ? -1 : 1;
+        if (a.session !== b.session) return a.session ? -1 : 1;
+        return a.i - b.i;
+      });
+      var rest = items.filter(function (x) { return !x.time; });
+      return timed.concat(rest.filter(function (x) { return x.session; }), rest.filter(function (x) { return !x.session; }))
+        .map(function (x) { return x.html; }).join("");
+    }
+    function dayCol(d) {
+      var closed = showDone ? closedOn(d) : [], past = d < TODAY;
+      var body = dayItems(d) + closed.map(taskCard).join("");
+      if (!body) body = '<p class="px-1 py-2 text-sm text-muted-foreground">Nothing planned</p>';
+      var n = toDoCount(d);
+      return '<section class="week-col' + (d === selectedDay ? " is-selected" : "") + '" data-day="' + d + '" data-col="' + d + '"' + (d === TODAY ? " data-today" : "") + (past ? " data-past" : "") + ' aria-labelledby="h-' + d + '">' +
+        '<header class="week-col-head flex flex-wrap items-baseline justify-between gap-x-2 px-1 pb-2">' +
+          '<h3 id="h-' + d + '" tabindex="-1" class="font-heading text-lg font-medium outline-none lg:font-sans lg:text-sm lg:font-semibold">' +
+            '<span class="lg:hidden">' + fmt(d, SHORT) + '</span><span class="hidden lg:inline">' + fmt(d, DAY) + "</span>" +
+            (d === TODAY ? ' <span class="ml-1 rounded-full bg-primary px-2 py-0.5 align-middle font-sans text-[0.6875rem] font-semibold text-primary-foreground">Today</span>' : "") + "</h3>" +
+          '<span class="font-mono text-xs text-muted-foreground">' + (n ? n + " to do" : past ? "Past" : "") + "</span>" +
+        "</header>" +
+        '<p class="drop-label mb-2 rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">Plan for ' + fmt(d, SHORT) + "</p>" +
+        '<div class="week-col-body">' + body + "</div>" +
+        (past ? "" : addButton(d, "Add")) +
+      "</section>";
+    }
+    function unplannedCol() {
+      var ids = unplannedIds();
+      return '<section class="week-col" data-col="unplanned" aria-labelledby="h-unplanned">' +
+        '<header class="flex items-center justify-between gap-2 px-1 pb-2">' +
+          '<h3 id="h-unplanned" tabindex="-1" class="unplanned-full flex items-center gap-2 font-heading text-lg font-medium outline-none lg:font-sans lg:text-sm lg:font-semibold">' +
+            '<svg class="icon size-4 text-muted-foreground" aria-hidden="true"><use href="#i-inbox"/></svg>Unplanned <span class="font-mono text-xs font-normal text-muted-foreground">' + ids.length + '<span class="sr-only"> tasks</span></span></h3>' +
+          '<button type="button" id="unplanned-toggle" class="hidden size-9 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent lg:grid" aria-expanded="' + String(!unplannedCollapsed) + '" aria-label="' + (unplannedCollapsed ? "Show" : "Hide") + ' Unplanned (' + ids.length + ' tasks)"><svg class="icon size-4" aria-hidden="true"><use href="#i-panel-left"/></svg></button>' +
+        "</header>" +
+        '<p class="unplanned-rail-label" aria-hidden="true">Unplanned · ' + ids.length + "</p>" +
+        '<p class="drop-label mb-2 rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">Remove the day</p>' +
+        '<div class="week-col-body">' + (ids.length ? ids.map(taskCard).join("") : '<p class="px-1 py-2 text-sm text-muted-foreground">Every open task has a day.</p>') + "</div>" +
+        '<div class="unplanned-full">' + addButton(null, "Add unplanned task") + "</div>" +
+      "</section>";
+    }
+    function renderPlan() {
+      var ds = days(week);
+      if (!selectedDay || !inWeek(selectedDay, week)) selectedDay = week === THIS_MON ? TODAY : week;
+      var empty = !unplannedIds().length && ds.every(function (d) { return !sessionsOn(d).length && !openOn(d).length && !closedOn(d).length; });
+      viewEl.innerHTML = revisitHtml() + carriedHtml() +
+        (empty ? '<div class="mb-4 rounded-2xl border border-border bg-card p-6 text-center"><p class="font-heading text-xl font-medium">Nothing planned for this week</p><p class="mt-1 text-sm text-muted-foreground">Add a task, or move one here from another week.</p></div>' : "") +
+        stripHtml(ds) +
+        '<p id="move-help" class="sr-only">Press Space or Enter to pick up. Use the left and right arrow keys to choose a day. Press Space or Enter to drop, or Escape to cancel.</p>' +
+        '<div class="week-scroll" id="week-scroll"><div class="week-board" id="board" data-unplanned="' + (unplannedCollapsed ? "collapsed" : "expanded") + '">' +
+          unplannedCol() + ds.map(dayCol).join("") +
+        "</div></div>";
+      // Phone: the selected day's column is the visible list; scroll today's column into view on laptop.
+    }
+
+    // ---------------- Review view (FIN-047) ----------------
+    function hm(min) { var h = Math.floor(min / 60), m = min % 60; return h ? h + " h" + (m ? " " + m + " min" : "") : m + " min"; }
+    // Decision 38: Pomodoros per day, as text. Future days show a dash.
+    function pomodoroHtml(card, total) {
+      return '<section class="' + card + '" aria-labelledby="rv-pomo">' +
+        '<h3 id="rv-pomo" class="font-heading text-lg font-medium">Pomodoros by day</h3>' +
+        '<ul class="mt-2 divide-y divide-border">' + days(week).map(function (d) {
+          var n = pomos[d] || 0, future = d > TODAY;
+          return '<li class="flex items-baseline justify-between gap-3 py-1.5 text-sm">' +
+            '<span class="' + (d === TODAY ? "font-semibold" : "") + '">' + fmt(d, DAY) + (d === TODAY ? " · Today" : "") + "</span>" +
+            (future ? '<span class="font-mono text-muted-foreground"><span aria-hidden="true">–</span><span class="sr-only">not yet</span></span>'
+              : '<span class="font-mono"><span class="font-semibold">' + n + '</span> <span class="text-muted-foreground">' + (n === 1 ? "Pomodoro" : "Pomodoros") + " · " + n * 25 + " min</span></span>") +
+            "</li>";
+        }).join("") + "</ul>" +
+        '<p class="mt-2 border-t border-border pt-2 font-mono text-[0.8125rem]"><span class="font-semibold">' + total + "</span> Pomodoros this week · " + hm(total * 25) + "</p>" +
+      "</section>";
+    }
+    // Decision 37: one plain-text note per week (A30: 2000 characters).
+    function noteHtml(card) {
+      var saved = notes[week] || "", text = noteDraft !== null ? noteDraft : saved;
+      return '<section class="' + card + '">' +
+        '<label for="note-text" class="font-heading text-lg font-medium">Notes on this week</label>' +
+        '<p id="note-hint" class="text-sm text-muted-foreground">What went well, and what to change next week.</p>' +
+        '<textarea id="note-text" rows="6" maxlength="2000" aria-describedby="note-hint note-count" class="mt-2 w-full resize-y rounded-xl border border-input bg-card p-3 text-base sm:text-sm">' + esc(text) + "</textarea>" +
+        '<div class="mt-2 flex flex-wrap items-center justify-between gap-3">' +
+          '<p id="note-count" class="font-mono text-xs text-muted-foreground">' + text.length + " / 2000</p>" +
+          '<div class="flex items-center gap-3"><p id="note-status" class="text-sm text-muted-foreground" role="status"></p>' +
+          '<button type="button" id="note-save" class="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50 sm:min-h-10"' + (text === saved ? " disabled" : "") + ">Save note</button></div>" +
+        "</div></section>";
+    }
+    function noteDirty() { return noteDraft !== null && noteDraft !== (notes[week] || ""); }
+    function confirmLeaveNote() {
+      if (!noteDirty()) { noteDraft = null; return true; }
+      // Prototype: native confirm. Production: AlertDialog with Keep editing focused first.
+      if (!window.confirm("Discard your changes to this week’s note?")) return false;
+      noteDraft = null;
+      return true;
+    }
+    function renderReview() {
+      var sun = addDays(week, 6);
+      var closedIn = Object.keys(tasks).filter(function (id) { return tasks[id].closed && inWeek(tasks[id].closed, week); });
+      var done = closedIn.filter(function (id) { return tasks[id].status === "done" || tasks[id].status === "delegated"; });
+      var letGo = closedIn.filter(function (id) { return tasks[id].status === "let_go"; });
+      var slipped = order.filter(function (id) { var t = tasks[id]; return isOpen(t) && inWeek(t.due, week) && (sun < TODAY || overdue(t)); });
+      var st = sessionTotals(week);
+      var delegated = done.filter(function (id) { return tasks[id].status === "delegated"; }).length;
+      var chip = function (n, label) { return '<li class="rounded-full border border-border bg-card px-3 py-1"><span class="font-semibold">' + n + "</span> " + label + "</li>"; };
+      var card = "rounded-2xl border border-border bg-card p-4 text-card-foreground sm:p-5";
+      var pomTotal = days(week).reduce(function (n, d) { return n + (d <= TODAY ? pomos[d] || 0 : 0); }, 0);
+      if (!done.length && !letGo.length && !slipped.length && !st.scheduled && !pomTotal) {
+        viewEl.innerHTML = '<div class="rounded-2xl border border-border bg-card p-8 text-center"><p class="font-heading text-xl font-medium">Nothing happened in Finisher this week</p>' +
+          '<button type="button" data-view="plan" class="mt-3 inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground underline underline-offset-4">Open the Plan view</button></div>' +
+          '<div class="mt-4">' + noteHtml(card) + "</div>";
+        return;
+      }
+      var byDay = {};
+      done.forEach(function (id) { (byDay[tasks[id].closed] = byDay[tasks[id].closed] || []).push(id); });
+      viewEl.innerHTML =
+        '<ul class="flex flex-wrap gap-2 text-sm" aria-label="Week summary">' +
+          chip(done.length - delegated, "done") + chip(delegated, "delegated") + chip(letGo.length, "let go") + chip(slipped.length, "slipped") +
+          '<li class="rounded-full border border-border bg-card px-3 py-1">' + (st.scheduled ? 'Sessions <span class="font-semibold">' + st.done + " of " + st.scheduled + "</span> done" : "No sessions scheduled") + "</li>" +
+        "</ul>" +
+        '<div class="mt-5 grid gap-4 lg:grid-cols-2">' +
+          // Slipped first: it is the one with actions.
+          '<section class="' + card + '" aria-labelledby="rv-slipped">' +
+            '<div class="flex flex-wrap items-center justify-between gap-2"><h3 id="rv-slipped" class="font-heading text-lg font-medium">Slipped <span class="font-mono text-xs text-muted-foreground">' + slipped.length + "</span></h3>" +
+            (slipped.length ? '<button type="button" data-bulk="nextweek-slipped" class="inline-flex min-h-11 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium shadow-[var(--elev-ring)] hover:bg-accent sm:min-h-9">Move all to next week</button>' : "") + "</div>" +
+            (slipped.length ? '<ul class="mt-2 divide-y divide-border">' + slipped.map(function (id) {
+              var t = tasks[id];
+              return '<li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2" data-task="' + id + '"><div class="min-w-0 flex-1 basis-48"><a href="#task=' + id + '" class="text-sm font-medium break-words underline-offset-4 hover:underline">' + esc(t.title) + "</a>" +
+                '<p class="font-mono text-xs text-destructive">Was due ' + fmt(t.due, DAY) + (t.time ? " " + t.time : "") + "</p></div>" +
+                '<div class="flex gap-1"><button type="button" data-movedlg class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground hover:bg-accent sm:min-h-9">Move to day…</button>' +
+                '<button type="button" data-quick="nextweek" class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-accent-foreground hover:bg-accent sm:min-h-9">Next week</button></div></li>';
+            }).join("") + "</ul>" : '<p class="mt-2 text-sm text-muted-foreground">Nothing slipped this week.</p>') +
+          "</section>" +
+          '<section class="' + card + '" aria-labelledby="rv-done">' +
+            '<h3 id="rv-done" class="font-heading text-lg font-medium">Done this week <span class="font-mono text-xs text-muted-foreground">' + done.length + "</span></h3>" +
+            (done.length ? Object.keys(byDay).sort().map(function (d) {
+              return '<h4 class="mt-3 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">' + fmt(d, DAY) + '</h4><ul class="mt-1 space-y-1">' + byDay[d].map(function (id) {
+                var t = tasks[id];
+                return '<li class="flex items-start gap-2 text-sm"><svg class="icon mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true"><use href="#i-check"/></svg><span class="min-w-0 break-words">' + esc(t.title) +
+                  (t.status === "delegated" ? ' <span class="rounded-full bg-secondary px-2 text-xs text-secondary-foreground">Delegated to ' + esc(t.delegatedTo) + "</span>" : "") + "</span></li>";
+              }).join("") + "</ul>";
+            }).join("") : '<p class="mt-2 text-sm text-muted-foreground">No tasks finished this week.</p>') +
+          "</section>" +
+          '<section class="' + card + '" aria-labelledby="rv-projects">' +
+            '<h3 id="rv-projects" class="font-heading text-lg font-medium">Projects</h3>' +
+            (st.scheduled ? '<ul class="mt-2 divide-y divide-border">' + Object.keys(st.byProject).map(function (p) {
+              var r = st.byProject[p];
+              return '<li class="py-2"><p class="text-sm font-medium">' + esc(p) + '</p><p class="font-mono text-xs text-muted-foreground">' + r.done + " of " + r.scheduled + " sessions · " + r.skipped + " skipped · " + r.missed + " missed" + (r.remaining ? " · " + r.remaining + " not marked yet" : "") + "</p></li>";
+            }).join("") + "</ul>" : '<p class="mt-2 text-sm text-muted-foreground">No sessions scheduled.</p>') +
+          "</section>" +
+          '<section class="' + card + '" aria-labelledby="rv-letgo">' +
+            '<details><summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden"><svg class="icon size-4" aria-hidden="true"><use href="#i-chevron-down"/></svg><h3 id="rv-letgo" class="font-heading text-lg font-medium">Let go this week <span class="font-mono text-xs text-muted-foreground">' + letGo.length + "</span></h3></summary>" +
+            (letGo.length ? '<ul class="mt-1 space-y-2">' + letGo.map(function (id) { return '<li class="text-sm"><p class="font-medium break-words">' + esc(tasks[id].title) + '</p><p class="text-muted-foreground">' + esc(tasks[id].reason) + "</p></li>"; }).join("") + "</ul>" : '<p class="text-sm text-muted-foreground">Nothing let go.</p>') +
+            "</details></section>" +
+        "</div>" +
+        '<div class="mt-4 grid gap-4 lg:grid-cols-2">' + pomodoroHtml(card, pomTotal) + noteHtml(card) + "</div>" +
+        '<div class="mt-6"><button type="button" id="plan-next" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover">Plan next week<svg class="icon size-4" aria-hidden="true"><use href="#i-chevron-right"/></svg></button></div>';
+    }
+
+    function render() {
+      renderHeader();
+      if (state === "loading") {
+        viewEl.innerHTML = '<p class="sr-only">Loading the week…</p><div class="grid gap-2 lg:grid-cols-8" aria-hidden="true">' +
+          Array.from({ length: 8 }, function () { return '<div class="space-y-2 rounded-xl border border-border p-2"><span class="skeleton block h-4 w-2/3"></span><span class="skeleton block h-16 w-full"></span><span class="skeleton block h-16 w-full"></span></div>'; }).join("") + "</div>";
+      } else if (state === "error") {
+        viewEl.innerHTML = '<div role="alert" class="flex flex-wrap items-center gap-3 rounded-2xl border border-destructive/40 bg-card p-5"><svg class="icon size-5 text-destructive" aria-hidden="true"><use href="#i-alert"/></svg>' +
+          '<p class="flex-1 text-sm">Couldn’t load this week. Check your connection and try again.</p>' +
+          '<button type="button" id="retry" class="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium hover:bg-accent"><svg class="icon size-4" aria-hidden="true"><use href="#i-refresh"/></svg>Retry</button></div>';
+      } else if (view === "review") renderReview();
+      else renderPlan();
+      document.getElementById("tasks-count").textContent = order.filter(function (id) { return isOpen(tasks[id]); }).length;
+    }
+
+    // ---------------- URL state (A21) ----------------
+    function writeUrl(push) {
+      var h = "#week=" + week + "&view=" + view;
+      if (push) history.pushState(null, "", h); else history.replaceState(null, "", h);
+    }
+    function readUrl() {
+      var w = (location.hash.match(/week=(\d{4}-\d{2}-\d{2})/) || [])[1];
+      var v = (location.hash.match(/view=(plan|review)/) || [])[1];
+      var ok = w && !isNaN(parse(w)) && isoOf(parse(w)) === w && mondayOf(w) === w && w >= MIN_MON && w <= MAX_MON;
+      week = ok ? w : THIS_MON;
+      view = v === "review" && week <= THIS_MON ? "review" : "plan";
+      selectedDay = null;
+    }
+    function goWeek(mon, focusRange) {
+      if (!confirmLeaveNote()) return;
+      week = mon;
+      if (week > THIS_MON) view = "plan";
+      selectedDay = null;
+      writeUrl(true);
+      render();
+      announce(rangeText(week) + (weekLabel(week) ? ", " + weekLabel(week).toLowerCase() : ""));
+      if (focusRange) document.getElementById("wk-range").focus();
+    }
+    window.addEventListener("popstate", function () { readUrl(); render(); });
+
+    // ---------------- Moving tasks (FIN-044, FIN-046) ----------------
+    function toBottom(id) { order = order.filter(function (x) { return x !== id; }).concat(id); }
+    function applyMove(t, date) {
+      t.due = date;
+      if (!date) t.time = null; // A26
+      else if (date === TODAY && t.time && t.time <= NOW) t.time = null; // as A14
+    }
+    function movedText(date) { return date ? "Moved to " + fmt(date, SHORT) + (inWeek(date, week) ? "" : " " + date.slice(0, 4)) : "Moved to Unplanned"; }
+    function moveTask(id, date, focus) {
+      var t = tasks[id], before = { due: t.due, time: t.time, index: order.indexOf(id) };
+      applyMove(t, date);
+      toBottom(id); // FIN-038: a date change puts the task at the bottom of its new day
+      render(); // phone: the day strip stays on the day the user was looking at
+
+      restoreFocus(id, focus);
+      var msg = movedText(date);
+      announce(msg);
+      toast(msg, { action: { label: "Undo", run: function () { t.due = before.due; t.time = before.time; render(); restoreFocus(id, "title"); announce("Move undone"); } } });
+      save(function () {
+        t.due = before.due; t.time = before.time;
+        order = order.filter(function (x) { return x !== id; });
+        order.splice(Math.min(before.index, order.length), 0, id);
+        render();
+        toast("Couldn’t move “" + t.title + "”. It keeps " + (before.due ? fmt(before.due, LONG) : "no date") + ".", { error: true });
+      });
+    }
+    function moveAll(ids, date, label) {
+      var before = ids.map(function (id) { return { id: id, due: tasks[id].due, time: tasks[id].time }; });
+      ids.forEach(function (id) { applyMove(tasks[id], date); toBottom(id); });
+      var failed = save(function () {}) ? ids[ids.length - 1] : null; // prototype: one task fails
+      if (failed) { var b = before[before.length - 1]; tasks[failed].due = b.due; tasks[failed].time = b.time; }
+      render();
+      var n = failed ? ids.length - 1 : ids.length;
+      var msg = n + (n === 1 ? " task" : " tasks") + " moved to " + label + (failed ? ". 1 couldn’t be moved and is still carried over." : "");
+      announce(msg);
+      toast(msg, { error: !!failed, action: { label: "Undo", run: function () {
+        before.forEach(function (b) { tasks[b.id].due = b.due; tasks[b.id].time = b.time; });
+        render(); announce("Move undone");
+      } } });
+      var h = document.getElementById("carried-h") || document.getElementById("wk-range");
+      h.focus();
+    }
+    function restoreFocus(id, focus) {
+      var card = document.querySelector('#view [data-task="' + id + '"]');
+      var sel = focus === "handle" ? "[data-handle]" : focus === "more" ? "[data-more]" : "[data-title]";
+      var el = card && card.querySelector(sel);
+      if (el && el.offsetParent !== null) el.focus();
+      else document.getElementById("wk-range").focus();
+    }
+
+    // ---------------- Move to day dialog (FIN-044) ----------------
+    var moveDlg = document.getElementById("move-dialog");
+    var moveFor = null; // { id, mon, opener }
+    function openMoveDialog(id, opener) {
+      closeMenu(false);
+      moveFor = { id: id, mon: tasks[id].due && tasks[id].due >= TODAY ? mondayOf(tasks[id].due) : (week < THIS_MON ? THIS_MON : week), opener: opener };
+      document.getElementById("move-task").textContent = "“" + tasks[id].title + "”";
+      renderMoveOptions();
+      moveDlg.showModal();
+      var first = moveDlg.querySelector("#move-options .move-option:not([aria-disabled])");
+      (first || document.getElementById("move-unplan")).focus();
+    }
+    function renderMoveOptions() {
+      var t = tasks[moveFor.id];
+      document.getElementById("move-range").textContent = rangeText(moveFor.mon) + (weekLabel(moveFor.mon) ? " · " + weekLabel(moveFor.mon) : "");
+      document.getElementById("move-prev").setAttribute("aria-label", "Previous week, " + rangeText(addDays(moveFor.mon, -7)));
+      document.getElementById("move-next").setAttribute("aria-label", "Next week, " + rangeText(addDays(moveFor.mon, 7)));
+      document.getElementById("move-prev").disabled = moveFor.mon <= THIS_MON; // A25: no past weeks
+      document.getElementById("move-options").innerHTML = days(moveFor.mon).map(function (d) {
+        var current = d === t.due, past = d < TODAY;
+        var cap = current ? "current" : past ? "past" : d === TODAY ? "Today" : "";
+        return '<button type="button" class="move-option" data-to="' + d + '"' + (current || past ? ' aria-disabled="true"' : "") +
+          ' aria-label="' + fmt(d, SHORT) + (d === TODAY ? ", today" : "") + (current ? ", current day" : "") + (past ? ", past" : "") + '">' +
+          "<span>" + fmt(d, SHORT) + '</span><span class="font-mono text-xs text-muted-foreground">' + cap + "</span></button>";
+      }).join("");
+      var un = document.getElementById("move-unplan");
+      if (t.due) un.removeAttribute("aria-disabled"); else un.setAttribute("aria-disabled", "true");
+    }
+    document.getElementById("move-prev").addEventListener("click", function () { moveFor.mon = addDays(moveFor.mon, -7); renderMoveOptions(); });
+    document.getElementById("move-next").addEventListener("click", function () { moveFor.mon = addDays(moveFor.mon, 7); renderMoveOptions(); });
+    function chooseMove(date) {
+      var id = moveFor.id;
+      moveFor.opener = null;
+      moveDlg.close();
+      moveTask(id, date, "more");
+    }
+    document.getElementById("move-options").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-to]");
+      if (b && !b.hasAttribute("aria-disabled")) chooseMove(b.getAttribute("data-to"));
+    });
+    document.getElementById("move-unplan").addEventListener("click", function (e) { if (!e.currentTarget.hasAttribute("aria-disabled")) chooseMove(null); });
+    moveDlg.querySelector("[data-move-cancel]").addEventListener("click", function () { moveDlg.close(); });
+    moveDlg.addEventListener("close", function () {
+      if (moveFor && moveFor.opener && document.body.contains(moveFor.opener)) moveFor.opener.focus();
+      moveFor = null;
+    });
+    moveDlg.addEventListener("click", function (e) { if (e.target === moveDlg) moveDlg.close(); }); // backdrop
+
+    // ---------------- Item menu ----------------
+    var menu = document.getElementById("row-menu");
+    var menuTrigger = null, menuList = [];
+    function quickDate(kind) { return kind === "today" ? TODAY : kind === "tomorrow" ? addDays(TODAY, 1) : addDays(THIS_MON, 7); }
+    function taskMenu(id, kind) {
+      var t = tasks[id], items = [];
+      if (!isOpen(t)) {
+        return [{ label: "Reopen", run: function () { setDone(id, false); } }, { sep: true }, { label: "Delete", destructive: true, run: function () { deleteTask(id); } }];
+      }
+      items.push({ heading: "Due" });
+      [["today", "Today"], ["tomorrow", "Tomorrow"], ["nextweek", "Next week"]].forEach(function (q) {
+        var d = quickDate(q[0]);
+        var passedToday = q[0] === "today" && t.due === TODAY && t.time && t.time <= NOW; // decision 22
+        var current = t.due === d && !passedToday;
+        items.push({ label: q[1], caption: fmt(d, SHORT) + (current ? " · current" : ""), disabled: current,
+          aria: "Set due date to " + q[1].toLowerCase() + ", " + fmt(d, SHORT) + (current ? " (current due date)" : ""),
+          run: function () { moveTask(id, d, "more"); } });
+      });
+      items.push({ label: "Move to day…", run: function () { openMoveDialog(id, menuTrigger); } });
+      // FIN-048: only for a task on today or a later day.
+      if (t.due && t.due >= TODAY) items.push({ label: "Set time…", caption: t.time || "no time", run: function () { openTimeDialog(id, menuTrigger); } });
+      if (t.due && kind === "carried") items.push({ label: "Unplan", caption: "remove the day", run: function () { moveTask(id, null, "more"); } });
+      items.push({ sep: true });
+      ["Edit", "Delegate…", "Park", "Let go"].forEach(function (l) { items.push({ label: l, run: function () { toast("Opens the " + l.replace("…", "") + " dialog, as on the Tasks tab."); } }); });
+      items.push({ sep: true }, { label: "Delete", destructive: true, run: function () { deleteTask(id); } });
+      return items;
+    }
+    function sessionMenu(key) {
+      var p = key.split("|"), st = marks[key];
+      var items = [];
+      if (st !== "done") items.push({ label: "Mark done", run: function () { markSession(key, "done"); } });
+      if (st !== "skipped") items.push({ label: "Mark skipped", run: function () { markSession(key, "skipped"); } });
+      if (st) items.push({ label: "Clear mark", run: function () { markSession(key, null); } });
+      items.push({ sep: true }, { label: "Open project", run: function () { toast("Opens the project page."); } });
+      return items;
+    }
+    function openMenu(trigger, items, name) {
+      closeMenu(false);
+      menuTrigger = trigger;
+      menuList = items;
+      trigger.setAttribute("aria-expanded", "true");
+      menu.setAttribute("aria-label", "Actions for “" + name + "”");
+      menu.innerHTML = items.map(function (it, i) {
+        if (it.sep) return '<div role="separator" class="my-1 h-px bg-border"></div>';
+        if (it.heading) return '<p role="presentation" class="px-3 pt-2 pb-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">' + it.heading + "</p>";
+        return '<button type="button" role="menuitem" tabindex="-1" data-i="' + i + '" class="menu-item' + (it.destructive ? " text-destructive" : "") + '"' +
+          (it.disabled ? ' aria-disabled="true"' : "") + (it.aria ? ' aria-label="' + esc(it.aria) + '"' : "") + ">" +
+          "<span>" + it.label + "</span>" + (it.caption ? '<span class="font-mono text-xs text-muted-foreground">' + esc(it.caption) + "</span>" : "") + "</button>";
+      }).join("");
+      menu.hidden = false;
+      menu.style.maxHeight = "";
+      var r = trigger.getBoundingClientRect(), w = menu.offsetWidth, h = menu.offsetHeight;
+      var below = window.innerHeight - r.bottom - 12, above = r.top - 12;
+      var left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)), top;
+      if (h <= below || below >= above) { top = r.bottom + 4; if (h > below) menu.style.maxHeight = below + "px"; }
+      else { top = r.top - Math.min(h, above) - 4; if (h > above) menu.style.maxHeight = above + "px"; }
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
+      var first = enabledItems()[0];
+      if (first) first.focus();
+    }
+    function enabledItems() { return Array.prototype.filter.call(menu.querySelectorAll("[role=menuitem]"), function (b) { return !b.hasAttribute("aria-disabled"); }); }
+    function closeMenu(returnFocus) {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      menu.innerHTML = "";
+      if (menuTrigger) { menuTrigger.setAttribute("aria-expanded", "false"); if (returnFocus && document.body.contains(menuTrigger)) menuTrigger.focus(); }
+    }
+    menu.addEventListener("click", function (e) {
+      var b = e.target.closest("[role=menuitem]");
+      if (!b || b.hasAttribute("aria-disabled")) return;
+      var it = menuList[Number(b.getAttribute("data-i"))];
+      closeMenu(false);
+      it.run();
+    });
+    menu.addEventListener("keydown", function (e) {
+      var items = enabledItems(), i = items.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      else if (e.key === "Home") { e.preventDefault(); items[0].focus(); }
+      else if (e.key === "End") { e.preventDefault(); items[items.length - 1].focus(); }
+      else if (e.key === "Escape" || e.key === "Tab") { e.preventDefault(); closeMenu(true); }
+    });
+    document.addEventListener("pointerdown", function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && !(menuTrigger && menuTrigger.contains(e.target))) closeMenu(false);
+    });
+    var lastWidth = window.innerWidth;
+    window.addEventListener("resize", function () { if (window.innerWidth !== lastWidth) { lastWidth = window.innerWidth; closeMenu(false); } });
+    desktop.addEventListener("change", function () { cancelKb(); render(); });
+
+    // ---------------- Task and session actions ----------------
+    function setDone(id, done) {
+      var t = tasks[id], prev = t.status;
+      t.status = done ? "done" : "open";
+      if (done) t.closed = TODAY; else { delete t.closed; toBottom(id); }
+      render();
+      restoreFocus(id, "title");
+      if (done) toast("Done: “" + t.title + "”", { action: { label: "Undo", run: function () { t.status = prev; delete t.closed; render(); restoreFocus(id, "title"); } } });
+      save(function () { t.status = prev; render(); toast("Couldn’t save. “" + t.title + "” is back as it was.", { error: true }); });
+    }
+    function deleteTask(id) {
+      var title = tasks[id].title;
+      delete tasks[id];
+      order = order.filter(function (x) { return x !== id; });
+      render();
+      document.getElementById("wk-range").focus();
+      toast("Deleted “" + title + "” (prototype skips the confirmation dialog).");
+    }
+    function markSession(key, next) {
+      var prev = marks[key];
+      if (next) marks[key] = next; else delete marks[key];
+      render();
+      var btn = document.querySelector('[data-session="' + key + '"] [data-scheck]');
+      if (btn) btn.focus();
+      announce(next ? "Session marked " + next : "Session mark cleared");
+      save(function () { if (prev) marks[key] = prev; else delete marks[key]; render(); toast("Couldn’t save the session mark. It’s back as it was.", { error: true }); });
+    }
+
+    viewEl.addEventListener("click", function (e) {
+      var el;
+      if ((el = e.target.closest("[data-pick]"))) { selectedDay = el.getAttribute("data-pick"); render(); var p = document.querySelector('[data-pick="' + selectedDay + '"]'); if (p) p.focus(); return; }
+      if (e.target.closest("[data-handle]")) return; // keyboard and pointer handled separately
+      var host = e.target.closest("[data-task]"), id = host && host.getAttribute("data-task");
+      if ((el = e.target.closest("[data-check]")) && id) { setDone(id, !isOpen(tasks[id])); return; }
+      if ((el = e.target.closest("[data-scheck]"))) {
+        if (el.hasAttribute("aria-disabled")) return;
+        var key = el.closest("[data-session]").getAttribute("data-session");
+        markSession(key, marks[key] ? null : "done");
+        return;
+      }
+      if ((el = e.target.closest("[data-more]"))) {
+        var kind = el.getAttribute("data-more");
+        if (kind === "session") { var k = el.closest("[data-session]").getAttribute("data-session"); openMenu(el, sessionMenu(k), slots.filter(function (s) { return s.id === k.split("|")[0]; })[0].activity); }
+        else openMenu(el, taskMenu(id, kind), tasks[id].title);
+        return;
+      }
+      if ((el = e.target.closest("[data-quick]")) && id) { moveTask(id, quickDate(el.getAttribute("data-quick")), "title"); return; }
+      if ((el = e.target.closest("[data-movedlg]")) && id) { openMoveDialog(id, el); return; }
+      if ((el = e.target.closest("[data-bulk]"))) {
+        var b = el.getAttribute("data-bulk");
+        if (b === "today") moveAll(carriedIds(), TODAY, "today");
+        else if (b === "nextweek") moveAll(carriedIds(), addDays(THIS_MON, 7), "next week (" + fmt(addDays(THIS_MON, 7), SHORT) + ")");
+        else {
+          var sun = addDays(week, 6);
+          var ids = order.filter(function (x) { var t = tasks[x]; return isOpen(t) && inWeek(t.due, week) && (sun < TODAY || overdue(t)); });
+          var target = addDays(THIS_MON, 7); // always the Monday after today (decision 11), never a past day (A25)
+          moveAll(ids, target, "next week (" + fmt(target, SHORT) + ")");
+        }
+        return;
+      }
+      if ((el = e.target.closest("[data-add]"))) { addTask(el.getAttribute("data-add")); return; }
+      if (e.target.closest("#unplanned-toggle")) { unplannedCollapsed = !unplannedCollapsed; render(); document.getElementById("unplanned-toggle").focus(); return; }
+      if (e.target.closest("#plan-next")) { var nxt = addDays(week, 7); view = "plan"; goWeek(nxt < THIS_MON ? THIS_MON : nxt, true); return; }
+      if (e.target.closest("#retry")) { showLoading(); return; }
+      if ((el = e.target.closest("[data-view]"))) { setView(el.getAttribute("data-view")); return; }
+      // Prototype: in-page links would change the hash (and the week state), so they only explain where they go.
+      if ((el = e.target.closest('a[href^="#task="]'))) {
+        e.preventDefault();
+        toast(desktop.matches ? "Opens the task’s side panel (FIN-036, see task-list.html)." : "Opens the task page (/finisher/tasks/…).");
+      } else if ((el = e.target.closest('a[href="#project"]'))) {
+        e.preventDefault();
+        toast("Opens the project page.");
+      }
+    });
+    // ---------------- Weekly note (FIN-047) ----------------
+    viewEl.addEventListener("input", function (e) {
+      if (e.target.id !== "note-text") return;
+      noteDraft = e.target.value;
+      document.getElementById("note-count").textContent = noteDraft.length + " / 2000";
+      document.getElementById("note-save").disabled = !noteDirty();
+      document.getElementById("note-status").textContent = "";
+    });
+    viewEl.addEventListener("click", function (e) {
+      if (!e.target.closest("#note-save")) return;
+      var btn = document.getElementById("note-save"), status = document.getElementById("note-status");
+      var text = document.getElementById("note-text").value.trim(), forWeek = week;
+      var fail = failToggle.checked;
+      failToggle.checked = false;
+      btn.disabled = true;
+      status.textContent = "Saving…";
+      setTimeout(function () {
+        if (fail) {
+          status.textContent = "";
+          btn.disabled = false;
+          toast("Couldn’t save the note. Your text is still here; try again.", { error: true });
+          return;
+        }
+        if (text) notes[forWeek] = text; else delete notes[forWeek];
+        noteDraft = null;
+        if (forWeek === week && document.getElementById("note-status")) {
+          document.getElementById("note-status").textContent = text ? "Saved" : "Note removed";
+        }
+      }, 500);
+    });
+
+    // ---------------- Set time (FIN-048) ----------------
+    var timeDlg = document.getElementById("time-dialog");
+    var timeFor = null; // { id, opener }
+    function openTimeDialog(id, opener) {
+      closeMenu(false);
+      var t = tasks[id], html = "";
+      timeFor = { id: id, opener: opener };
+      document.getElementById("time-task").textContent = "“" + t.title + "” · " + fmt(t.due, SHORT);
+      for (var h = 6; h <= 21; h++) { // A32
+        var hh = (h < 10 ? "0" : "") + h + ":00";
+        var past = t.due === TODAY && hh <= NOW, current = t.time === hh;
+        html += '<button type="button" class="time-chip" data-time="' + hh + '"' + (past || current ? ' aria-disabled="true"' : "") +
+          ' aria-label="' + hh + ", " + fmt(t.due, SHORT) + (current ? ", current time" : "") + (past ? ", past" : "") + '">' +
+          "<span>" + hh + "</span>" + (past || current ? '<span class="time-chip-cap">' + (current ? "current" : "past") + "</span>" : "") + "</button>";
+      }
+      document.getElementById("time-options").innerHTML = html;
+      document.getElementById("time-input").value = t.time || "";
+      document.getElementById("time-error").hidden = true;
+      var clear = document.getElementById("time-clear");
+      if (t.time) clear.removeAttribute("aria-disabled"); else clear.setAttribute("aria-disabled", "true");
+      timeDlg.showModal();
+      var first = timeDlg.querySelector(".time-chip:not([aria-disabled])");
+      (first || document.getElementById("time-input")).focus();
+    }
+    function chooseTime(time) {
+      var id = timeFor.id;
+      timeFor.opener = null;
+      timeDlg.close();
+      setTime(id, time);
+    }
+    function setTime(id, time) {
+      var t = tasks[id], before = t.time;
+      t.time = time; // the user's task order (FIN-038) is unchanged; only the day's display order follows the time
+      render();
+      restoreFocus(id, "more");
+      var msg = time ? "Set for " + time + " on " + fmt(t.due, SHORT) : "Time cleared";
+      announce(msg);
+      toast(msg, { action: { label: "Undo", run: function () { t.time = before; render(); restoreFocus(id, "more"); announce("Time change undone"); } } });
+      save(function () {
+        t.time = before;
+        render();
+        toast("Couldn’t change the time. “" + t.title + "” keeps " + (before || "no time") + ".", { error: true });
+      });
+    }
+    document.getElementById("time-options").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-time]");
+      if (b && !b.hasAttribute("aria-disabled")) chooseTime(b.getAttribute("data-time"));
+    });
+    document.getElementById("time-other").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = document.getElementById("time-input").value, err = document.getElementById("time-error"), t = tasks[timeFor.id];
+      var problem = !v ? "Enter a time, or choose No time." : (t.due === TODAY && v <= NOW) ? "That time has already passed today." : v === t.time ? "That is already the task’s time." : "";
+      if (problem) { err.textContent = problem; err.hidden = false; document.getElementById("time-input").focus(); return; }
+      chooseTime(v);
+    });
+    document.getElementById("time-clear").addEventListener("click", function (e) { if (!e.currentTarget.hasAttribute("aria-disabled")) chooseTime(null); });
+    timeDlg.querySelector("[data-time-cancel]").addEventListener("click", function () { timeDlg.close(); });
+    timeDlg.addEventListener("close", function () {
+      if (timeFor && timeFor.opener && document.body.contains(timeFor.opener)) timeFor.opener.focus();
+      timeFor = null;
+    });
+    timeDlg.addEventListener("click", function (e) { if (e.target === timeDlg) timeDlg.close(); });
+
+    function addTask(d) {
+      toast(d ? "Opens Add task with the due date set to " + fmt(d, SHORT) + " (index.html#add)." : "Opens Add task with no due date (index.html#add).");
+    }
+    document.querySelector("[data-add]").addEventListener("click", function () { addTask(null); });
+
+    // ---------------- Drag between days (laptop, FIN-044) ----------------
+    function columns() { return Array.prototype.slice.call(document.querySelectorAll("#board .week-col")); }
+    function colTarget(col) { var c = col.getAttribute("data-col"); return c === "unplanned" ? "unplanned" : c; }
+    function markTargets(t, over) {
+      columns().forEach(function (col) {
+        var target = colTarget(col);
+        var ok = canDropOn(t, target);
+        if (target === over && ok) col.setAttribute("data-drop", "over");
+        else if (!ok && target !== (t.due || "unplanned")) col.setAttribute("data-drop", "no");
+        else col.removeAttribute("data-drop");
+      });
+    }
+    function clearTargets() { columns().forEach(function (c) { c.removeAttribute("data-drop"); }); }
+    function targetName(target) { return target === "unplanned" ? "Unplanned" : fmt(target, SHORT); }
+
+    viewEl.addEventListener("pointerdown", function (e) {
+      var h = e.target.closest("[data-handle]");
+      if (!h || h.disabled || !desktop.matches || e.button !== 0) return;
+      e.preventDefault();
+      var card = h.closest("[data-task]");
+      drag = { id: card.getAttribute("data-task"), card: card, x: e.clientX, y: e.clientY, started: false, over: null };
+    });
+    document.addEventListener("pointermove", function (e) {
+      if (!drag) return;
+      if (!drag.started) {
+        if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 5) return;
+        drag.started = true;
+        var r = drag.card.getBoundingClientRect();
+        drag.dx = e.clientX - r.left; drag.dy = e.clientY - r.top;
+        drag.ghost = drag.card.cloneNode(true);
+        drag.ghost.className += " drag-ghost";
+        drag.ghost.style.width = r.width + "px";
+        document.body.appendChild(drag.ghost);
+        drag.card.classList.add("is-dragging");
+        document.body.classList.add("is-moving");
+      }
+      drag.ghost.style.left = e.clientX - drag.dx + "px";
+      drag.ghost.style.top = e.clientY - drag.dy + "px";
+      var under = document.elementFromPoint(e.clientX, e.clientY);
+      var col = under && under.closest("#board .week-col");
+      drag.over = col ? colTarget(col) : null;
+      markTargets(tasks[drag.id], drag.over);
+      if (drag.over && !canDropOn(tasks[drag.id], drag.over)) drag.ghost.setAttribute("data-invalid", ""); else drag.ghost.removeAttribute("data-invalid");
+      // Auto-scroll the board near its left and right edges.
+      var sc = document.getElementById("week-scroll"), sr = sc.getBoundingClientRect();
+      if (e.clientX > sr.right - 48) sc.scrollLeft += 12; else if (e.clientX < sr.left + 48) sc.scrollLeft -= 12;
+    });
+    function endDrag(cancel) {
+      if (!drag) return;
+      var d = drag;
+      drag = null;
+      if (d.ghost) d.ghost.remove();
+      document.body.classList.remove("is-moving");
+      d.card.classList.remove("is-dragging");
+      clearTargets();
+      if (!d.started) return;
+      if (!cancel && d.over && canDropOn(tasks[d.id], d.over)) moveTask(d.id, d.over === "unplanned" ? null : d.over, "handle");
+      else announce("Move cancelled. “" + tasks[d.id].title + "” stays where it was.");
+    }
+    document.addEventListener("pointerup", function () { endDrag(false); });
+    document.addEventListener("pointercancel", function () { endDrag(true); });
+
+    // Keyboard: Space/Enter lifts, Left/Right choose a day, Space/Enter drops, Escape cancels.
+    function kbTargets(t) {
+      var all = ["unplanned"].concat(days(week));
+      return all.filter(function (x) { return canDropOn(t, x) || x === (t.due || "unplanned"); });
+    }
+    function cancelKb() {
+      if (!kb) return;
+      var id = kb.id;
+      kb = null;
+      clearTargets();
+      var c = document.querySelector('#view [data-task="' + id + '"]');
+      if (c) { c.classList.remove("is-lifted"); var h = c.querySelector("[data-handle]"); if (h) h.removeAttribute("aria-pressed"); }
+    }
+    viewEl.addEventListener("keydown", function (e) {
+      if (drag && e.key === "Escape") { e.preventDefault(); endDrag(true); return; }
+      var h = e.target.closest("[data-handle]");
+      if (!h) return;
+      var id = h.closest("[data-task]").getAttribute("data-task"), t = tasks[id];
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        if (!kb) {
+          kb = { id: id, list: kbTargets(t), at: t.due || "unplanned" };
+          h.setAttribute("aria-pressed", "true");
+          h.closest("[data-task]").classList.add("is-lifted");
+          markTargets(t, null);
+          announce("Picked up “" + t.title + "”. Use the left and right arrow keys to choose a day.");
+        } else {
+          var to = kb.at;
+          cancelKb();
+          if (canDropOn(t, to)) moveTask(id, to === "unplanned" ? null : to, "handle");
+          else announce("“" + t.title + "” stays on its day.");
+        }
+      } else if (kb && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+        e.preventDefault();
+        var i = kb.list.indexOf(kb.at) + (e.key === "ArrowRight" ? 1 : -1);
+        if (i < 0 || i >= kb.list.length) return;
+        kb.at = kb.list[i];
+        markTargets(t, kb.at);
+        var col = document.querySelector('#board [data-col="' + kb.at + '"]');
+        if (col) col.scrollIntoView({ block: "nearest", inline: "nearest" });
+        announce(kb.at === (t.due || "unplanned") ? "Back on its current day" : "“" + t.title + "” over " + targetName(kb.at));
+      } else if (kb && e.key === "Escape") {
+        e.preventDefault();
+        cancelKb();
+        announce("Move cancelled.");
+      }
+    });
+    viewEl.addEventListener("focusout", function (e) { if (kb && e.target.closest && e.target.closest("[data-handle]")) cancelKb(); });
+
+    // ---------------- Toolbar ----------------
+    document.getElementById("wk-prev").addEventListener("click", function () { goWeek(addDays(week, -7)); });
+    document.getElementById("wk-next").addEventListener("click", function () { goWeek(addDays(week, 7)); });
+    document.getElementById("wk-this").addEventListener("click", function () { goWeek(THIS_MON, true); });
+    document.getElementById("show-done").addEventListener("change", function (e) { showDone = e.target.checked; render(); });
+    function setView(v) {
+      if (v === "review" && week > THIS_MON) return;
+      if (v !== view && !confirmLeaveNote()) return;
+      view = v;
+      writeUrl(true);
+      render();
+    }
+    document.querySelectorAll(".view-switch [data-view]").forEach(function (b) { b.addEventListener("click", function () { setView(b.getAttribute("data-view")); }); });
+
+    // ---------------- Prototype controls ----------------
+    function showLoading() { state = "loading"; render(); setTimeout(function () { state = "ready"; render(); }, 1500); }
+    document.getElementById("proto-loading").addEventListener("click", showLoading);
+    document.getElementById("proto-error").addEventListener("click", function () { state = "error"; render(); });
+    document.getElementById("proto-empty").addEventListener("click", function () { goWeek(addDays(THIS_MON, 21), true); });
+    document.getElementById("proto-last").addEventListener("click", function () { view = "review"; goWeek(addDays(THIS_MON, -7), true); });
+
+    // ---------------- Drawer (same behaviour as app-shell) ----------------
+    var sidebar = document.getElementById("sidebar");
+    var backdrop = document.getElementById("drawer-backdrop");
+    var openBtn = document.getElementById("drawer-open");
+    var closeBtn = document.getElementById("drawer-close");
+    var contentColumn = document.getElementById("content-column");
+    function isDrawerOpen() { return sidebar.getAttribute("data-open") === "true"; }
+    function drawerFocusables() { return Array.prototype.filter.call(sidebar.querySelectorAll("a[href], button:not([disabled])"), function (el) { return el.offsetParent !== null; }); }
+    function openDrawer() {
+      sidebar.setAttribute("data-open", "true"); sidebar.setAttribute("role", "dialog"); sidebar.setAttribute("aria-modal", "true");
+      backdrop.hidden = false; contentColumn.inert = true; openBtn.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden"; closeBtn.focus();
+    }
+    function closeDrawer(returnFocus) {
+      sidebar.removeAttribute("data-open"); sidebar.removeAttribute("role"); sidebar.removeAttribute("aria-modal");
+      backdrop.hidden = true; contentColumn.inert = false; openBtn.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = ""; if (returnFocus) openBtn.focus();
+    }
+    openBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", function () { closeDrawer(true); });
+    backdrop.addEventListener("click", function () { closeDrawer(true); });
+    document.addEventListener("keydown", function (e) {
+      if (!isDrawerOpen()) return;
+      if (e.key === "Escape") { e.preventDefault(); closeDrawer(true); return; }
+      if (e.key === "Tab") {
+        var items = drawerFocusables(); if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    desktop.addEventListener("change", function (e) { if (e.matches && isDrawerOpen()) closeDrawer(false); });
+
+    // ---------------- Theme ----------------
+    var themeButtons = document.querySelectorAll("[data-theme-choice]");
+    function syncThemeButtons() {
+      var dark = document.documentElement.classList.contains("dark");
+      themeButtons.forEach(function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-theme-choice") === "dark") === dark)); });
+    }
+    themeButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dark = b.getAttribute("data-theme-choice") === "dark";
+        document.documentElement.classList.toggle("dark", dark);
+        try { localStorage.setItem("ph-theme", dark ? "dark" : "light"); } catch (e) {}
+        syncThemeButtons();
+      });
+    });
+    syncThemeButtons();
+
+    readUrl();
+    writeUrl(false);
+    render();
+  })();
+  </script>
+</body>
+</html>

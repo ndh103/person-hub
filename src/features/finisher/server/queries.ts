@@ -45,10 +45,14 @@ import {
   type TaskPage,
   type TasksTabData,
   type TaskStatus,
-  type TodayData,
+  type ReviewTask,
+  type TaskList,
+  type WeekData,
+  type WeekReviewData,
 } from "../types";
+import { weekDates } from "../domain/week";
 import type { FinisherContext } from "./context";
-import { fromDbError } from "./errors";
+import { FinisherError, fromDbError } from "./errors";
 import { getPomodoroSummary, getTaskPomodoros } from "./pomodoros";
 
 /**
@@ -219,66 +223,175 @@ function sessionsFor(schedule: ProjectSchedule | undefined, from: LocalDate, to:
 }
 
 // ---------------------------------------------------------------------------
-// Today (FIN-031)
+// Week tab (FIN-042 to FIN-047, ADR-0008)
 // ---------------------------------------------------------------------------
 
-export async function getToday(ctx: FinisherContext): Promise<TodayData> {
-  const { now } = ctx;
-  const index = await projectIndex(ctx);
-  const activeIds = [...index.values()].filter((project) => project.status === "active").map((project) => project.id);
-  const dayStart = zonedToUtc(now.date, ctx.timeZone).toISOString();
+/** Dated tasks in one week read; a personal week holds far fewer. */
+const WEEK_TASK_LIMIT = 500;
+/** Unplanned and carried-over tasks loaded per week read (TD-FIN-1). */
+export const WEEK_LIST_LIMIT = 200;
 
-  const [schedules, dueRows, doneRows, parkedTasks] = await Promise.all([
-    loadSchedules(ctx, activeIds, now.date, now.date),
+/** Sessions of every project between `from` and `to`, with project titles, timed first. */
+async function weekSessions(
+  ctx: FinisherContext,
+  index: Map<string, ProjectIndexRow>,
+  from: LocalDate,
+  to: LocalDate,
+): Promise<{ projectId: string; sessions: ScheduledSession[] }[]> {
+  // Every project: a Parked or closed one still shows the sessions it had while Active (FIN-045).
+  const ids = [...index.keys()];
+  const schedules = await loadSchedules(ctx, ids, from, to);
+  return ids.map((projectId) => ({ projectId, sessions: sessionsFor(schedules.get(projectId), from, to) }));
+}
+
+async function taskList(
+  query: PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null; count: number | null }>,
+  index: Map<string, ProjectIndexRow>,
+  now: LocalNow,
+): Promise<TaskList> {
+  const result = await query;
+  const items = rows<TaskRow[]>(result).map((row) => toTaskItem(row, index, now));
+  return { items, total: result.count ?? items.length };
+}
+
+/** The week board (FIN-043): sessions and tasks per day, Unplanned, and Carried over for the current week. */
+export async function getWeek(ctx: FinisherContext, weekStart: LocalDate): Promise<WeekData> {
+  const { now } = ctx;
+  const dates = weekDates(weekStart);
+  const weekEnd = dates[6];
+  const current = weekStart === startOfWeek(now.date);
+  const index = await projectIndex(ctx);
+
+  const openTasks = () =>
+    ctx.supabase.from("finisher_tasks").select(TASK_COLUMNS, { count: "exact" }).eq("status", "open");
+
+  const [sessions, datedRows, unplanned, carried, parkedTasks] = await Promise.all([
+    weekSessions(ctx, index, weekStart, weekEnd),
+    ctx.supabase
+      .from("finisher_tasks")
+      .select(TASK_COLUMNS)
+      .in("status", ["open", "done", "delegated"]) // finished ones stay on their day (decision 36)
+      .gte("due_date", weekStart)
+      .lte("due_date", weekEnd)
+      .order("sort_key") // the user's task order (FIN-038)
+      .order("id")
+      .limit(WEEK_TASK_LIMIT),
+    taskList(openTasks().is("due_date", null).order("sort_key").order("id").limit(WEEK_LIST_LIMIT), index, now),
+    current
+      ? taskList(openTasks().lt("due_date", now.date).order("sort_key").order("id").limit(WEEK_LIST_LIMIT), index, now)
+      : Promise.resolve(null),
+    current
+      ? ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "parked").lte("revisit_date", now.date)
+      : Promise.resolve(null),
+  ]);
+  if (parkedTasks?.error) throw fromDbError(parkedTasks.error);
+
+  const dated = rows<TaskRow[]>(datedRows).map((row) => toTaskItem(row, index, now));
+  const daySessions = new Map<LocalDate, SessionItem[]>(dates.map((date) => [date, []]));
+  for (const { projectId, sessions: list } of sessions) {
+    for (const session of list) {
+      daySessions.get(session.date)?.push({ ...session, projectId, projectTitle: index.get(projectId)?.title ?? "" });
+    }
+  }
+
+  return {
+    now,
+    weekStart,
+    days: dates.map((date) => ({
+      date,
+      sessions: (daySessions.get(date) ?? []).sort(compareSessions),
+      // In the current week, open tasks from earlier days are shown once, as carried over (FIN-046).
+      open: current && date < now.date ? [] : dated.filter((task) => task.status === "open" && task.dueDate === date),
+      finished: dated.filter((task) => task.status !== "open" && task.dueDate === date),
+    })),
+    unplanned,
+    carried,
+    revisitDue: parkedTasks
+      ? {
+          tasks: parkedTasks.count ?? 0,
+          projects: [...index.values()].filter(
+            (project) => project.status === "parked" && project.revisit_date !== null && project.revisit_date <= now.date,
+          ).length,
+        }
+      : null,
+    projects: projectOptions(index),
+  };
+}
+
+/** The weekly review (FIN-047) of the current or a past week. */
+export async function getWeekReview(ctx: FinisherContext, weekStart: LocalDate): Promise<WeekReviewData> {
+  const { now } = ctx;
+  if (weekStart > startOfWeek(now.date)) throw new FinisherError("not_allowed", 409);
+  const dates = weekDates(weekStart);
+  const weekEnd = dates[6];
+  const from = zonedToUtc(weekStart, ctx.timeZone).toISOString();
+  const to = zonedToUtc(addDays(weekStart, 7), ctx.timeZone).toISOString();
+  const nowIso = new Date().toISOString();
+  const index = await projectIndex(ctx);
+
+  const [sessions, closedRows, dueRows, pomodoroRows, noteRow] = await Promise.all([
+    weekSessions(ctx, index, weekStart, weekEnd),
+    ctx.supabase
+      .from("finisher_tasks")
+      .select(`${TASK_COLUMNS}, close_note, closed_at`)
+      .in("status", ["done", "delegated", "let_go"])
+      .gte("closed_at", from)
+      .lt("closed_at", to)
+      .order("closed_at")
+      .limit(WEEK_TASK_LIMIT),
     ctx.supabase
       .from("finisher_tasks")
       .select(TASK_COLUMNS)
       .eq("status", "open")
-      .lte("due_date", now.date)
-      .order("sort_key") // the user's task order (FIN-038), shared with the Tasks tab
+      .gte("due_date", weekStart)
+      .lte("due_date", weekEnd < now.date ? weekEnd : now.date)
+      .order("sort_key")
       .order("id")
-      .limit(500),
+      .limit(WEEK_TASK_LIMIT),
+    // Completed sessions: not stopped and already ended, counted on their local end date (FIN-040).
     ctx.supabase
-      .from("finisher_tasks")
-      .select(TASK_COLUMNS)
-      .in("status", ["done", "delegated"]) // delegating counts as finishing (FIN-041)
-      .gte("closed_at", dayStart)
-      .order("closed_at", { ascending: false })
-      .limit(100),
-    ctx.supabase
-      .from("finisher_tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "parked")
-      .lte("revisit_date", now.date),
+      .from("finisher_pomodoros")
+      .select("ends_at")
+      .is("stopped_at", null)
+      .gte("ends_at", from)
+      .lt("ends_at", to)
+      .lte("ends_at", nowIso)
+      .limit(1000),
+    ctx.supabase.from("finisher_weekly_notes").select("note").eq("week_start", weekStart).maybeSingle(),
   ]);
-  if (parkedTasks.error) throw fromDbError(parkedTasks.error);
+  if (noteRow.error) throw fromDbError(noteRow.error);
 
-  const all: SessionItem[] = activeIds.flatMap((projectId) =>
-    sessionsFor(schedules.get(projectId), now.date, now.date).map((session) => ({
-      ...session,
-      projectId,
-      projectTitle: index.get(projectId)?.title ?? "",
-    })),
-  );
-  all.sort(compareSessions);
+  const closed: ReviewTask[] = rows<(TaskRow & { close_note: string | null; closed_at: string })[]>(closedRows).map((row) => ({
+    ...toTaskItem(row, index, now),
+    closedOn: localDateOf(row.closed_at, ctx.timeZone),
+    note: row.close_note,
+  }));
 
-  const due = rows<TaskRow[]>(dueRows).map((row) => toTaskItem(row, index, now));
+  const perDay = new Map<LocalDate, number>(dates.map((date) => [date, 0]));
+  for (const row of rows<{ ends_at: string }[]>(pomodoroRows)) {
+    const date = localDateOf(row.ends_at, ctx.timeZone);
+    if (perDay.has(date)) perDay.set(date, perDay.get(date)! + 1);
+  }
+
   return {
     now,
-    sessions: all.filter((session) => session.state !== "done"),
-    doneSessions: all.filter((session) => session.state === "done"),
-    sessionsTotal: all.length,
-    sessionsDone: all.filter((session) => session.state === "done").length,
-    overdue: due.filter((task) => task.overdue),
-    dueToday: due.filter((task) => !task.overdue && task.dueDate === now.date),
-    doneTasks: rows<TaskRow[]>(doneRows).map((row) => toTaskItem(row, index, now)),
-    revisitDue: {
-      tasks: parkedTasks.count ?? 0,
-      projects: [...index.values()].filter(
-        (project) => project.status === "parked" && project.revisit_date !== null && project.revisit_date <= now.date,
-      ).length,
-    },
-    projects: projectOptions(index),
+    weekStart,
+    done: closed.filter((task) => task.status !== "let_go"),
+    letGo: closed.filter((task) => task.status === "let_go"),
+    slipped: rows<TaskRow[]>(dueRows)
+      .map((row) => toTaskItem(row, index, now))
+      .filter((task) => task.overdue),
+    projects: sessions
+      .filter(({ sessions: list }) => list.length > 0)
+      .map(({ projectId, sessions: list }) => ({
+        id: projectId,
+        title: index.get(projectId)?.title ?? "",
+        week: summarizeWeek(list, weekStart, now.date),
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title)),
+    pomodoros: dates.map((date) => ({ date, completed: perDay.get(date) ?? 0 })),
+    note: (noteRow.data as { note: string } | null)?.note ?? null,
+    projectOptions: projectOptions(index),
   };
 }
 
@@ -398,23 +511,17 @@ export async function getFinisherBasics(ctx: FinisherContext): Promise<FinisherB
   const index = await projectIndex(ctx);
   const activeIds = [...index.values()].filter((project) => project.status === "active").map((project) => project.id);
 
-  const [schedules, dueOrOverdue, open, pomodoro] = await Promise.all([
-    loadSchedules(ctx, activeIds, now.date, now.date),
-    ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open").lte("due_date", now.date),
+  const [open, pomodoro] = await Promise.all([
     ctx.supabase.from("finisher_tasks").select("id", { count: "exact", head: true }).eq("status", "open"),
     getPomodoroSummary(ctx),
   ]);
-  if (dueOrOverdue.error) throw fromDbError(dueOrOverdue.error);
   if (open.error) throw fromDbError(open.error);
 
-  // FIN-035: what is still to do today, open tasks, and active projects.
-  const unmarkedToday = activeIds
-    .flatMap((projectId) => sessionsFor(schedules.get(projectId), now.date, now.date))
-    .filter((session) => session.state === "unmarked").length;
+  // FIN-035: open tasks and active projects (the Today count went with the Today tab, decision 40).
   return {
     today: now.date,
     projects: projectOptions(index),
-    counts: { today: unmarkedToday + (dueOrOverdue.count ?? 0), tasks: open.count ?? 0, projects: activeIds.length },
+    counts: { tasks: open.count ?? 0, projects: activeIds.length },
     pomodoro, // FIN-039, FIN-040
   };
 }

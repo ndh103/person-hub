@@ -19,11 +19,11 @@ import { useMutation } from "./use-mutation";
 
 type Values = { title: string; notes: string; dueDate: string; dueTime: string; projectId: string };
 
-function initialValues(task: TaskDetail | undefined, projectId: string | undefined): Values {
+function initialValues(task: TaskDetail | undefined, projectId: string | undefined, dueDate?: LocalDate): Values {
   return {
     title: task?.title ?? "",
     notes: task?.notes ?? "",
-    dueDate: task?.dueDate ?? "",
+    dueDate: task?.dueDate ?? dueDate ?? "",
     dueTime: task?.dueTime ?? "",
     projectId: task?.projectId ?? projectId ?? "",
   };
@@ -37,6 +37,7 @@ export function TaskFormDialog({
   projects,
   task,
   defaultProjectId,
+  defaultDueDate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -44,9 +45,11 @@ export function TaskFormDialog({
   projects: ProjectOption[];
   task?: TaskDetail;
   defaultProjectId?: string;
+  /** A day's Add on the Week board presets its date; the user can still change it (FIN-043). */
+  defaultDueDate?: LocalDate;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [values, setValues] = useState<Values>(() => initialValues(task, defaultProjectId));
+  const [values, setValues] = useState<Values>(() => initialValues(task, defaultProjectId, defaultDueDate));
   const { run, pending, fieldErrors, setFieldErrors, formError, reset } = useMutation();
   const [announcement, setAnnouncement] = useState("");
   const editing = Boolean(task);
@@ -58,7 +61,7 @@ export function TaskFormDialog({
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setValues(initialValues(task, defaultProjectId));
+      setValues(initialValues(task, defaultProjectId, defaultDueDate));
       setAnnouncement("");
     }
   }
@@ -104,9 +107,9 @@ export function TaskFormDialog({
     setAnnouncement("");
     if (!next) {
       reset();
-      if (!editing) setValues(initialValues(undefined, defaultProjectId));
+      if (!editing) setValues(initialValues(undefined, defaultProjectId, defaultDueDate));
     } else {
-      setValues(initialValues(task, defaultProjectId));
+      setValues(initialValues(task, defaultProjectId, defaultDueDate));
     }
     onOpenChange(next);
   }
