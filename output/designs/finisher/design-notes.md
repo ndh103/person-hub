@@ -405,7 +405,7 @@ Unplanned 3
 ```
 
 - **Board width:** Unplanned is 13rem, or a 3rem rail when collapsed. Day columns are at least 7.25rem. At 1280px with a classic 17px scrollbar and Unplanned collapsed, all seven days fit. Unplanned starts expanded at 1400px and wider, where all eight columns fit. Narrower laptops (1024–1279px) scroll sideways inside `.week-scroll`, never the page. The Week tab drops `max-w-5xl` on laptop and uses 1.5rem side padding.
-- **Cards:** on laptop the controls get their own row (handle, check-off, ⋯), so the title uses the full column width. On phone it is one row: check-off, title and meta, ⋯. The ⋯ is 28px on laptop (`lg:size-7`) and keeps its 44px `.hit-44` touch area.
+- **Cards:** one row at every width: check-off, title and meta, ⋯ (decision 42, 2026-10-26; this replaces the laptop controls row and its handle). The ⋯ is 28px on laptop (`lg:size-7`) and keeps its 44px `.hit-44` touch area.
 - **Sessions vs tasks** are told apart without relying on colour: sessions have a dashed left rule, a repeat icon, and the duration in text, and they have no drag handle. Assistive technology reads "Session:" before the activity.
 - **Done and Delegated tasks** stay on their day, muted and struck through, with "Done" or "Delegated to …" in text (A23). The **Show done** toggle hides them.
 - **Today** has an accent-tinted column with a ring border and a "Today" pill. **Past days** say "Past" in place of the count and have no Add button (A25).
@@ -413,11 +413,11 @@ Unplanned 3
 ### Interaction
 
 - **Drag (laptop only, FIN-044):**
-  - The grip handle starts the drag. A ghost follows the pointer.
+  - Pressing on the card and moving 4px starts the drag (the card shows a grab cursor); a click still opens the title, check-off or ⋯. A ghost follows the pointer.
   - The column under the pointer gets a 2px ring and a "Plan for Thursday 29 Oct" label.
   - Unavailable columns (the task's own day, past days, every day of a past week) are hatched and dimmed. Dropping there cancels.
   - The board scrolls automatically near its left and right edges. Escape cancels.
-- **Keyboard:** Space or Enter picks the task up; ←/→ moves between Unplanned and the available days (the task's own day is a stop that means "no move"); Space or Enter drops; Escape cancels. Each step is announced. Focus stays on the handle afterwards.
+- **Keyboard:** no keyboard drag on the board (decision 42); keyboard users use Move to day… in the ⋯ menu. After a drop, focus goes to the task's title.
 - **Move to day…:** in every Open task's ⋯ menu, under Today / Tomorrow / Next week (FIN-037). On laptop it opens a centred dialog, and below 1024px a bottom sheet with week arrows. It lists:
   - seven day options, with past days and the current day disabled and captioned "past" or "current";
   - **No day (Unplanned)** ("clears date and time").

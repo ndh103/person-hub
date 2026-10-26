@@ -442,7 +442,7 @@ Putting a task on a day sets its **due date** to that day (decision 34). This is
 
 **By drag (laptop)**
 
-- Each Open task on the board has a visible drag handle (decision 21). When it is dropped on a day, its due date becomes that day. When it is dropped on Unplanned, its due date **and** due time are cleared (A26).
+- An Open task on the board is dragged by its card; there is no drag handle (decision 42). When it is dropped on a day, its due date becomes that day. When it is dropped on Unplanned, its due date **and** due time are cleared (A26).
 - While dragging, the day under the pointer is highlighted and names its date. Days that cannot take the task are shown as unavailable: the task's own day, past days of the current week, and every day of a past week. Dropping there, or outside the board, cancels the drag and nothing changes. Escape cancels. The board scrolls automatically near its edges.
 - Reduced-motion settings are respected.
 
@@ -464,11 +464,8 @@ Putting a task on a day sets its **due date** to that day (decision 34). This is
 
 **Accessibility**
 
-- The drag handle is a keyboard-operable button named after the task, for example "Move 'Submit form' to another day".
-  - Space or Enter picks the task up.
-  - The Left and Right arrow keys move it between Unplanned and the days, skipping unavailable days.
-  - Space or Enter drops it, and Escape cancels.
-- Each step is announced politely, for example "'Submit form' over Wednesday 28 Oct". After a move, focus stays on the task's handle, or on its ⋯ button when the menu was used.
+- Dragging is pointer only. Keyboard and screen-reader users move a task with **Move to day…** in its ⋯ menu (decision 42).
+- Each drag step is announced politely, for example "'Submit form' over Wednesday 28 Oct". After a move, focus goes to the task's title after a drag, or to its ⋯ button when the menu was used.
 - Menu items and dialog options are at least 44px tall on phones. The dialog traps focus, closes on Escape, and returns focus to the ⋯ button.
 
 ### FIN-045 Sessions on the week board (Must)
@@ -661,6 +658,10 @@ From the user, 2026-10-24 (later):
 40. The **Today** tab is removed. **Week** is the first tab and the Finisher home: Week, Tasks, Projects, Closed.
 41. The board hides Saturday and Sunday by default; a toggle shows them.
 
+From the user, 2026-10-26:
+
+42. Week board cards have no drag handle: the user drags the card itself. Each card is one row: check-off on the left, title in the middle, ⋯ on the right. This replaces decision 21 on the Week board only; the Tasks tab keeps its handles.
+
 ## Assumptions (reversible proposed defaults)
 
 - A1. The user's timezone is the browser's IANA timezone, until the hub defines an account timezone.
@@ -709,6 +710,7 @@ From the user, 2026-10-24 (later):
 
 ## Change notes
 
+- **2026-10-26, v6.4.** Decision 42: Week board cards lose the drag handle and are dragged by the card; cards are one row (check-off, title, ⋯) at every width. Keyboard drag on the board is removed; Move to day… is the keyboard path (FIN-044). **Affects:** `week-cards.tsx`, `week-board.tsx`, `week-plan-context.ts`; no API or schema change.
 - **2026-10-24, v6.3.** Decision 41 and A34: the weekend is hidden by default with a Show weekend toggle (FIN-043). **Affects:** `week-view.tsx` and `week-board.tsx`; no API or schema change. The Week page also now uses the full content width with less padding, as the design specified.
 - **2026-10-24, v6.2.** Removed the **Today** tab (decision 40). Week is the first tab and the Finisher home.
   - FIN-031 is retired, with a table of where each part went.

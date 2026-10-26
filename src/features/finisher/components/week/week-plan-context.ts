@@ -2,8 +2,8 @@ import { createContext, useContext } from "react";
 import type { LocalDate, LocalTime } from "../../domain/dates";
 import type { ProjectOption, TaskItem } from "../../types";
 
-/** Where focus goes after a task moved: its drag handle, its ⋯ button, or its title (FIN-044). */
-export type FocusTarget = "handle" | "more" | "title";
+/** Where focus goes after a task moved: its ⋯ button, or its title after a drag (FIN-044). */
+export type FocusTarget = "more" | "title";
 
 /**
  * What the week board offers its cards, menus and dialogs. Moves are

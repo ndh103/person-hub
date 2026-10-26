@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { CheckCircle2Icon, CheckIcon, CircleIcon, GripVerticalIcon, MoreHorizontalIcon, Repeat2Icon, SkipForwardIcon } from "lucide-react";
+import { CheckCircle2Icon, CheckIcon, CircleIcon,MoreHorizontalIcon, Repeat2Icon, SkipForwardIcon } from "lucide-react";
 import { Link } from "@/components/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,17 +20,12 @@ import { TaskActionsMenu, TaskCheck } from "../task-row";
 import { useWeekPlan } from "./week-plan-context";
 
 /**
- * Cards on the week board. On phones a card is one row: check-off, title and
- * details, ⋯. In the narrow laptop columns the handle and ⋯ get their own row
- * above, so the check-off and title can use the full width (design notes, Week
- * planner).
+ * Cards on the week board are one row: check-off, title and details, ⋯. On
+ * laptop an Open task is dragged by the card itself; Move to day… in the ⋯
+ * menu is the keyboard and phone alternative (design notes, Week planner).
  */
-const ROW_GRID =
+const CARD_GRID =
   "grid grid-cols-[auto_minmax(0,1fr)_auto] [grid-template-areas:'check_title_more'_'check_meta_more'] items-start gap-x-2";
-const CARD_GRID = `${ROW_GRID} lg:[grid-template-areas:'handle_._more'_'check_title_title'_'check_meta_meta'] lg:gap-x-0.5`;
-/** Title and details padding in the stacked laptop layout only. */
-const STACKED_TEXT = "lg:px-1";
-const STACKED_TITLE = STACKED_TEXT;
 
 /** An Open, Done or Delegated task on a day, in Unplanned or in Carried over. */
 export function PlanTaskCard({ task, carried = false, actions }: { task: TaskItem; carried?: boolean; actions?: React.ReactNode }) {
@@ -38,7 +33,9 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
   const panel = useTaskPanel();
   const open = task.status === "open";
   const draggable = open && !carried && plan.dragEnabled;
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
+  // Pointer only: the board has no keyboard sensor, so the listeners are just
+  // onPointerDown and keys on the card's links and buttons are left alone.
+  const { listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
     data: { task },
     disabled: !draggable,
@@ -59,27 +56,16 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
     <article
       ref={setNodeRef}
       data-week-task={task.id}
+      {...(draggable ? listeners : undefined)}
       className={cn(
         "rounded-lg border bg-card px-1.5 pt-1 pb-1.5 text-card-foreground",
+        draggable && "cursor-grab active:cursor-grabbing",
         !open && "bg-transparent",
         isDragging && "opacity-40",
         selected && "bg-accent shadow-[inset_3px_0_0_var(--ring)]",
       )}
     >
-      <div className={carried ? ROW_GRID : CARD_GRID}>
-        {draggable ? (
-          <button
-            ref={setActivatorNodeRef}
-            type="button"
-            data-focus="handle"
-            {...attributes}
-            {...listeners}
-            aria-label={`Move “${task.title}” to another day`}
-            className="relative hidden h-9 w-7 cursor-grab touch-none place-items-center rounded-md text-muted-foreground outline-none [grid-area:handle] after:absolute after:inset-x-0 after:-inset-y-1 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing lg:grid"
-          >
-            <GripVerticalIcon aria-hidden="true" className="size-4" />
-          </button>
-        ) : null}
+      <div className={CARD_GRID}>
         <div className="flex h-9 items-center [grid-area:check]">
           {task.status === "delegated" ? (
             <span className="grid size-7 place-items-center text-muted-foreground" aria-hidden="true">
@@ -102,14 +88,13 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
           }}
           className={cn(
             "pt-2 text-sm font-medium break-words underline-offset-4 outline-none [grid-area:title] hover:underline focus-visible:underline",
-            !carried && STACKED_TITLE,
             selected && "font-semibold",
             !open && "text-muted-foreground line-through decoration-input",
           )}
         >
           {task.title}
         </Link>
-        <TaskMeta task={task} carried={carried} className={carried ? undefined : STACKED_TEXT} />
+        <TaskMeta task={task} carried={carried} />
         <div className="[grid-area:more] lg:-mr-1">
           <TaskActionsMenu task={task} today={plan.today} projects={plan.projects} planItems={planItems} triggerProps={{ "data-focus": "more" }} />
         </div>
@@ -119,7 +104,7 @@ export function PlanTaskCard({ task, carried = false, actions }: { task: TaskIte
   );
 }
 
-function TaskMeta({ task, carried, className }: { task: TaskItem; carried: boolean; className?: string }) {
+function TaskMeta({ task, carried }: { task: TaskItem; carried: boolean }) {
   const parts: React.ReactNode[] = [];
   if (carried && task.dueDate) {
     parts.push(
@@ -141,7 +126,7 @@ function TaskMeta({ task, carried, className }: { task: TaskItem; carried: boole
   if (task.projectTitle) parts.push(<span key="project" className="break-words">{task.projectTitle}</span>);
   if (!parts.length) return null;
   return (
-    <p className={cn("font-mono text-xs text-muted-foreground [grid-area:meta]", className)}>
+    <p className="font-mono text-xs text-muted-foreground [grid-area:meta]">
       {parts.map((part, index) => (
         <span key={index}>
           {index ? " · " : ""}
@@ -208,7 +193,6 @@ export function PlanSessionCard({ session }: { session: SessionItem }) {
         <p
           className={cn(
             "flex items-start gap-1 pt-2 text-sm font-medium break-words [grid-area:title]",
-            STACKED_TITLE,
             marked && "text-muted-foreground line-through decoration-input",
           )}
         >
@@ -218,7 +202,7 @@ export function PlanSessionCard({ session }: { session: SessionItem }) {
             {session.activity}
           </span>
         </p>
-        <p className={cn("font-mono text-xs text-muted-foreground [grid-area:meta]", STACKED_TEXT)}>
+        <p className="font-mono text-xs text-muted-foreground [grid-area:meta]">
           {formatDuration(session.durationMinutes)}
           {session.startTime ? ` · ${session.startTime}` : ""}
           {STATE_WORD[shown] ? ` · ${STATE_WORD[shown]}` : ""}

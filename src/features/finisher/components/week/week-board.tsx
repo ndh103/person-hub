@@ -1,7 +1,6 @@
 import {
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
   pointerWithin,
   rectIntersection,
@@ -11,7 +10,6 @@ import {
   type Announcements,
   type CollisionDetection,
   type DragEndEvent,
-  type KeyboardCoordinateGetter,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { FlagIcon, GripVerticalIcon, InboxIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon } from "lucide-react";
@@ -100,28 +98,10 @@ function placeTasks(data: WeekData, overrides: Map<string, Due>, current: boolea
   return { days, unplanned, carried, all };
 }
 
-/** Pointer: the column under the pointer. Keyboard (no pointer): the column the card was moved into. */
+/** The column under the pointer, else the column the card overlaps most. */
 const collision: CollisionDetection = (args) => {
   const hits = pointerWithin(args);
   return hits.length ? hits : rectIntersection(args);
-};
-
-/** Left and right arrows jump the card to the next column that can take it (FIN-044). */
-const columnCoordinates: KeyboardCoordinateGetter = (event, { context: { active, droppableRects, droppableContainers, collisionRect } }) => {
-  if (!active || !collisionRect || (event.code !== "ArrowRight" && event.code !== "ArrowLeft")) return undefined;
-  event.preventDefault();
-  const columns = droppableContainers
-    .getEnabled()
-    .map((container) => droppableRects.get(container.id))
-    .filter((rect): rect is NonNullable<typeof rect> => Boolean(rect))
-    .sort((a, b) => a.left - b.left);
-  const centre = collisionRect.left + collisionRect.width / 2;
-  const next =
-    event.code === "ArrowRight"
-      ? columns.find((rect) => rect.left + rect.width / 2 > centre + 1)
-      : [...columns].reverse().find((rect) => rect.left + rect.width / 2 < centre - 1);
-  if (!next) return undefined;
-  return { x: next.left + next.width / 2 - collisionRect.width / 2, y: next.top + 40 };
 };
 
 /**
@@ -280,15 +260,13 @@ export function WeekBoard({ data, showDone, showWeekend }: { data: WeekData; sho
     [data.weekStart, data.projects, today, mobile, move, setTime],
   );
 
-  // Drag and drop between columns (laptop only, A27).
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: columnCoordinates }),
-  );
+  // Drag a card between columns (laptop only, A27). Pointer only: keyboard
+  // users move a task with Move to day… in its ⋯ menu.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const activeTask = activeId ? placed.all.find((task) => task.id === activeId) ?? null : null;
   const activeTitle = activeTask?.title ?? "Task";
   const announcements: Announcements = {
-    onDragStart: () => `Picked up “${activeTitle}”. Use the left and right arrow keys to choose a day.`,
+    onDragStart: () => `Picked up “${activeTitle}”.`,
     onDragOver: ({ over }) => (over ? `“${activeTitle}” over ${targetName(over.id)}.` : `“${activeTitle}” is not over a day.`),
     onDragEnd: ({ over }) => (over ? `“${activeTitle}” dropped on ${targetName(over.id)}.` : `“${activeTitle}” dropped. It stays where it was.`),
     onDragCancel: () => `Move cancelled. “${activeTitle}” stays where it was.`,
@@ -299,7 +277,7 @@ export function WeekBoard({ data, showDone, showWeekend }: { data: WeekData; sho
     const task = placed.all.find((item) => item.id === String(event.active.id));
     const target = event.over ? (String(event.over.id) as PlanTarget) : null;
     if (!task || !target || !canPlanOn(target, task, today)) return;
-    void move(task, target === "unplanned" ? null : target, "handle");
+    void move(task, target === "unplanned" ? null : target, "title");
   }
 
   const unavailable = (target: PlanTarget) => activeTask !== null && !canPlanOn(target, activeTask, today);
@@ -314,13 +292,7 @@ export function WeekBoard({ data, showDone, showWeekend }: { data: WeekData; sho
       <DndContext
         sensors={sensors}
         collisionDetection={collision}
-        accessibility={{
-          announcements,
-          screenReaderInstructions: {
-            draggable:
-              "To move this task to another day, press Space or Enter to pick it up. Use the left and right arrow keys to choose a day. Press Space or Enter to drop it, or Escape to cancel.",
-          },
-        }}
+        accessibility={{ announcements }}
         onDragStart={(event) => setActiveId(String(event.active.id))}
         onDragEnd={onDragEnd}
         onDragCancel={() => setActiveId(null)}
