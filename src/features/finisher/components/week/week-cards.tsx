@@ -21,15 +21,16 @@ import { useWeekPlan } from "./week-plan-context";
 
 /**
  * Cards on the week board. On phones a card is one row: check-off, title and
- * details, ⋯. In the narrow laptop columns the controls get their own row, so
- * the title can use the full width (design notes, Week planner).
+ * details, ⋯. In the narrow laptop columns the handle and ⋯ get their own row
+ * above, so the check-off and title can use the full width (design notes, Week
+ * planner).
  */
 const ROW_GRID =
   "grid grid-cols-[auto_minmax(0,1fr)_auto] [grid-template-areas:'check_title_more'_'check_meta_more'] items-start gap-x-2";
-const CARD_GRID = `${ROW_GRID} lg:grid-cols-[auto_auto_minmax(0,1fr)_auto] lg:[grid-template-areas:'handle_check_._more'_'title_title_title_title'_'meta_meta_meta_meta'] lg:gap-x-0.5`;
+const CARD_GRID = `${ROW_GRID} lg:[grid-template-areas:'handle_._more'_'check_title_title'_'check_meta_meta'] lg:gap-x-0.5`;
 /** Title and details padding in the stacked laptop layout only. */
 const STACKED_TEXT = "lg:px-1";
-const STACKED_TITLE = "lg:px-1 lg:pt-1";
+const STACKED_TITLE = STACKED_TEXT;
 
 /** An Open, Done or Delegated task on a day, in Unplanned or in Carried over. */
 export function PlanTaskCard({ task, carried = false, actions }: { task: TaskItem; carried?: boolean; actions?: React.ReactNode }) {
