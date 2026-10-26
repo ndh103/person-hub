@@ -2,6 +2,7 @@ import { Outlet } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { AppTopBar } from "@/components/shell/app-top-bar";
 import { RouteFocus } from "@/components/shell/route-focus";
+import { useSidebarPreference } from "@/components/shell/sidebar-preference";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toast";
@@ -14,6 +15,7 @@ import { PomodoroWatcher } from "@/features/finisher/components/pomodoro";
  * convenience only: the API verifies the access token on every read and write.
  */
 export function AppLayout({ account }: { account: string | null }) {
+  const [sidebarOpen, setSidebarOpen] = useSidebarPreference();
   return (
     <TooltipProvider>
       <Toaster>
@@ -24,8 +26,11 @@ export function AppLayout({ account }: { account: string | null }) {
           Skip to content
         </a>
         <SidebarProvider
+          open={sidebarOpen}
+          onOpenChange={setSidebarOpen}
           className="bg-sidebar text-sidebar-foreground"
-          style={{ "--sidebar-width": "17rem" } as React.CSSProperties}
+          // The collapsed icon rail is wide enough for the 44px avatar and nav targets.
+          style={{ "--sidebar-width": "17rem", "--sidebar-width-icon": "3.75rem" } as React.CSSProperties}
         >
           <AppSidebar account={account} />
           <SidebarInset

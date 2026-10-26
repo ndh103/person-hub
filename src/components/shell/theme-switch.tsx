@@ -1,6 +1,8 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 /** Same key as the pre-paint script in the root layout. */
 const STORAGE_KEY = "ph-theme";
@@ -17,18 +19,46 @@ function subscribe(onChange: () => void) {
   return () => observer.disconnect();
 }
 
+function choose(next: Theme) {
+  document.documentElement.classList.toggle("dark", next === "dark");
+  try {
+    localStorage.setItem(STORAGE_KEY, next);
+  } catch {
+    // Storage can be unavailable (private mode); the choice still applies to this page.
+  }
+}
+
+function useTheme() {
+  return useSyncExternalStore<Theme | null>(subscribe, readTheme, () => null);
+}
+
+/** Single icon button for the collapsed sidebar rail: switches to the other theme. */
+export function ThemeToggleButton() {
+  const theme = useTheme();
+  const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="size-11 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            aria-label={label}
+            onClick={() => choose(theme === "dark" ? "light" : "dark")}
+          />
+        }
+      >
+        {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 /** Light/Dark segmented switch in the sidebar footer (SHELL-001). */
 export function ThemeSwitch() {
-  const theme = useSyncExternalStore<Theme | null>(subscribe, readTheme, () => null);
-
-  function choose(next: Theme) {
-    document.documentElement.classList.toggle("dark", next === "dark");
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // Storage can be unavailable (private mode); the choice still applies to this page.
-    }
-  }
+  const theme = useTheme();
 
   return (
     <ToggleGroup
