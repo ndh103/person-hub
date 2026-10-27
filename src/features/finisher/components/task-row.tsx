@@ -125,11 +125,11 @@ export function TaskCheck({ task, variant = "icon" }: { task: TaskItem; variant?
       aria-pressed={done}
       aria-label={`Mark “${task.title}” done`}
       disabled={busy}
-      // 28px circle; the ::after keeps a 44px touch target.
-      className="relative size-7 shrink-0 rounded-full after:absolute after:-inset-2 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
+      // 20px circle; the ::after keeps a 44px touch target.
+      className="relative size-5 shrink-0 rounded-full after:absolute after:-inset-3 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary-hover aria-pressed:hover:text-primary-foreground"
       onClick={() => void setDone(!done)}
     >
-      {done ? <CheckIcon className="size-3.5" /> : <CircleIcon className="size-3.5 text-muted-foreground" />}
+      {done ? <CheckIcon className="size-3" /> : <CircleIcon className="size-3 text-muted-foreground" />}
     </Button>
   );
 }
